@@ -4,6 +4,7 @@ import { Product } from "../types";
 import AppImage from "./AppImage";
 import { toggleFavoriteRequest } from "./services/toggleFavorite";
 import { FALLBACK_IMAGE_URL } from "@/constants";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 
 interface ProductCardProps {
@@ -102,13 +103,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         >
 
           <div className="min-w-full h-full relative shrink-0">
-            {/* <AppImage
-              src={product?.image}
-              alt={`${product.name}`}
-              className="w-full h-full object-cover"
-              draggable={false}
-            /> */}
-            <img src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
+            <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
           </div>
         </div>
 
