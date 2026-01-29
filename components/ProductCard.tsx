@@ -108,7 +108,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               className="w-full h-full object-cover"
               draggable={false}
             /> */}
-            <img src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" draggable={false} />
+            {/* <img src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" draggable={false} /> */}
           </div>
         </div>
 
