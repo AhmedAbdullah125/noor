@@ -90,27 +90,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image Carousel Area */}
       <div className="relative w-full aspect-square bg-app-bg/50 overflow-hidden">
         <div
-          className="flex h-full w-full transition-transform duration-500 ease-out transform-gpu will-change-transform"
-          style={{ transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }}
+          className="flex h-full w-full transition-transform duration-500 ease-out"
+          // ✅ (اختياري) غالباً الصحيح بالسالب
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           onTouchStart={(e) => handleStart(e.touches[0].clientX)}
           onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
           onMouseDown={(e) => handleStart(e.clientX)}
           onMouseUp={(e) => handleEnd(e.clientX)}
-          onMouseLeave={() => { touchStartX.current = null; }}
+          onMouseLeave={() => {
+            touchStartX.current = null;
+          }}
         >
-          <div className="min-w-full h-full relative shrink-0">
-            <img
-              src={product?.image || FALLBACK_IMAGE_URL}
-              alt={product.name}
-              className="w-full h-full object-cover object-center"
-              style={{
-                transform: "translateZ(0)",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-              }}
-            />
-          </div>
 
+          <div className="min-w-full h-full relative shrink-0">
+            <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
+          </div>
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent z-10" />

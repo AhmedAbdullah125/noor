@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Search, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Home, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Product } from '../types';
-import ProductCard from './ProductCard';
 import AppImage from './AppImage';
 import AppHeader from './AppHeader';
 import { useGetServiceByCategory } from './services/useGetServiceByCategory';
 import { useGetLookups } from './services/useGetLookups';
+import { toggleFavoriteRequest } from './services/toggleFavorite';
+import { FALLBACK_IMAGE_URL } from '@/constants';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 interface BrandPageProps {
   onBook: (product: Product, quantity: number) => void;
@@ -20,6 +22,8 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
   const { brandId } = useParams();
 
   const [page, setPage] = useState(1);
+  const [localFavourites, setLocalFavourites] = useState<Record<number, boolean>>({});
+  const [favLoadingStates, setFavLoadingStates] = useState<Record<number, boolean>>({});
 
   const { data, isLoading, isError, isFetching, error } =
     useGetServiceByCategory("ar", brandId, page);
@@ -149,15 +153,86 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
           {mappedProducts.length > 0 && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                {mappedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    isFavourite={favourites.includes(product.id)}
-                    onBook={onBook}
-                    onClick={handleProductClick}
-                  />
-                ))}
+                {mappedProducts.map((product) => {
+                  const isFavourite = localFavourites[product.id] ?? favourites.includes(product.id);
+                  const favLoading = favLoadingStates[product.id] ?? false;
+
+                  const handleToggleFav = async (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    if (favLoading) return;
+
+                    const prev = isFavourite;
+                    setLocalFavourites(state => ({ ...state, [product.id]: !prev }));
+                    setFavLoadingStates(state => ({ ...state, [product.id]: true }));
+
+                    const res = await toggleFavoriteRequest(product.id, "ar");
+                    if (!res.ok) {
+                      setLocalFavourites(state => ({ ...state, [product.id]: prev }));
+                    }
+                    setFavLoadingStates(state => ({ ...state, [product.id]: false }));
+                  };
+
+                  return (
+                    <div
+                      key={product.id}
+                      onClick={() => handleProductClick(product)}
+                      className="flex flex-col rounded-[20px] bg-white shadow-sm border border-app-card/30 overflow-hidden group active:scale-[0.98] transition-transform cursor-pointer h-full select-none"
+                    >
+                      <div className="relative w-full aspect-square bg-app-bg/50 overflow-hidden">
+                        <div className="flex h-full w-full">
+                          <div className="min-w-full h-full relative shrink-0">
+                            <LazyLoadImage
+                              src={product?.image || FALLBACK_IMAGE_URL}
+                              alt={`${product.name}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent z-10" />
+
+                        <div className="absolute inset-x-0 bottom-0 px-3 pb-7 pt-4 z-20 pointer-events-none">
+                          <h3 className="text-xs font-semibold text-app-text text-right w-full line-clamp-2 font-alexandria leading-relaxed">
+                            {product.name}
+                          </h3>
+                        </div>
+
+                        <button
+                          onClick={handleToggleFav}
+                          disabled={favLoading}
+                          className={`absolute top-2 right-2 p-1.5 backdrop-blur-md rounded-full shadow-sm transition-all z-30 ${isFavourite ? "bg-white text-red-500" : "bg-white/60 text-app-gold hover:bg-white"
+                            } ${favLoading ? "opacity-70" : "active:scale-90"}`}
+                          aria-label="toggle favourite"
+                        >
+                          <Heart size={16} fill={isFavourite ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+
+                      <div className="p-3 pt-2 mt-auto flex items-center justify-between bg-white relative z-10">
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-semibold text-app-gold font-alexandria leading-none">
+                            {product.price}
+                          </span>
+                          {product.oldPrice && (
+                            <span className="text-[9px] text-app-textSec line-through font-alexandria opacity-60 mt-0.5">
+                              {product.oldPrice}
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductClick(product);
+                          }}
+                          className="bg-app-bg text-app-text font-semibold text-[10px] py-1.5 px-3 rounded-xl border border-app-card hover:bg-app-card transition-colors shadow-sm flex items-center gap-1 active:scale-90"
+                        >
+                          <span>التفاصيل</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {pagination && pagination.total_pages > 1 && (
