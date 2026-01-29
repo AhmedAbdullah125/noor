@@ -85,27 +85,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       onClick={onCardClick}
-      className="flex flex-col rounded-[20px] bg-white shadow-sm border border-app-card/30 overflow-hidden group active:scale-[0.98] transition-transform cursor-pointer h-full select-none"
+      className="flex flex-col rounded-[20px] bg-white shadow-sm border border-app-card/30 overflow-hidden active:scale-[0.98] transition-transform cursor-pointer h-full "
     >
       {/* Image Carousel Area */}
       <div className="relative w-full aspect-square bg-app-bg/50 overflow-hidden">
-        <div
-          className="flex h-full w-full transition-transform duration-500 ease-out"
-          // ✅ (اختياري) غالباً الصحيح بالسالب
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-          onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
-          onMouseDown={(e) => handleStart(e.clientX)}
-          onMouseUp={(e) => handleEnd(e.clientX)}
-          onMouseLeave={() => {
-            touchStartX.current = null;
-          }}
-        >
-
-          <div className="min-w-full h-full relative shrink-0">
-            <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
-          </div>
-
+        <div className="flex h-full w-full">
+          <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent z-10" />
@@ -114,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <h3 className="text-xs font-semibold text-app-text text-right w-full line-clamp-2 font-alexandria leading-relaxed">
             {product.name}
           </h3>
-          <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
+          {/* <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" /> */}
         </div>
 
         {images.length > 1 && (
