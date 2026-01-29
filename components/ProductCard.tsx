@@ -3,6 +3,8 @@ import { Heart } from "lucide-react";
 import { Product } from "../types";
 import AppImage from "./AppImage";
 import { toggleFavoriteRequest } from "./services/toggleFavorite";
+import { FALLBACK_IMAGE_URL } from "@/constants";
+
 
 interface ProductCardProps {
   product: Product;
@@ -100,12 +102,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         >
 
           <div className="min-w-full h-full relative shrink-0">
-            <AppImage
+            {/* <AppImage
               src={product?.image}
               alt={`${product.name}`}
               className="w-full h-full object-cover"
               draggable={false}
-            />
+            /> */}
+            <img src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" draggable={false} />
           </div>
         </div>
 
