@@ -105,6 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="min-w-full h-full relative shrink-0">
             <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
           </div>
+
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent z-10" />
@@ -113,6 +114,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <h3 className="text-xs font-semibold text-app-text text-right w-full line-clamp-2 font-alexandria leading-relaxed">
             {product.name}
           </h3>
+          <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" />
         </div>
 
         {images.length > 1 && (
