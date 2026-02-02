@@ -58,21 +58,7 @@ const HairProfilePage: React.FC = () => {
     };
   }, [answers]);
 
-  useEffect(() => {
-    const id = focusedTextIdRef.current;
-    if (!id) return;
 
-    const el = textAreaRefs.current[id];
-    if (!el) return;
-
-    if (document.activeElement !== el) {
-      try {
-        el.focus({ preventScroll: true } as any);
-      } catch {
-        el.focus();
-      }
-    }
-  }, [answers]);
 
   const clearErrorIfExists = (questionId: number) => {
     setErrors((prev) => {
@@ -180,151 +166,133 @@ const HairProfilePage: React.FC = () => {
     }, 350);
   };
 
-  const QuestionCard: React.FC<{ q: ApiQuestion }> = ({ q }) => {
-    const required = 1;
-    const hasError = errors.has(q.id);
+  const renderQuestions = useMemo(() => {
+    return questions.map((q) => {
+      const required = 1;
+      const hasError = errors.has(q.id);
 
-    if (q.type === "text") {
-      const v = answers[q.id] ?? "";
+      if (q.type === "text") {
+        const v = answers[q.id] ?? "";
 
-      return (
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-app-text mb-2">
-            {q.question} {required && <span className="text-red-500">*</span>}
-          </label>
+        return (
+          <div className="mb-6" key={q.id}>
+            <label className="block text-sm font-semibold text-app-text mb-2">
+              {q.question} {required && <span className="text-red-500">*</span>}
+            </label>
 
-          <textarea
-            ref={(el) => {
-              textAreaRefs.current[q.id] = el;
-            }}
-            className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm h-32 leading-relaxed"
-            value={v}
-            onFocus={() => {
-              focusedTextIdRef.current = q.id;
-            }}
-            onChange={(e) => {
-              const next = e.target.value;
-              setAnswerLocal(q.id, next);
+            <textarea
+              ref={(el) => {
+                textAreaRefs.current[q.id] = el;
+              }}
+              className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm h-32 leading-relaxed"
+              value={v}
+              onFocus={() => {
+                focusedTextIdRef.current = q.id;
+              }}
+              onChange={(e) => {
+                const next = e.target.value;
+                setAnswerLocal(q.id, next);
 
-              if (textTimers.current[q.id]) clearTimeout(textTimers.current[q.id]);
+                // Clear existing timer
+                if (textTimers.current[q.id]) clearTimeout(textTimers.current[q.id]);
 
-              textTimers.current[q.id] = setTimeout(() => {
-                const txt = String(next ?? "").trim();
-                const last = lastSubmittedTextRef.current[q.id] ?? "";
-
-                if (!txt) return;
-                if (txt === last) return;
-
-                submitAnswer(q, next);
-                lastSubmittedTextRef.current[q.id] = txt;
-              }, 3000);
-            }}
-            onBlur={(e) => {
-              const nextEl = (e.relatedTarget as HTMLElement) || null;
-
-              if (!nextEl) {
-                setTimeout(() => {
-                  const el = textAreaRefs.current[q.id];
-                  if (el && document.activeElement === el) return;
-
-                  if (textTimers.current[q.id]) clearTimeout(textTimers.current[q.id]);
-
-                  const current = String(answers[q.id] ?? "").trim();
+                // Set 3-second timer to auto-submit
+                textTimers.current[q.id] = setTimeout(() => {
+                  const txt = String(next ?? "").trim();
                   const last = lastSubmittedTextRef.current[q.id] ?? "";
 
-                  if (!current) return;
-                  if (!current) return;
-                  if (current === last) return;
+                  if (!txt) return;
+                  if (txt === last) return;
 
-                  submitAnswer(q, answers[q.id]);
-                  lastSubmittedTextRef.current[q.id] = current;
-                  focusedTextIdRef.current = null;
-                }, 50);
-                return;
-              }
+                  submitAnswer(q, next);
+                  lastSubmittedTextRef.current[q.id] = txt;
+                }, 2000);
+              }}
+              onBlur={() => {
+                focusedTextIdRef.current = null;
 
-              if (textTimers.current[q.id]) clearTimeout(textTimers.current[q.id]);
+                // Clear the timer since we're submitting now
+                if (textTimers.current[q.id]) clearTimeout(textTimers.current[q.id]);
 
-              const current = String(answers[q.id] ?? "").trim();
-              const last = lastSubmittedTextRef.current[q.id] ?? "";
+                const current = String(answers[q.id] ?? "").trim();
+                const last = lastSubmittedTextRef.current[q.id] ?? "";
 
-              if (!current) return;
-              if (!current) return;
-              if (current === last) return;
+                if (!current) return;
+                if (current === last) return;
 
-              submitAnswer(q, answers[q.id]);
-              lastSubmittedTextRef.current[q.id] = current;
-              focusedTextIdRef.current = null;
-            }}
-            placeholder="اكتبي هنا..."
-          />
+                submitAnswer(q, answers[q.id]);
+                lastSubmittedTextRef.current[q.id] = current;
+              }}
+              placeholder="اكتبي هنا..."
+            />
 
-          {hasError && (
-            <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
-              <AlertCircle size={10} /> هذا الحقل مطلوب
-            </p>
-          )}
-        </div>
-      );
-    }
+            {hasError && (
+              <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
+                <AlertCircle size={10} /> هذا الحقل مطلوب
+              </p>
+            )}
+          </div>
+        );
+      }
 
-    if (q.type === "multiple_choice") {
-      const selectedAnswerId = answers[q.id];
-      const opts = (q.answers ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      if (q.type === "multiple_choice") {
+        const selectedAnswerId = answers[q.id];
+        const opts = (q.answers ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-      return (
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-app-text mb-3">
-            {q.question} {required && <span className="text-red-500">*</span>}
-          </label>
+        return (
+          <div className="mb-6" key={q.id}>
+            <label className="block text-sm font-semibold text-app-text mb-3">
+              {q.question} {required && <span className="text-red-500">*</span>}
+            </label>
 
-          <div className="space-y-2">
-            {opts.map((opt) => {
-              const active = selectedAnswerId === opt.id;
+            <div className="space-y-2">
+              {opts.map((opt) => {
+                const active = selectedAnswerId === opt.id;
 
-              return (
-                <label
-                  key={opt.id}
-                  className={`flex items-center p-4 rounded-2xl border transition-all cursor-pointer ${active ? "border-app-gold bg-app-gold/5 shadow-sm" : "border-app-card/50 bg-white"
-                    }`}
-                >
-                  <input
-                    type="radio"
-                    className="hidden"
-                    name={`q_${q.id}`}
-                    checked={active}
-                    onChange={async () => {
-                      setAnswerLocal(q.id, opt.id);
-                      await submitAnswer(q, opt.id);
-                    }}
-                  />
-
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ml-3 ${active ? "border-app-gold" : "border-app-textSec/30"
+                return (
+                  <label
+                    key={opt.id}
+                    className={`flex items-center p-4 rounded-2xl border transition-all cursor-pointer ${active ? "border-app-gold bg-app-gold/5 shadow-sm" : "border-app-card/50 bg-white"
                       }`}
                   >
-                    {active && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
-                  </div>
+                    <input
+                      type="radio"
+                      className="hidden"
+                      name={`q_${q.id}`}
+                      checked={active}
+                      onChange={async () => {
+                        setAnswerLocal(q.id, opt.id);
+                        await submitAnswer(q, opt.id);
+                      }}
+                    />
 
-                  <span className={`text-xs font-normal ${active ? "text-app-gold" : "text-app-text"}`}>
-                    {opt.answer}
-                  </span>
-                </label>
-              );
-            })}
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ml-3 ${active ? "border-app-gold" : "border-app-textSec/30"
+                        }`}
+                    >
+                      {active && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
+                    </div>
+
+                    <span className={`text-xs font-normal ${active ? "text-app-gold" : "text-app-text"}`}>
+                      {opt.answer}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {hasError && (
+              <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
+                <AlertCircle size={10} /> هذا الحقل مطلوب
+              </p>
+            )}
           </div>
+        );
+      }
 
-          {hasError && (
-            <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
-              <AlertCircle size={10} /> هذا الحقل مطلوب
-            </p>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  };
+      return null;
+    });
+  }, [questions, answers, errors]);
 
   const answeredRequiredLocal = useMemo(() => {
     let c = 0;
@@ -371,7 +339,7 @@ const HairProfilePage: React.FC = () => {
             جاري تحميل الأسئلة...
           </div>
         ) : (
-          questions.map((q) => <QuestionCard key={q.id} q={q} />)
+          renderQuestions
         )}
       </main>
 
