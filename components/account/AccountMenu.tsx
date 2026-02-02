@@ -41,6 +41,7 @@ type Props = {
 
 export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete,
 }: Props) {
+    console.log(profile);
     const userName = isGuest ? "زائر" : profile?.name || "—";
     const userPhone = isGuest ? "" : profile?.phone || "";
     const userPhoto = isGuest ? "" : profile?.photo || "https://maison-de-noor.com/assets/img/unknown.svg";
@@ -126,7 +127,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                         <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-app-card/30 flex flex-col items-center justify-center text-center">
                             <h2 className="text-xs font-semibold text-app-text mb-3">QR الحساب</h2>
                             <div className="p-2 bg-white rounded-xl border border-app-card/20 shadow-sm mb-3">
-                                <QRCodeSVG value={`mezo://account/${userPhone}`} size={100} fgColor={APP_COLORS.gold} bgColor="#ffffff" level="M" />
+                                <QRCodeSVG value={`noor://account/${profile?.id}`} size={100} fgColor={APP_COLORS.gold} bgColor="#ffffff" level="M" />
                             </div>
                             <p className="text-[9px] text-app-textSec opacity-70 leading-tight">امسحي الكود للفتح السريع</p>
                         </div>
