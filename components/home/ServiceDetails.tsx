@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Check, ShoppingBag, X } from "lucide-react";
+import { ArrowLeft, Check, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 
 import ImageCarousel from "../ImageCarousel";
@@ -9,7 +9,6 @@ import {
     Product,
     ServiceAddon,
     ServiceAddonGroup,
-    ServicePackageOption,
     ServiceSubscription,
 } from "../../types";
 import { createRequest } from "../services/createRequest";
@@ -48,6 +47,9 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
 
     const [creating, setCreating] = useState(false);
+
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+    const descriptionCharLimit = 150;
 
     const [bookingModal, setBookingModal] = useState<{
         subscriptionId: number | null;
@@ -357,13 +359,13 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 </div>
             )}
 
-            <div className="px-6 mb-4">
+            <div className="px-6 mb-4 flex justify-end">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-white rounded-full shadow-sm text-app-text hover:bg-app-card transition-colors flex items-center gap-2"
+                    className="p-2 bg-white rounded-full shadow-sm  text-app-text hover:bg-app-card transition-colors flex items-center gap-2"
                 >
-                    <ArrowRight size={20} />
                     <span className="text-sm font-normal">العودة</span>
+                    <ArrowLeft size={20} />
                 </button>
             </div>
 
@@ -375,7 +377,28 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
             <div className="px-8 mb-4">
                 <h2 className="text-xl font-semibold text-app-text font-alexandria leading-tight mb-2">{product.name}</h2>
-                <p className="text-sm text-app-text/70">{product?.description}</p>
+                <div>
+                    <p className="text-sm text-app-text/70">
+                        {product?.description && product.description.length > descriptionCharLimit ? (
+                            <>
+                                {isDescriptionExpanded
+                                    ? product.description
+                                    : `${product.description.slice(0, descriptionCharLimit)}...`
+                                }
+                            </>
+                        ) : (
+                            product?.description
+                        )}
+                    </p>
+                    {product?.description && product.description.length > descriptionCharLimit && (
+                        <button
+                            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                            className="text-xs font-semibold text-app-gold hover:text-app-goldDark transition-colors mt-1 active:scale-95"
+                        >
+                            {isDescriptionExpanded ? "عرض أقل" : "عرض المزيد"}
+                        </button>
+                    )}
+                </div>
                 <div className="mt-2 mb-1 flex flex-wrap gap-2">
                     {resolvedAddonGroups.length > 0 && (
                         <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg">

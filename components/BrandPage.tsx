@@ -130,9 +130,9 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
         </div>
 
         <div className="mb-6">
-          <h3 className="text-base font-semibold text-app-text mb-4 text-right">
+          {/* <h3 className="text-base font-semibold text-app-text mb-4 text-right">
             خدمات {brandInfo.name}
-          </h3>
+          </h3> */}
 
           {(isLoading || isFetching) && (
             <div className="text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
