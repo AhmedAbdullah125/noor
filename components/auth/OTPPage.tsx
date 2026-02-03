@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { registerRequest } from "../services/register";
+import { confirmCodeRequest } from "../services/confirmCode";
 
 interface OTPPageProps {
   onLoginSuccess: () => void;
@@ -28,10 +28,10 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
   }, []);
 
   useEffect(() => {
-    if (!name || !phone || !password) {
+    if (!phone || !password) {
       navigate("/signup", { replace: true });
     }
-  }, [name, phone, password, navigate]);
+  }, [phone, password, navigate]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -55,21 +55,21 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
       return;
     }
 
-    // ✅ مؤقت: OTP = 1234
-    if (code !== "1234") {
-      setError("الكود غير صحيح، يرجى المحاولة مرة أخرى");
+    // Call confirm-code API
+    const res = await confirmCodeRequest(
+      { phone, verification_code: code, password },
+      setLoading,
+      lang
+    );
+
+    if (!res.ok) {
+      setError(res.error || "فشل التحقق من الكود");
       setOtp(["", "", "", ""]);
       inputRefs.current[0]?.focus();
       return;
     }
 
-    // ✅ بعد OTP الصح: Register API
-    const res = await registerRequest({ name, phone, password }, setLoading, lang);
-    if (!res.ok) {
-      setError(res.error || "فشل إنشاء الحساب");
-      return;
-    }
-
+    // Verification successful, user is now logged in
     onLoginSuccess();
     navigate("/", { replace: true });
   };

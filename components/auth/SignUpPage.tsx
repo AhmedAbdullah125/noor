@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Phone, Lock } from "lucide-react";
+import { registerRequest } from "../services/register";
 
 interface SignUpPageProps {
   onLoginSuccess?: () => void;
+  lang?: string;
 }
 
-const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
+const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -15,20 +17,21 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
     confirmPassword: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
     setError(null);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.phone || !formData.password || !formData.confirmPassword) {
       setError("يرجى ملء جميع الحقول");
       return;
 
     }
-    if (!/^\d{8}$/.test(formData.phone)) {
-      setError("رقم الهاتف يجب أن يتكون من 8 أرقام");
+    if (!/^\+?\d{8,}$/.test(formData.phone)) {
+      setError("رقم الهاتف يجب أن يتكون من 8 أرقام على الأقل ويمكن أن يبدأ بـ +");
       return;
     }
 
@@ -37,6 +40,19 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
+    // Call register API
+    const res = await registerRequest(
+      { name: formData.name, phone: formData.phone, password: formData.password },
+      setLoading,
+      lang
+    );
+
+    if (!res.ok) {
+      setError(res.error || "فشل في التسجيل");
+      return;
+    }
+
+    // Navigate to OTP page after successful registration
     navigate("/verify", {
       state: {
         name: formData.name,
@@ -120,9 +136,10 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform mb-6"
+          disabled={loading}
+          className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60 disabled:active:scale-100 mb-6"
         >
-          تسجيل حساب جديد
+          {loading ? "جاري التسجيل..." : "تسجيل حساب جديد"}
         </button>
 
         <button
