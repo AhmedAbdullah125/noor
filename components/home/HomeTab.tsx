@@ -7,7 +7,7 @@ import AppImage from "../AppImage";
 import HomeDrawer from "./HomeDrawer";
 import { useHomeData } from "./useHomeData";
 import type { Product, ServiceAddon, ServicePackageOption } from "@/types";
-import { Menu } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
 import HomeLanding from "./HomeLanding";
 import CategoryServicesGrid from "./CategoryServicesGrid";
 import ServiceDetails from "./ServiceDetails";
@@ -36,7 +36,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const activeCategory = categoryName || null;
 
     return (
-        <div className="flex flex-col h-[100vh] bg-app-bg relative font-alexandria overflow-hidden">
+        <div className="flex flex-col items-center h-[100vh] bg-app-bg relative font-alexandria overflow-hidden">
             <HomeDrawer
                 open={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
@@ -46,18 +46,34 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
 
             <AppHeader
                 actionStart={
-                    <button
-                        onClick={() => setIsMenuOpen(true)}
-                        className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
-                    >
-                        <Menu size={24} />
-                    </button>
+                    selectedProduct ?
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => {
+                                    const fromState = location.state as { from?: string } | undefined;
+                                    navigate(fromState?.from || "/");
+                                }}
+                                className="p-2 bg-white rounded-full shadow-sm  text-app-text hover:bg-app-card transition-colors flex items-center gap-2"
+                            >
+                                <span className="text-sm font-normal">العودة</span>
+                                <ArrowLeft size={20} />
+                            </button>
+                        </div>
+                        : null
                 }
                 title={
                     <div className="flex items-center justify-center gap-2 px-2 cursor-pointer w-full" onClick={() => navigate("/")}>
                         <AppImage src="https://raiyansoft.com/wp-content/uploads/2025/12/fav.png" alt="Mezo Do Noor logo" className="h-7 w-7 object-contain" />
                         <span className="text-lg font-semibold text-app-text font-alexandria truncate">ميزو دو نور</span>
                     </div>
+                }
+                actionEnd={
+                    <button
+                        onClick={() => setIsMenuOpen(true)}
+                        className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
+                    >
+                        <Menu size={24} />
+                    </button>
                 }
             />
 

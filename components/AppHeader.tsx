@@ -28,7 +28,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
       <div className="flex-1 flex items-center justify-center px-2 min-w-0">
         {typeof title === 'string' ? (
-          <h1 className="text-lg font-semibold text-app-text truncate w-full text-left">{title}</h1>
+          <h1 className="text-lg font-semibold text-app-text truncate w-full">{title}</h1>
         ) : (
           title
         )}

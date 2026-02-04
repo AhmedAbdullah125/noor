@@ -411,14 +411,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ onBook, favourites, onToggleFavourite
 
       {/* Persistent App Header */}
       <AppHeader
-        actionStart={
-          <button
-            onClick={toggleMenu}
-            className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
-          >
-            <Menu size={24} />
-          </button>
-        }
+
         title={
           <div
             className="flex items-center justify-center gap-2 px-2 cursor-pointer w-full"
@@ -433,6 +426,14 @@ const HomeTab: React.FC<HomeTabProps> = ({ onBook, favourites, onToggleFavourite
               ميزو دو نور
             </span>
           </div>
+        }
+        actionEnd={
+          <button
+            onClick={toggleMenu}
+            className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
+          >
+            <Menu size={24} />
+          </button>
         }
       />
 

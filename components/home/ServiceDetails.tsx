@@ -359,15 +359,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 </div>
             )}
 
-            <div className="px-6 mb-4 flex justify-end">
-                <button
-                    onClick={onBack}
-                    className="p-2 bg-white rounded-full shadow-sm  text-app-text hover:bg-app-card transition-colors flex items-center gap-2"
-                >
-                    <span className="text-sm font-normal">العودة</span>
-                    <ArrowLeft size={20} />
-                </button>
-            </div>
+
 
             <div className="px-6 mb-6">
                 <div className="w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-md bg-white border border-app-card/30">
