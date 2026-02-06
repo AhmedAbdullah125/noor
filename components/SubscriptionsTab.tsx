@@ -54,6 +54,7 @@ function mapStatus(apiStatus: string, remaining: number): UserSubscription["stat
   const s = String(apiStatus || "").toLowerCase();
   if (remaining <= 0) return "expired";
   if (s === "paused") return "paused";
+  if (s === "pending") return "pending";
   if (s === "expired" || s === "completed" || s === "canceled" || s === "cancelled") return "expired";
   return "active";
 }
@@ -142,6 +143,8 @@ const SubscriptionsTab: React.FC = () => {
         return "bg-red-100 text-red-700 border-red-200";
       case "paused":
         return "bg-orange-100 text-orange-700 border-orange-200";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -155,6 +158,8 @@ const SubscriptionsTab: React.FC = () => {
         return "منتهي";
       case "paused":
         return "متوقف مؤقتاً";
+      case "pending":
+        return "قيد الانتظار";
       default:
         return "";
     }

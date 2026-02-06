@@ -88,10 +88,10 @@ export interface UserSubscription {
   userId?: string;
   serviceId: number;
   packageTitle: string;
-  status: 'active' | 'expired' | 'paused';
+  status: 'active' | 'expired' | 'paused' | 'pending';
   sessionsTotal: number;
   sessionsUsed: number;
-  expiryDate: string; 
+  expiryDate: string;
   purchaseDate: string;
   validityDays?: number;
   minGapDays?: number;
