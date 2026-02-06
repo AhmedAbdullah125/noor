@@ -520,7 +520,12 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         <div className="flex flex-col items-start gap-1">
                                             <div className="flex items-center gap-2">
                                                 <ShoppingBag size={18} />
-                                                <span className="text-sm">حجز {sessionsCount} جلسات</span>
+                                                {sessionsCount > 1 && (
+                                                    <span className="text-sm">حجز {sessionsCount} جلسات</span>
+                                                )}
+                                                {sessionsCount === 1 && (
+                                                    <span className="text-sm">حجز جلسة</span>
+                                                )}
                                             </div>
                                             <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} جلسات</div>
                                         </div>
