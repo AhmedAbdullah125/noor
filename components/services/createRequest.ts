@@ -14,7 +14,10 @@ type CreateRequestResponse = {
     status: boolean;
     statusCode: number;
     message: string;
-    items?: any;
+    items?: {
+        payment_url?: string;
+        [key: string]: any;
+    };
 };
 
 function toFormData(payload: CreateRequestPayload) {

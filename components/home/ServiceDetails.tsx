@@ -219,6 +219,12 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
         if (!res.ok) return;
 
+        if (res.data?.payment_url) {
+            toast("جاري التحويل لصفحة الدفع...", { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
+            window.location.href = res.data.payment_url;
+            return;
+        }
+
         toast("تم إنشاء الطلب بنجاح", { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
         setBookingModal(null);
         onCreated?.(res.data);
