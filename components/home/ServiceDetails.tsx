@@ -494,68 +494,70 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 </div>
             )}
 
-            <div className="px-8 mb-10 space-y-3">
-                {product.subscriptions && product.subscriptions.length > 0 ? (
-                    <div className="space-y-4">
-                        {product.subscriptions.map((sub: any) => {
-                            const sessionsCount = sub.sessionsCount ?? sub.session_count ?? 1;
-                            const fixedPrice = parsePrice(sub.fixedPrice ?? sub.fixed_price ?? 0);
-                            const pricePercent = parsePrice(sub.pricePercent ?? sub.price_percentage ?? 100);
+            {(priceData.base > 0 || resolvedAddonGroups.length > 0 || ((product as any)?.addons?.length ?? 0) > 0) && (
+                <div className="px-8 mb-10 space-y-3">
+                    {product.subscriptions && product.subscriptions.length > 0 ? (
+                        <div className="space-y-4">
+                            {product.subscriptions.map((sub: any) => {
+                                const sessionsCount = sub.sessionsCount ?? sub.session_count ?? 1;
+                                const fixedPrice = parsePrice(sub.fixedPrice ?? sub.fixed_price ?? 0);
+                                const pricePercent = parsePrice(sub.pricePercent ?? sub.price_percentage ?? 100);
+                                const originalTotal = priceData.total * sessionsCount;
+                                const computedFinal = originalTotal * (pricePercent / 100);
+                                const finalTotal = fixedPrice > 0 ? fixedPrice : computedFinal;
 
-                            const originalTotal = priceData.total * sessionsCount;
-                            const computedFinal = originalTotal * (pricePercent / 100);
-                            const finalTotal = fixedPrice > 0 ? fixedPrice : computedFinal;
+                                return (
+                                    <div key={sub.id} className="w-full">
+                                        {sub.titleText || sub.title || sub.name ? (
+                                            <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
+                                        ) : null}
 
-                            return (
-                                <div key={sub.id} className="w-full">
-                                    {sub.titleText || sub.title || sub.name ? (
-                                        <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
-                                    ) : null}
-
-                                    <button
-                                        onClick={() => handleSubscriptionClick(sub)}
-                                        disabled={creating || !canSubscribe}
-                                        className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                                    >
-                                        <div className="flex flex-col items-start gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <ShoppingBag size={18} />
-                                                {sessionsCount > 1 && (
-                                                    <span className="text-sm">حجز {sessionsCount} جلسات</span>
-                                                )}
-                                                {sessionsCount === 1 && (
-                                                    <span className="text-sm">حجز جلسة</span>
-                                                )}
+                                        <button
+                                            onClick={() => handleSubscriptionClick(sub)}
+                                            disabled={creating || !canSubscribe}
+                                            className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
+                                        >
+                                            <div className="flex flex-col items-start gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <ShoppingBag size={18} />
+                                                    {sessionsCount > 1 && (
+                                                        <span className="text-sm">حجز {sessionsCount} جلسات</span>
+                                                    )}
+                                                    {sessionsCount === 1 && (
+                                                        <span className="text-sm">حجز جلسة</span>
+                                                    )}
+                                                </div>
+                                                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} جلسات</div>
                                             </div>
-                                            <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} جلسات</div>
-                                        </div>
 
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-sm font-semibold">{finalTotal.toFixed(3)} د.ك</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <button
-                        onClick={handleSingleSessionClick}
-                        disabled={creating || !canSubscribe}
-                        className="w-full bg-app-gold text-white font-semibold py-4 px-6 rounded-2xl shadow-lg shadow-app-gold/30 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                    >
-                        <div className="flex items-center gap-2">
-                            <ShoppingBag size={20} />
-                            <span>{creating ? "جاري الحجز..." : "حجز جلسة"}</span>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-sm font-semibold">{finalTotal.toFixed(3)} د.ك</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold">{priceData.total.toFixed(3)} د.ك</span>
-                            <div className="h-6 w-[1px] bg-white/30" />
-                            <span className="text-[10px] font-normal opacity-90">1 جلسة</span>
-                        </div>
-                    </button>
-                )}
-            </div>
+
+                    ) : (
+                        <button
+                            onClick={handleSingleSessionClick}
+                            disabled={creating || !canSubscribe}
+                            className="w-full bg-app-gold text-white font-semibold py-4 px-6 rounded-2xl shadow-lg shadow-app-gold/30 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
+                        >
+                            <div className="flex items-center gap-2">
+                                <ShoppingBag size={20} />
+                                <span>{creating ? "جاري الحجز..." : "حجز جلسة"}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm font-semibold">{priceData.total.toFixed(3)} د.ك</span>
+                                <div className="h-6 w-[1px] bg-white/30" />
+                                <span className="text-[10px] font-normal opacity-90">حجز جلسة</span>
+                            </div>
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
