@@ -61,15 +61,15 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     } | null>(null);
 
     const [paymentType, setPaymentType] = useState<"cash" | "knet" | "wallet">("cash");
-    const [startDate, setStartDate] = useState<string>(getTomorrowDate());
-    const [startTime, setStartTime] = useState<string>(getNowTime());
+    const [startDate, setStartDate] = useState<string>("");
+    const [startTime, setStartTime] = useState<string>("");
 
     useEffect(() => {
         setSelectedAddonIds(new Set());
         setBookingModal(null);
         setPaymentType("cash");
-        setStartDate(getTomorrowDate());
-        setStartTime(getNowTime());
+        setStartDate("");
+        setStartTime("");
     }, [product?.id]);
 
     const resolvedAddonGroups: ServiceAddonGroup[] = useMemo(() => {
@@ -183,8 +183,8 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         finalTotal: number;
     }) => {
         if (!validateRequiredGroups()) return;
-        setStartDate(getTomorrowDate());
-        setStartTime(getNowTime());
+        setStartDate("");
+        setStartTime("");
         setPaymentType("cash");
         setBookingModal(data);
     };
@@ -375,7 +375,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             </div>
 
             <div className="px-8 mb-4">
-                <h2 className="text-xl font-semibold text-app-text font-amiri leading-tight mb-2">{product.name}</h2>
+                <h2 className="text-xl font-semibold text-app-text font-arefRuqaa leading-tight mb-2">{product.name}</h2>
                 <div>
                     <div className="text-sm text-app-text/70">
                         {product?.description && product.description.length > descriptionCharLimit ? (
