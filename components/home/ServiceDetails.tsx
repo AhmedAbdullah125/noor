@@ -44,6 +44,17 @@ function getNowTime() {
     return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
 }
 
+const timeSlots = [];
+const startHour = 11;
+const endHour = 18;
+
+for (let h = startHour; h <= endHour; h++) {
+    timeSlots.push(`${String(h).padStart(2, "0")}:00`);
+    if (h < endHour) {
+        timeSlots.push(`${String(h).padStart(2, "0")}:30`);
+    }
+}
+
 export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
 
@@ -314,12 +325,25 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                                         <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
                                             <label className="block text-[11px] font-semibold text-app-text mb-2">الوقت</label>
-                                            <input
-                                                type="time"
-                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                            <select
+                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none text-right"
                                                 value={startTime.slice(0, 5)}
                                                 onChange={(e) => setStartTime(e.target.value)}
-                                            />
+                                            >
+                                                <option value="">اختر الوقت</option>
+                                                {timeSlots.map((time) => {
+                                                    const [hStr, mStr] = time.split(":");
+                                                    const h = parseInt(hStr, 10);
+                                                    const period = h < 12 ? "ص" : "م";
+                                                    const displayH = h % 12 || 12;
+                                                    const label = `${displayH}:${mStr} ${period}`;
+                                                    return (
+                                                        <option key={time} value={time}>
+                                                            {label}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
                                         </div>
                                     </div>
 
@@ -400,7 +424,8 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                         )}
                     </div>
                 </div>
-            )}
+            )
+            }
 
 
 
@@ -465,134 +490,140 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 </div>
             </div>
 
-            {resolvedAddonGroups.length > 0 && (
-                <div className="px-6 mb-6 space-y-6">
-                    {resolvedAddonGroups.map((group) => (
-                        <div key={group.id}>
-                            <div className="mb-3 flex items-center gap-2">
-                                <h3 className="text-sm font-semibold text-app-text">{group.title_ar}</h3>
-                                {(group as any).required && (
-                                    <span className="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded-md font-semibold">مطلوب</span>
-                                )}
-                            </div>
+            {
+                resolvedAddonGroups.length > 0 && (
+                    <div className="px-6 mb-6 space-y-6">
+                        {resolvedAddonGroups.map((group) => (
+                            <div key={group.id}>
+                                <div className="mb-3 flex items-center gap-2">
+                                    <h3 className="text-sm font-semibold text-app-text">{group.title_ar}</h3>
+                                    {(group as any).required && (
+                                        <span className="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded-md font-semibold">مطلوب</span>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                {(group.options ?? []).map((option: any) => {
-                                    const isSelected = selectedAddonIds.has(option.id);
-                                    const isRadio = (group as any).type === "single";
+                                <div className="space-y-2">
+                                    {(group.options ?? []).map((option: any) => {
+                                        const isSelected = selectedAddonIds.has(option.id);
+                                        const isRadio = (group as any).type === "single";
+
+                                        return (
+                                            <div
+                                                key={option.id}
+                                                onClick={() => handleGroupOptionSelect(String(group.id), option.id, (group as any).type)}
+                                                className={`flex relative items-center justify-between p-3.5 pb-8 rounded-2xl border cursor-pointer transition-all active:scale-[0.99] ${isSelected ? "bg-app-gold/5 border-app-gold shadow-sm" : "bg-white border-app-card/30 hover:border-app-card"
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {isRadio ? (
+                                                        <div
+                                                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-app-gold" : "border-app-textSec/30"
+                                                                }`}
+                                                        >
+                                                            {isSelected && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
+                                                        </div>
+                                                    ) : (
+                                                        <div
+                                                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-app-gold border-app-gold" : "border-app-textSec/30"
+                                                                }`}
+                                                        >
+                                                            {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
+                                                        </div>
+                                                    )}
+
+                                                    <div>
+                                                        <p className={`text-sm font-semibold ${isSelected ? "text-app-gold" : "text-app-text"}`}>{option.title_ar}</p>
+                                                        {option.desc_ar && <p className="text-[10px] text-app-textSec">{option.desc_ar}</p>}
+                                                    </div>
+                                                </div>
+
+                                                <span className="text-[10px] absolute bottom-1 end-1 font-bold text-white bg-app-gold px-2.5 py-1 rounded-lg">
+                                                    +{parsePrice(option.price_kwd ?? option.price ?? 0).toFixed(3)} د.ك
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )
+            }
+
+            {
+                !canSubscribe && (
+                    <div className="px-8 mb-4">
+                        <div className="bg-red-50 border border-red-100 text-red-600 rounded-2xl p-3 text-[12px] font-semibold">
+                            يرجى اختيار الخيارات المطلوبة أولاً
+                        </div>
+                    </div>
+                )
+            }
+
+            {
+                (priceData.base > 0 || resolvedAddonGroups.length > 0 || ((product as any)?.addons?.length ?? 0) > 0) && (
+                    <div className="px-8 mb-10 space-y-3">
+                        {product.subscriptions && product.subscriptions.length > 0 ? (
+                            <div className="space-y-4">
+                                {product.subscriptions.map((sub: any) => {
+                                    const sessionsCount = sub.sessionsCount ?? sub.session_count ?? 1;
+                                    const fixedPrice = parsePrice(sub.fixedPrice ?? sub.fixed_price ?? 0);
+                                    const pricePercent = parsePrice(sub.pricePercent ?? sub.price_percentage ?? 100);
+                                    const originalTotal = priceData.total * sessionsCount;
+                                    const computedFinal = originalTotal * (pricePercent / 100);
+                                    const finalTotal = fixedPrice > 0 ? fixedPrice : computedFinal;
 
                                     return (
-                                        <div
-                                            key={option.id}
-                                            onClick={() => handleGroupOptionSelect(String(group.id), option.id, (group as any).type)}
-                                            className={`flex relative items-center justify-between p-3.5 pb-8 rounded-2xl border cursor-pointer transition-all active:scale-[0.99] ${isSelected ? "bg-app-gold/5 border-app-gold shadow-sm" : "bg-white border-app-card/30 hover:border-app-card"
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                {isRadio ? (
-                                                    <div
-                                                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-app-gold" : "border-app-textSec/30"
-                                                            }`}
-                                                    >
-                                                        {isSelected && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
-                                                    </div>
-                                                ) : (
-                                                    <div
-                                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-app-gold border-app-gold" : "border-app-textSec/30"
-                                                            }`}
-                                                    >
-                                                        {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
-                                                    </div>
-                                                )}
+                                        <div key={sub.id} className="w-full">
+                                            {sub.titleText || sub.title || sub.name ? (
+                                                <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
+                                            ) : null}
 
-                                                <div>
-                                                    <p className={`text-sm font-semibold ${isSelected ? "text-app-gold" : "text-app-text"}`}>{option.title_ar}</p>
-                                                    {option.desc_ar && <p className="text-[10px] text-app-textSec">{option.desc_ar}</p>}
+                                            <button
+                                                onClick={() => handleSubscriptionClick(sub)}
+                                                disabled={creating || !canSubscribe}
+                                                className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
+                                            >
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <ShoppingBag size={18} />
+                                                        {sessionsCount > 1 && (
+                                                            <span className="text-sm">حجز {sessionsCount} جلسات</span>
+                                                        )}
+                                                        {sessionsCount === 1 && (
+                                                            <span className="text-sm">حجز جلسة</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} جلسات</div>
                                                 </div>
-                                            </div>
 
-                                            <span className="text-[10px] absolute bottom-1 end-1 font-bold text-white bg-app-gold px-2.5 py-1 rounded-lg">
-                                                +{parsePrice(option.price_kwd ?? option.price ?? 0).toFixed(3)} د.ك
-                                            </span>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-sm font-semibold">{finalTotal.toFixed(3)} د.ك</span>
+                                                </div>
+                                            </button>
                                         </div>
                                     );
                                 })}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
 
-            {!canSubscribe && (
-                <div className="px-8 mb-4">
-                    <div className="bg-red-50 border border-red-100 text-red-600 rounded-2xl p-3 text-[12px] font-semibold">
-                        يرجى اختيار الخيارات المطلوبة أولاً
+                        ) : (
+                            <button
+                                onClick={handleSingleSessionClick}
+                                disabled={creating || !canSubscribe}
+                                className="w-full bg-app-gold text-white font-semibold py-4 px-6 rounded-2xl shadow-lg shadow-app-gold/30 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <ShoppingBag size={20} />
+                                    <span>{creating ? "جاري الحجز..." : "احجزي الان"}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-semibold">{priceData.total.toFixed(3)} د.ك</span>
+                                </div>
+                            </button>
+                        )}
                     </div>
-                </div>
-            )}
-
-            {(priceData.base > 0 || resolvedAddonGroups.length > 0 || ((product as any)?.addons?.length ?? 0) > 0) && (
-                <div className="px-8 mb-10 space-y-3">
-                    {product.subscriptions && product.subscriptions.length > 0 ? (
-                        <div className="space-y-4">
-                            {product.subscriptions.map((sub: any) => {
-                                const sessionsCount = sub.sessionsCount ?? sub.session_count ?? 1;
-                                const fixedPrice = parsePrice(sub.fixedPrice ?? sub.fixed_price ?? 0);
-                                const pricePercent = parsePrice(sub.pricePercent ?? sub.price_percentage ?? 100);
-                                const originalTotal = priceData.total * sessionsCount;
-                                const computedFinal = originalTotal * (pricePercent / 100);
-                                const finalTotal = fixedPrice > 0 ? fixedPrice : computedFinal;
-
-                                return (
-                                    <div key={sub.id} className="w-full">
-                                        {sub.titleText || sub.title || sub.name ? (
-                                            <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
-                                        ) : null}
-
-                                        <button
-                                            onClick={() => handleSubscriptionClick(sub)}
-                                            disabled={creating || !canSubscribe}
-                                            className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                                        >
-                                            <div className="flex flex-col items-start gap-1">
-                                                <div className="flex items-center gap-2">
-                                                    <ShoppingBag size={18} />
-                                                    {sessionsCount > 1 && (
-                                                        <span className="text-sm">حجز {sessionsCount} جلسات</span>
-                                                    )}
-                                                    {sessionsCount === 1 && (
-                                                        <span className="text-sm">حجز جلسة</span>
-                                                    )}
-                                                </div>
-                                                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} جلسات</div>
-                                            </div>
-
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-sm font-semibold">{finalTotal.toFixed(3)} د.ك</span>
-                                            </div>
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                    ) : (
-                        <button
-                            onClick={handleSingleSessionClick}
-                            disabled={creating || !canSubscribe}
-                            className="w-full bg-app-gold text-white font-semibold py-4 px-6 rounded-2xl shadow-lg shadow-app-gold/30 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                        >
-                            <div className="flex items-center gap-2">
-                                <ShoppingBag size={20} />
-                                <span>{creating ? "جاري الحجز..." : "احجزي الان"}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-semibold">{priceData.total.toFixed(3)} د.ك</span>
-                            </div>
-                        </button>
-                    )}
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
