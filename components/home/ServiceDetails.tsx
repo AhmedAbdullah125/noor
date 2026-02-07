@@ -270,7 +270,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                     onClick={() => setBookingModal(null)}
                 >
                     <div
-                        className="bg-white w-full max-w-[360px] rounded-[24px] p-6 shadow-2xl relative flex flex-col text-center animate-scaleIn"
+                        className="bg-white w-full max-w-full rounded-[24px] p-6 shadow-2xl relative flex flex-col text-center animate-scaleIn"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
