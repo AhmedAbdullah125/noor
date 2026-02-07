@@ -294,29 +294,29 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-3 text-right">
+                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
                                     <label className="block text-[11px] font-semibold text-app-text mb-2">التاريخ</label>
                                     <input
                                         type="date"
-                                        className="w-full bg-white rounded-xl p-3 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                        className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
                                         value={startDate}
                                         min={getTomorrowDate()}
                                         onChange={(e) => setStartDate(e.target.value)}
                                     />
                                 </div>
 
-                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-3 text-right">
+                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
                                     <label className="block text-[11px] font-semibold text-app-text mb-2">الوقت</label>
                                     <input
                                         type="time"
-                                        className="w-full bg-white rounded-xl p-3 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                        className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
                                         value={startTime.slice(0, 5)}
                                         onChange={(e) => setStartTime(e.target.value)}
                                     />
                                 </div>
                             </div>
 
-                            <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-3 text-right">
+                            <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
                                 <label className="block text-[11px] font-semibold text-app-text mb-2">طريقة الدفع</label>
                                 <div className="flex gap-2">
                                     {(["cash", "knet", "wallet"] as const).map((p) => (
