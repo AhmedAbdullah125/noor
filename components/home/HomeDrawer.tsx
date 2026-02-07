@@ -1,19 +1,16 @@
 "use client";
 
 import React from "react";
-import { X, ChevronLeft, User, Video, ShoppingBag } from "lucide-react";
-import type { Brand } from "@/types";
+import { X, User, Video, ShoppingBag, BookOpen, HelpCircle, MessageCircle } from "lucide-react";
 
 interface Props {
     open: boolean;
     onClose: () => void;
     onNavigate: (path: string) => void;
-    lang: string;
-    categories: Brand[];
-    isLoading?: boolean;
+    socialLinks?: { id: number; name: string; link: string; icon: string }[];
 }
 
-export default function HomeDrawer({ open, onClose, onNavigate, lang = "ar", categories, isLoading = false }: Props) {
+export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = [] }: Props) {
     if (!open) return null;
 
     return (
@@ -23,34 +20,13 @@ export default function HomeDrawer({ open, onClose, onNavigate, lang = "ar", cat
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 flex items-center justify-between border-b border-app-card/30 bg-white z-10">
-                    <span className="text-base font-semibold text-app-text font-active">الأقسام</span>
                     <button onClick={onClose} className="p-2 hover:bg-app-bg rounded-full transition-colors text-app-text">
                         <X size={24} />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto no-scrollbar py-4 flex flex-col">
-                    <div className="flex-1">
-                        {isLoading ? (
-                            <div className="px-6 py-4 text-sm text-app-textSec">جاري تحميل الأقسام...</div>
-                        ) : categories.length === 0 ? (
-                            <div className="px-6 py-4 text-sm text-app-textSec">لا توجد أقسام حالياً</div>
-                        ) : (
-                            categories.map((cat) => (
-                                <button
-                                    key={cat.id}
-                                    className="w-full px-6 py-5 flex items-center justify-between hover:bg-app-bg active:bg-app-card/50 transition-colors border-b border-app-card/10 group"
-                                    onClick={() => {
-                                        onNavigate(`/category/${cat.name}?id=${cat.id}`);
-                                        onClose();
-                                    }}
-                                >
-                                    <span className="text-sm font-normal text-app-text font-active">{cat.name}</span>
-                                    <ChevronLeft size={18} className="text-app-gold opacity-50 group-hover:opacity-100 transition-opacity" />
-                                </button>
-                            ))
-                        )}
-                    </div>
+
 
                     <div className="px-6 mt-6 space-y-3">
                         <button
@@ -61,23 +37,45 @@ export default function HomeDrawer({ open, onClose, onNavigate, lang = "ar", cat
                             className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <User size={18} />
-                            <span>حسابي</span>
+                            <span>حساب اشتراكاتي</span>
                         </button>
 
                         <button
                             onClick={() => {
-                                onNavigate("/technician/online");
+                                onNavigate("/");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl bg-app-gold text-white font-semibold text-xs sm:text-xs flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md shadow-app-gold/20"
+                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
-                            <Video size={18} />
-                            <span>حجز التكنك أونلاين ( المرة الأولى مجانا )</span>
+                            <BookOpen size={18} />
+                            <span>مذكرات الكترونية</span>
                         </button>
 
                         <button
                             onClick={() => {
-                                window.open("https://google.com", "_blank", "noreferrer");
+                                onNavigate("/");
+                                onClose();
+                            }}
+                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                        >
+                            <HelpCircle size={18} />
+                            <span>كيف اعرف المناسب لحالتي</span>
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                onNavigate("/product/94");
+                                onClose();
+                            }}
+                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                        >
+                            <MessageCircle size={18} />
+                            <span>استشارة الخبيرة</span>
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                window.open("https://onelink.to/trandyhair", "_blank", "noreferrer");
                                 onClose();
                             }}
                             className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
@@ -85,6 +83,20 @@ export default function HomeDrawer({ open, onClose, onNavigate, lang = "ar", cat
                             <ShoppingBag size={18} />
                             <span>شراء منتجات ترندي هير</span>
                         </button>
+                    </div>
+                    <div className="px-6 mt-4 grid grid-cols-2 gap-3">
+                        {socialLinks.map((social) => (
+                            <a
+                                key={social.id}
+                                href={social.link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100/50 hover:bg-gray-100 transition-colors"
+                            >
+                                <img src={social.icon} alt={social.name} className="w-5 h-5" />
+                                <span className="text-xs font-semibold text-app-text">{social.name}</span>
+                            </a>
+                        ))}
                     </div>
                 </div>
 

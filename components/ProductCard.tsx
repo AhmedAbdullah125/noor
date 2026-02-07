@@ -129,11 +129,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="p-3 pt-2 mt-auto flex items-center justify-between bg-white relative z-10">
         <div className="flex flex-col items-start">
           <span className="text-sm font-semibold text-app-gold font-active leading-none">
-            {product.price}
+            {product.price} د.ك
+
           </span>
           {product.oldPrice && (
             <span className="text-[9px] text-app-textSec line-through font-active opacity-60 mt-0.5">
-              {product.oldPrice}
+              {product.oldPrice} د.ك
             </span>
           )}
         </div>

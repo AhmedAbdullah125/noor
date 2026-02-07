@@ -26,7 +26,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const lang = "ar"; // خليه من state/localStorage زي عندك
-    const { categories, banners, products, isLoading } = useHomeData(lang, 1);
+    const { categories, banners, products, isLoading, socialLinks } = useHomeData(lang, 1);
 
     const selectedProduct = useMemo(() => {
         if (!productId) return null;
@@ -40,7 +40,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
             <HomeDrawer
                 open={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                categories={categories}
+                socialLinks={socialLinks}
                 onNavigate={(path) => navigate(path)}
             />
 
