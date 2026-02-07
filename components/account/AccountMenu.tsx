@@ -102,7 +102,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                     className="bg-white rounded-[2rem] p-4 flex items-center justify-between shadow-sm mb-6 border border-app-card/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
                     <div className="flex flex-col text-right">
-                        <span className="font-semibold text-sm text-app-text">ملف العناية بالفروة و الشعر</span>
+                        <span className="font-semibold text-sm text-app-text">استبيان العناية بالفروة و الشعر</span>
                     </div>
 
                     <div className="flex items-center gap-3">
