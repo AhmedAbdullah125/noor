@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
+import parse from "html-react-parser";
 
 import ImageCarousel from "../ImageCarousel";
 import {
@@ -376,18 +377,18 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             <div className="px-8 mb-4">
                 <h2 className="text-xl font-semibold text-app-text font-amiri leading-tight mb-2">{product.name}</h2>
                 <div>
-                    <p className="text-sm text-app-text/70">
+                    <div className="text-sm text-app-text/70">
                         {product?.description && product.description.length > descriptionCharLimit ? (
                             <>
                                 {isDescriptionExpanded
-                                    ? product.description
-                                    : `${product.description.slice(0, descriptionCharLimit)}...`
+                                    ? parse(product.description)
+                                    : parse(`${product.description.slice(0, descriptionCharLimit)}...`)
                                 }
                             </>
                         ) : (
-                            product?.description
+                            product?.description ? parse(product.description) : null
                         )}
-                    </p>
+                    </div>
                     {product?.description && product.description.length > descriptionCharLimit && (
                         <button
                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}

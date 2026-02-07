@@ -237,7 +237,7 @@ const SubscriptionsTab: React.FC = () => {
               const remaining = sub.sessionsTotal - sub.sessionsUsed;
               const progressPercent = sub.sessionsTotal > 0 ? (remaining / sub.sessionsTotal) * 100 : 0;
               const isActive = sub.status === "active";
-
+              console.log(sub);
               return (
                 <div
                   key={sub.id}
