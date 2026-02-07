@@ -63,6 +63,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [paymentType, setPaymentType] = useState<"cash" | "knet" | "wallet">("cash");
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
+    const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
 
     useEffect(() => {
         setSelectedAddonIds(new Set());
@@ -70,6 +71,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         setPaymentType("cash");
         setStartDate("");
         setStartTime("");
+        setShowPolicyConfirm(false);
     }, [product?.id]);
 
     const resolvedAddonGroups: ServiceAddonGroup[] = useMemo(() => {
@@ -280,88 +282,120 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                             <X size={20} />
                         </button>
 
-                        <h2 className="text-base font-semibold text-app-text mb-4 mt-2">تأكيد الحجز</h2>
+                        {!showPolicyConfirm ? (
+                            <>
+                                <h2 className="text-base font-semibold text-app-text mb-4 mt-2">تأكيد الحجز</h2>
 
-                        <div className="w-full space-y-3 mb-5">
-                            <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                <span className="text-xs text-app-textSec font-normal">الخدمة</span>
-                                <span className="text-sm font-semibold text-app-text">{product.name}</span>
-                            </div>
+                                <div className="w-full space-y-3 mb-5">
+                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
+                                        <span className="text-xs text-app-textSec font-normal">الخدمة</span>
+                                        <span className="text-sm font-semibold text-app-text">{product.name}</span>
+                                    </div>
 
-                            <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                <span className="text-xs text-app-textSec font-normal">الباقة</span>
-                                <span className="text-sm font-semibold text-app-text">{bookingModal.title}</span>
-                            </div>
+                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
+                                        <span className="text-xs text-app-textSec font-normal">الباقة</span>
+                                        <span className="text-sm font-semibold text-app-text">{bookingModal.title}</span>
+                                    </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
-                                    <label className="block text-[11px] font-semibold text-app-text mb-2">التاريخ</label>
-                                    <input
-                                        type="date"
-                                        className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                        value={startDate}
-                                        min={getTomorrowDate()}
-                                        onChange={(e) => setStartDate(e.target.value)}
-                                    />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
+                                            <label className="block text-[11px] font-semibold text-app-text mb-2">التاريخ</label>
+                                            <input
+                                                type="date"
+                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                value={startDate}
+                                                min={getTomorrowDate()}
+                                                onChange={(e) => setStartDate(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
+                                            <label className="block text-[11px] font-semibold text-app-text mb-2">الوقت</label>
+                                            <input
+                                                type="time"
+                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                value={startTime.slice(0, 5)}
+                                                onChange={(e) => setStartTime(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
+                                        <label className="block text-[11px] font-semibold text-app-text mb-2">طريقة الدفع</label>
+                                        <div className="flex gap-2">
+                                            {(["cash", "knet", "wallet"] as const).map((p) => (
+                                                <button
+                                                    key={p}
+                                                    type="button"
+                                                    onClick={() => setPaymentType(p)}
+                                                    className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all ${paymentType === p
+                                                        ? "bg-app-gold text-white border-app-gold"
+                                                        : "bg-white text-app-text border-app-card/30"
+                                                        }`}
+                                                >
+                                                    {p === "cash" ? "كاش" : p === "knet" ? "كي نت" : "المحفظة"}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
+                                        <span className="text-xs text-app-textSec font-normal">الإجمالي</span>
+                                        <span className="text-sm font-semibold text-app-gold">{bookingModal.finalTotal.toFixed(3)} د.ك</span>
+                                    </div>
+
+                                    {bookingModal.subscriptionId != null && (
+                                        <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec font-normal">عدد الجلسات</span>
+                                            <span className="text-sm font-semibold text-app-text">{bookingModal.sessionsCount}</span>
+                                        </div>
+                                    )}
+
+                                    {bookingModal.subscriptionId != null && (
+                                        <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec font-normal">صلاحية الباكج</span>
+                                            <span className="text-sm font-semibold text-app-text">{bookingModal.validityDays || 30} يوم</span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
-                                    <label className="block text-[11px] font-semibold text-app-text mb-2">الوقت</label>
-                                    <input
-                                        type="time"
-                                        className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                        value={startTime.slice(0, 5)}
-                                        onChange={(e) => setStartTime(e.target.value)}
-                                    />
+                                <button
+                                    onClick={() => {
+                                        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+                                        if (!startDate) {
+                                            toast("يرجى اختيار التاريخ", { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+                                            return;
+                                        }
+                                        if (!time || time.length < 5) {
+                                            toast("يرجى اختيار الوقت", { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+                                            return;
+                                        }
+                                        setShowPolicyConfirm(true);
+                                    }}
+                                    disabled={creating}
+                                    className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
+                                >
+                                    {creating ? "جاري الحجز..." : "تأكيد الحجز"}
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center animate-fadeIn">
+                                <h2 className="text-base font-semibold text-app-text mb-4 mt-2">سياسة الحجز</h2>
+                                <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium leading-relaxed mb-6 border border-red-100">
+                                    المبلغ غير مسترد في حال عدم الحضور. ويمكن تأجيل الموعد مرة واحدة فقط خلال الأسبوع التالي، بشرط طلب تعديل الموعد قبل 24 ساعة على الأقل من وقت الموعد.
+                                </div>
+                                <div className="flex gap-3 w-full">
+
+                                    <button
+                                        onClick={doCreateRequest}
+                                        disabled={creating}
+                                        className="flex-[2] bg-app-gold text-white font-semibold py-3 rounded-xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
+                                    >
+                                        {creating ? "جاري الحجز..." : "موافق وتأكيد"}
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
-                                <label className="block text-[11px] font-semibold text-app-text mb-2">طريقة الدفع</label>
-                                <div className="flex gap-2">
-                                    {(["cash", "knet", "wallet"] as const).map((p) => (
-                                        <button
-                                            key={p}
-                                            type="button"
-                                            onClick={() => setPaymentType(p)}
-                                            className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all ${paymentType === p
-                                                ? "bg-app-gold text-white border-app-gold"
-                                                : "bg-white text-app-text border-app-card/30"
-                                                }`}
-                                        >
-                                            {p === "cash" ? "كاش" : p === "knet" ? "كي نت" : "المحفظة"}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                <span className="text-xs text-app-textSec font-normal">الإجمالي</span>
-                                <span className="text-sm font-semibold text-app-gold">{bookingModal.finalTotal.toFixed(3)} د.ك</span>
-                            </div>
-
-                            {bookingModal.subscriptionId != null && (
-                                <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                    <span className="text-xs text-app-textSec font-normal">عدد الجلسات</span>
-                                    <span className="text-sm font-semibold text-app-text">{bookingModal.sessionsCount}</span>
-                                </div>
-                            )}
-
-                            {bookingModal.subscriptionId != null && (
-                                <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                    <span className="text-xs text-app-textSec font-normal">صلاحية الباكج</span>
-                                    <span className="text-sm font-semibold text-app-text">{bookingModal.validityDays || 30} يوم</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <button
-                            onClick={doCreateRequest}
-                            disabled={creating}
-                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {creating ? "جاري الحجز..." : "تأكيد الحجز"}
-                        </button>
+                        )}
                     </div>
                 </div>
             )}
