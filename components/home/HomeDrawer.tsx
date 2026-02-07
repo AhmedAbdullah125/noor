@@ -62,16 +62,6 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                             <span>كيف اعرف المناسب لحالتي</span>
                         </button>
 
-                        <button
-                            onClick={() => {
-                                onNavigate("/product/94");
-                                onClose();
-                            }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
-                        >
-                            <MessageCircle size={18} />
-                            <span>استشارة الخبيرة</span>
-                        </button>
 
                         <button
                             onClick={() => {
@@ -82,6 +72,16 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                         >
                             <ShoppingBag size={18} />
                             <span>شراء منتجات ترندي هير</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                onNavigate("/product/94");
+                                onClose();
+                            }}
+                            className="w-full py-3.5 rounded-xl border border-app-gold text-white bg-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                        >
+                            <MessageCircle size={18} />
+                            <span>حجز استشارة مع الخبيرة</span>
                         </button>
                     </div>
                     <div className="px-6 mt-4 grid grid-cols-2 gap-3">

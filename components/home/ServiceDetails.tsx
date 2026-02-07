@@ -548,12 +548,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                         >
                             <div className="flex items-center gap-2">
                                 <ShoppingBag size={20} />
-                                <span>{creating ? "جاري الحجز..." : "حجز جلسة"}</span>
+                                <span>{creating ? "جاري الحجز..." : "احجزي الان"}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className="text-sm font-semibold">{priceData.total.toFixed(3)} د.ك</span>
-                                <div className="h-6 w-[1px] bg-white/30" />
-                                <span className="text-[10px] font-normal opacity-90">حجز جلسة</span>
                             </div>
                         </button>
                     )}
