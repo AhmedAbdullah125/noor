@@ -92,7 +92,7 @@ const EditAppointmentPage: React.FC = () => {
   if (!subscription || !service) return null;
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-arefRuqaa overflow-hidden min-h-screen">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen">
       <AppHeader
         title="تعديل الموعد"
         onBack={() => navigate(-1)}

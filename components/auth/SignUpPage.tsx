@@ -68,7 +68,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess, lang = "ar" }) 
   };
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-arefRuqaa overflow-hidden min-h-screen">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen">
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-12 pb-10 flex flex-col justify-center">
         <div className="text-center mb-10">
           <h1 className="text-xl font-semibold text-app-text mb-2">تسجيل حساب جديد</h1>

@@ -97,7 +97,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
 
   if (isRealError) {
     return (
-      <div className="flex flex-col h-full bg-app-bg items-center justify-center p-6 text-center font-arefRuqaa">
+      <div className="flex flex-col h-full bg-app-bg items-center justify-center p-6 text-center font-active">
         <div className="w-20 h-20 bg-app-card rounded-full flex items-center justify-center mb-6">
           <Search size={40} className="text-app-textSec" />
         </div>
@@ -114,7 +114,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
   }
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-arefRuqaa overflow-hidden">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden">
       <AppHeader title={brandInfo.name} onBack={handleBack} />
 
       <main className="flex-1 overflow-y-auto w-full pb-28 px-6 pt-24">
