@@ -276,7 +276,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
-                            onClick={() => setBookingModal(null)}
+                            onClick={() => {
+                                if (showPolicyConfirm) setShowPolicyConfirm(false);
+                                else setBookingModal(null);
+                            }}
                             className="absolute top-4 left-4 p-2 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-full transition-colors active:scale-95"
                         >
                             <X size={20} />
@@ -385,7 +388,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                     المبلغ غير مسترد في حال عدم الحضور. ويمكن تأجيل الموعد مرة واحدة فقط خلال الأسبوع التالي، بشرط طلب تعديل الموعد قبل 24 ساعة على الأقل من وقت الموعد.
                                 </div>
                                 <div className="flex gap-3 w-full">
-
                                     <button
                                         onClick={doCreateRequest}
                                         disabled={creating}
