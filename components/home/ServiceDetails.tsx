@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 import parse from "html-react-parser";
+import apple from "@/components/apple.png";
 
 import ImageCarousel from "../ImageCarousel";
 import {
@@ -368,19 +369,21 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                         type="button"
                                                         onClick={() => setPaymentType(p)}
                                                         className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
-                                                            ${isApple
-                                                                ? "bg-black text-white border-black hover:bg-gray-900"
-                                                                : isActive
-                                                                    ? "bg-app-gold text-white border-app-gold"
+                                                            ${isActive
+                                                                ? "bg-app-gold text-white border-app-gold"
+                                                                : isApple
+                                                                    ? "bg-black text-white border-black hover:bg-gray-900"
                                                                     : "bg-white text-app-text border-app-card/30"
                                                             }`}
                                                     >
                                                         {isApple ? (
                                                             <>
                                                                 <span className="font-medium text-[11px]">Apple Pay</span>
-                                                                <svg className="w-5 h-5 mb-0.5" viewBox="0 0 384 512" fill="currentColor">
-                                                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-54.7-65-54.7-65.9.1-.5.3-.8.4-1zM221.7 110.9c25.4-31.5 59.9-46.7 57.3-46.7-33.8 2.5-74.8 27.2-94.8 63-18.4 32.8-54 44-54.3 44.5 35.8 2.5 66.8-26.8 91.8-60.8z" />
-                                                                </svg>
+                                                                <img
+                                                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQesa2rF2WhrA7Sl3iIoznL-gFpA0y0GB-tQ&s"
+                                                                    alt="Apple Pay"
+                                                                    className="h-5 object-contain bg-white rounded-sm px-1"
+                                                                />
                                                             </>
                                                         ) : (
                                                             p === "knet" ? "كي نت" : "المحفظة"
