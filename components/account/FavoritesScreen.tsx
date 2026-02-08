@@ -24,19 +24,21 @@ function mapFavoriteApiToProduct(s: any): Product {
     } as any;
 }
 
+import { getLang, translations } from "../../services/i18n";
+
 export default function FavoritesScreen({
     onBack,
     onNavigateToHome,
     onBook,
     onOpenProduct,
-    lang = "ar",
 }: {
     onBack: () => void;
     onNavigateToHome: () => void;
     onBook: (product: Product, quantity: number, selectedAddons?: ServiceAddon[]) => void;
     onOpenProduct: (id: number) => void;
-    lang?: string;
 }) {
+    const lang = getLang();
+    const t = translations[lang as 'en' | 'ar'] || translations['ar'];
     const favQuery = useGetFavorites(lang);
 
     const products: Product[] = useMemo(() => {
@@ -45,8 +47,8 @@ export default function FavoritesScreen({
     }, [favQuery.data]);
 
     return (
-        <div className="animate-fadeIn flex flex-col h-full bg-app-bg">
-            <AppHeader title="الخدمات المفضلة" onBack={onBack} />
+        <div className="animate-fadeIn flex flex-col h-full bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            <AppHeader title={t.favoriteServicesTitle} onBack={onBack} />
 
             <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-28 pt-24">
                 {/* Loading */}
@@ -60,12 +62,12 @@ export default function FavoritesScreen({
                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 text-red-400 border border-app-card/30">
                             <Heart size={48} strokeWidth={1.5} className="text-red-400" />
                         </div>
-                        <h2 className="text-base font-semibold text-app-text mb-2">حدث خطأ أثناء تحميل المفضلة</h2>
+                        <h2 className="text-base font-semibold text-app-text mb-2">{t.errorLoadingFavorites}</h2>
                         <button
                             onClick={() => favQuery.refetch()}
                             className="mt-4 w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform"
                         >
-                            إعادة المحاولة
+                            {t.retry}
                         </button>
                     </div>
                 )}
@@ -74,16 +76,16 @@ export default function FavoritesScreen({
                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 text-app-gold/40 border border-app-card/30">
                             <Heart size={48} strokeWidth={1.5} className="text-app-gold" />
                         </div>
-                        <h2 className="text-base font-semibold text-app-text mb-6">لا يوجد أي خدمات في المفضلة</h2>
+                        <h2 className="text-base font-semibold text-app-text mb-6">{t.noFavorites}</h2>
                         <button onClick={onNavigateToHome} className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform">
-                            تصفح الخدمات
+                            {t.browseServices}
                         </button>
                     </div>
                 )}
                 {!favQuery.isLoading && !favQuery.isError && products.length > 0 && (
                     <div className="grid grid-cols-2 gap-4">
                         {products.map((product) => (
-                            <ProductCard key={product.id} product={product} isFavourite={true} onBook={onBook} onClick={() => onOpenProduct(product.id)} />
+                            <ProductCard key={product.id} product={product} isFavourite={true} onBook={onBook} onClick={() => onOpenProduct(product.id)} lang={lang} />
                         ))}
                     </div>
                 )}

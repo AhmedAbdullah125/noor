@@ -2,21 +2,24 @@
 
 import React from "react";
 import { X, User, Video, ShoppingBag, BookOpen, HelpCircle, MessageCircle } from "lucide-react";
+import { translations, Locale } from "../../services/i18n";
 
 interface Props {
     open: boolean;
     onClose: () => void;
     onNavigate: (path: string) => void;
     socialLinks?: { id: number; name: string; link: string; icon: string }[];
+    lang?: Locale;
 }
 
-export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = [] }: Props) {
+export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = [], lang = 'ar' }: Props) {
     if (!open) return null;
+    const t = translations[lang];
 
     return (
         <div className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
             <div
-                className="absolute right-0 top-0 bottom-0 w-3/4 max-w-[320px] bg-white shadow-2xl animate-slideLeftRtl flex flex-col fixed h-full"
+                className="absolute right-0 top-0 bottom-0 max-w-[350px] bg-white shadow-2xl animate-slideLeftRtl flex flex-col fixed h-full"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 flex items-center justify-between border-b border-app-card/30 bg-white z-10">
@@ -34,10 +37,10 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                                 onNavigate("/account");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <User size={18} />
-                            <span>حساب اشتراكاتي</span>
+                            <span>{t.mySubscriptions}</span>
                         </button>
 
                         <button
@@ -45,10 +48,10 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                                 onNavigate("/");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <BookOpen size={18} />
-                            <span>مذكرات الكترونية</span>
+                            <span>{t.electronicNotes}</span>
                         </button>
 
                         <button
@@ -56,10 +59,10 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                                 onNavigate("/");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <HelpCircle size={18} />
-                            <span>كيف اعرف المناسب لحالتي</span>
+                            <span>{t.suitableForMe}</span>
                         </button>
 
 
@@ -68,20 +71,20 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                                 window.open("https://onelink.to/trandyhair", "_blank", "noreferrer");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <ShoppingBag size={18} />
-                            <span>شراء منتجات ترندي هير</span>
+                            <span>{t.buyProducts}</span>
                         </button>
                         <button
                             onClick={() => {
                                 onNavigate("/product/94");
                                 onClose();
                             }}
-                            className="w-full py-3.5 rounded-xl border border-app-gold text-white bg-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-white bg-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
                             <MessageCircle size={18} />
-                            <span>حجز استشارة مع الخبيرة</span>
+                            <span>{t.bookConsultation}</span>
                         </button>
                     </div>
                     <div className="px-6 mt-4 grid grid-cols-2 gap-3">
@@ -107,7 +110,7 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                         rel="noopener noreferrer"
                         className="text-[10px] text-app-textSec text-center font-active block hover:opacity-70 active:opacity-50 transition-opacity"
                     >
-                        powered by raiyansoft
+                        {t.poweredBy}
                     </a>
                 </div>
             </div>

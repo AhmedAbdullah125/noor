@@ -419,7 +419,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ onBook, favourites, onToggleFavourite
           >
             <AppImage
               src="https://raiyansoft.com/wp-content/uploads/2025/12/fav.png"
-              alt="Mezo Do Noor logo"
+              alt="Maison de Noor logo"
               className="h-7 w-7 object-contain"
             />
             <span className="text-lg font-bold text-app-text font-active truncate">
@@ -705,7 +705,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ onBook, favourites, onToggleFavourite
                 <input
                   type="text"
                   placeholder="بحث عن خدمة"
-                  className="w-full bg-white border border-app-card rounded-full py-3.5 pr-6 pl-12 text-right focus:outline-none focus:border-app-gold shadow-sm font-active text-sm"
+                  className="w-full bg-white border border-app-card rounded-full py-3.5 pr-6 pl-12 text-left focus:outline-none focus:border-app-gold shadow-sm font-active text-sm"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-app-textSec" size={20} />
               </div>
@@ -753,7 +753,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ onBook, favourites, onToggleFavourite
 
             {/* Categories */}
             <div className="px-6 mt-8">
-              <h2 className="text-base font-bold text-app-text mb-4 text-center sm:text-right">الأقسام</h2>
+              <h2 className="text-base font-bold text-app-text mb-4 text-center sm:text-left">الأقسام</h2>
               <div className="grid grid-cols-3 gap-4 pb-20">
                 {brands.map((brand) => (
                   <button

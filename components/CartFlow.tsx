@@ -270,7 +270,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ onAddOrder }) => {
             <div className="relative">
               <input
                 type="date"
-                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-right"
+                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-left"
                 value={bookingForm.date}
                 onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
               />
@@ -280,7 +280,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ onAddOrder }) => {
             <div className="relative">
               <input
                 type="time"
-                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-right"
+                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-left"
                 value={bookingForm.time}
                 onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })}
               />

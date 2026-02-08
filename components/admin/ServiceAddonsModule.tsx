@@ -613,11 +613,11 @@ const ServiceAddonsModule: React.FC<ServiceAddonsModuleProps> = ({ lang }) => {
                   />
                 </div>
 
-                <div className="space-y-2 text-right">
+                <div className="space-y-2 text-left">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t.titleAr}</label>
                   <input
                     type="text"
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#483383] transition-all text-right"
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-[#483383] transition-all text-left"
                     value={form.titleAr || ""}
                     onChange={(e) => setForm({ ...form, titleAr: e.target.value })}
                   />
@@ -702,11 +702,11 @@ const ServiceAddonsModule: React.FC<ServiceAddonsModuleProps> = ({ lang }) => {
                         />
                       </div>
 
-                      <div className="flex-1 space-y-1 text-right">
+                      <div className="flex-1 space-y-1 text-left">
                         <label className="text-[10px] font-bold text-gray-400 uppercase">{t.labelAr}</label>
                         <input
                           type="text"
-                          className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs outline-none focus:border-[#483383] text-right"
+                          className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs outline-none focus:border-[#483383] text-left"
                           value={item.labelAr || ""}
                           onChange={(e) => handleItemChange(idx, "labelAr", e.target.value)}
                           disabled={saving}

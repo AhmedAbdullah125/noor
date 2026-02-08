@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { DEMO_PRODUCTS } from '../constants';
 import ProductCard from './ProductCard';
 import AppHeader from './AppHeader';
+import { getLang } from '../services/i18n';
 
 interface AllProductsPageProps {
   onBook: (product: Product, quantity: number) => void;
@@ -18,6 +19,7 @@ const AllProductsPage: React.FC<AllProductsPageProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const lang = getLang();
 
   const handleProductClick = (product: Product) => {
     navigate(`/product/${product.id}`, { state: { from: location.pathname } });
@@ -45,6 +47,7 @@ const AllProductsPage: React.FC<AllProductsPageProps> = ({
               isFavourite={favourites.includes(product.id)}
               onBook={onBook}
               onClick={handleProductClick}
+              lang={lang}
             />
           ))}
         </div>

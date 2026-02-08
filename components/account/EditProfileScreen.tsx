@@ -15,14 +15,18 @@ type Props = {
     };
 };
 
+import { translations, getLang } from "../../services/i18n";
+
 export default function EditProfileScreen({
     profile,
     isGuest,
-    lang,
     onBack,
     onSaved,
     updateMut,
 }: Props) {
+    const lang = getLang();
+    const t = translations[lang] || translations['ar'];
+
     const [name, setName] = useState(profile?.name || "");
     const [email, setEmail] = useState(profile?.email || "");
     const [phone, setPhone] = useState(profile?.phone || "");
@@ -61,16 +65,16 @@ export default function EditProfileScreen({
     };
 
     return (
-        <div className="animate-fadeIn flex flex-col h-full bg-app-bg">
-            <AppHeader title="تعديل الحساب" onBack={onBack} />
+        <div className="animate-fadeIn flex flex-col h-full bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            <AppHeader title={t.editAccount} onBack={onBack} />
 
             <div className="overflow-y-auto no-scrollbar px-6 pt-24 pb-10">
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30 space-y-6">
                     {/* Photo */}
                     <div className="flex items-center justify-between">
-                        <div className="flex flex-col text-right">
-                            <span className="text-sm font-semibold text-app-text">الصورة</span>
-                            <span className="text-[11px] text-app-textSec">اختياري</span>
+                        <div className="flex flex-col text-start">
+                            <span className="text-sm font-semibold text-app-text">{t.image}</span>
+                            <span className="text-[11px] text-app-textSec">{t.optional}</span>
                         </div>
 
                         <label className="relative cursor-pointer">
@@ -93,35 +97,35 @@ export default function EditProfileScreen({
                         </label>
                     </div>
 
-                    <Field label="الاسم">
+                    <Field label={t.name}>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-right font-semibold text-app-text"
-                            placeholder="الاسم"
+                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-start font-semibold text-app-text"
+                            placeholder={t.name}
                         />
                     </Field>
 
-                    <Field label="البريد الإلكتروني">
+                    <Field label={t.email}>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-right font-semibold text-app-text"
+                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-start font-semibold text-app-text"
                             placeholder="email@example.com"
                             dir="ltr"
                         />
                     </Field>
 
-                    <Field label="رقم الهاتف">
+                    <Field label={t.phone}>
                         <input
                             type="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-right font-semibold text-app-text"
+                            className="w-full p-4 bg-app-bg border border-app-card/50 rounded-2xl outline-none focus:border-app-gold text-start font-semibold text-app-text"
                             dir="ltr"
-                            placeholder="رقم الهاتف"
+                            placeholder={t.phone}
                         />
                     </Field>
                 </div>
@@ -138,7 +142,7 @@ export default function EditProfileScreen({
                     ) : (
                         <>
                             <Save size={20} />
-                            <span>حفظ التغييرات</span>
+                            <span>{t.saveChanges}</span>
                         </>
                     )}
                 </button>

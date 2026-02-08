@@ -5,15 +5,18 @@ import { Phone, Lock } from "lucide-react";
 import { loginRequest } from "../services/loginRequest";
 import { getRefreshToken } from "./authStorage";
 import { refreshToken } from "../services/refreshToken";
+import { translations, Locale, getLang } from "../../services/i18n";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
-  lang?: string;
+  lang?: Locale;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang }) => {
+  const lang = propLang || getLang();
   const navigate = useNavigate();
   const location = useLocation();
+  const t = translations[lang] || translations['ar'];
 
   const from = (location.state as any)?.from || "/";
 
@@ -62,14 +65,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) =>
     setError(null);
 
     if (!formData.phone || !formData.password) {
-      setError("من فضلك أدخل رقم الهاتف وكلمة المرور");
+      setError(t.enterPhonePassword);
       return;
     }
 
     const res = await loginRequest(formData, setLoading, lang);
 
     if (!res.ok) {
-      setError(res.error || "رقم الهاتف أو كلمة المرور غير صحيحة");
+      setError(res.error || t.loginError);
       return;
     }
 
@@ -81,18 +84,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) =>
     return (
       <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen items-center justify-center">
         <div className="bg-white border border-app-card/50 rounded-2xl px-6 py-4 shadow-sm text-app-text">
-          جاري التحقق من الجلسة...
+          {t.checkingSession}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-12 pb-10 flex flex-col justify-center">
         <div className="text-center mb-10">
-          <h1 className="text-xl font-semibold text-app-text mb-2">تسجيل الدخول</h1>
-          <p className="text-sm text-app-textSec">أهلاً بك مجدداً في ميزو دو نور</p>
+          <h1 className="text-xl font-semibold text-app-text mb-2">{t.loginTitle}</h1>
+          <p className="text-sm text-app-textSec">{t.welcomeBack}</p>
         </div>
 
         <div className="space-y-4 mb-8">
@@ -100,8 +103,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) =>
             <input
               type="tel"
               name="phone"
-              placeholder="رقم الهاتف"
-              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-right text-app-text placeholder:text-app-textSec/50"
+              placeholder={t.phone}
+              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.phone}
               onChange={handleChange}
               dir="ltr"
@@ -113,8 +116,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) =>
             <input
               type="password"
               name="password"
-              placeholder="كلمة المرور"
-              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-right text-app-text placeholder:text-app-textSec/50"
+              placeholder={t.password}
+              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.password}
               onChange={handleChange}
               dir="ltr"
@@ -134,14 +137,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang = "ar" }) =>
           disabled={loading}
           className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform mb-6 disabled:opacity-60 disabled:active:scale-100"
         >
-          {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+          {loading ? t.loggingIn : t.signIn}
         </button>
 
         <button
           onClick={() => navigate("/signup")}
           className="w-full text-app-textSec text-sm font-normal underline decoration-app-textSec/30 underline-offset-4 active:opacity-70"
         >
-          ليس لديكي حسابي سجلي حساب جديد
+          {t.noAccount}
         </button>
       </div>
     </div>

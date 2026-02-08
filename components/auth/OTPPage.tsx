@@ -1,16 +1,20 @@
+// src/pages/OTPPage.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { confirmCodeRequest } from "../services/confirmCode";
+import { translations, Locale, getLang } from "../../services/i18n";
 
 interface OTPPageProps {
   onLoginSuccess: () => void;
-  lang?: string;
+  lang?: Locale;
 }
 
-const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
+const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang: propLang }) => {
+  const lang = propLang || getLang();
   const navigate = useNavigate();
   const location = useLocation();
+  const t = translations[lang] || translations['ar'];
 
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +55,7 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
   const handleVerify = async () => {
     const code = otp.join("");
     if (code.length < 4) {
-      setError("يرجى إدخال الكود كاملاً");
+      setError(t.enterFullCode);
       return;
     }
 
@@ -63,7 +67,7 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
     );
 
     if (!res.ok) {
-      setError(res.error || "فشل التحقق من الكود");
+      setError(res.error || t.verifyFailed);
       setOtp(["", "", "", ""]);
       inputRefs.current[0]?.focus();
       return;
@@ -75,11 +79,11 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <header className="absolute top-0 left-0 right-0 p-6 flex items-center">
         <button
           onClick={() => navigate("/signup")}
-          className="p-2 bg-white rounded-full shadow-sm text-app-text hover:bg-app-card transition-colors"
+          className="p-2 bg-white rounded-full shadow-sm text-app-text hover:bg-app-card transition-colors rotate-180"
         >
           <ArrowRight size={20} />
         </button>
@@ -87,8 +91,8 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-24 pb-10 flex flex-col justify-center">
         <div className="text-center mb-10">
-          <h1 className="text-xl font-semibold text-app-text mb-2">كود التفعيل</h1>
-          <p className="text-sm text-app-textSec">أدخلي كود التفعيل المرسل بالواتساب</p>
+          <h1 className="text-xl font-semibold text-app-text mb-2">{t.otpTitle}</h1>
+          <p className="text-sm text-app-textSec">{t.otpSubtitle}</p>
           <p className="text-xs text-app-gold mt-2 font-semibold" dir="ltr">
             {phone}
           </p>
@@ -118,7 +122,7 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang = "ar" }) => {
           disabled={loading}
           className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60 disabled:active:scale-100"
         >
-          {loading ? "جاري التفعيل..." : "تأكيد"}
+          {loading ? t.verifying : t.verify}
         </button>
       </div>
     </div>

@@ -4,24 +4,23 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ClipboardList, ShoppingBag, X } from "lucide-react";
 import AppHeader from "../AppHeader";
 import { getBookings, type BookingItem } from "../services/getBookings";
+import { translations, getLang } from "@/services/i18n";
 
 function formatTime(t?: string) {
     if (!t) return "";
     return t.slice(0, 5);
 }
 
-function formatMoney(val: string) {
-    const n = Number(String(val).replace(/[^\d.]/g, ""));
-    if (!Number.isFinite(n)) return val;
-    return `${n.toFixed(3)} د.ك`;
-}
+
 
 function mapStatusLabel(status: string, isConfirmed: boolean) {
+    const lang = getLang();
+    const t = translations[lang] || translations['ar'];
     const s = String(status || "").toLowerCase();
-    if (isConfirmed || s === "confirmed") return "مؤكد";
-    if (s === "pending") return "قيد الانتظار";
-    if (s === "cancelled" || s === "canceled") return "ملغي";
-    if (s === "completed") return "مكتمل";
+    if (isConfirmed || s === "confirmed") return t.confirmed;
+    if (s === "pending") return t.pending;
+    if (s === "cancelled" || s === "canceled") return t.cancelled;
+    if (s === "completed") return t.completed;
     return status;
 }
 
@@ -34,7 +33,7 @@ function statusPillClass(status: string, isConfirmed: boolean) {
     return "bg-gray-50 text-gray-600";
 }
 
-export default function HistoryScreen({
+export default function OrderDetailsScreen({
     onBack,
     onNavigateToHome,
 }: {
@@ -44,7 +43,14 @@ export default function HistoryScreen({
     const [isLoading, setIsLoading] = useState(true);
     const [items, setItems] = useState<BookingItem[]>([]);
     const [openId, setOpenId] = useState<string | null>(null);
-    const lang = "ar";
+    const lang = getLang();
+    const t = translations[lang] || translations['ar'];
+
+    function formatMoney(val: string) {
+        const n = Number(String(val).replace(/[^\d.]/g, ""));
+        if (!Number.isFinite(n)) return val;
+        return `${n.toFixed(3)} ${t.currency}`;
+    }
 
     useEffect(() => {
         let mounted = true;
@@ -78,8 +84,8 @@ export default function HistoryScreen({
     }, [openId, items]);
 
     return (
-        <div className="animate-fadeIn flex flex-col h-full bg-app-bg">
-            <AppHeader title="سجل الحجوزات" onBack={onBack} />
+        <div className="animate-fadeIn flex flex-col h-full bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            <AppHeader title={t.bookingHistoryTitle} onBack={onBack} />
 
             {selected && (
                 <div
@@ -95,7 +101,7 @@ export default function HistoryScreen({
                                 <div className="p-2 bg-app-bg rounded-xl text-app-gold">
                                     <ShoppingBag size={20} />
                                 </div>
-                                <span className="text-sm font-semibold text-app-text">تفاصيل الحجز</span>
+                                <span className="text-sm font-semibold text-app-text">{t.bookingDetails}</span>
                             </div>
 
                             <button
@@ -110,38 +116,38 @@ export default function HistoryScreen({
                             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30">
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>رقم الحجز</span>
+                                        <span>{t.bookingId}</span>
                                         <span className="font-semibold text-app-text" dir="ltr">
                                             {selected.request_number}
                                         </span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>الخدمة</span>
-                                        <span className="font-semibold text-app-text">{selected.service || "خدمة محددة"}</span>
+                                        <span>{t.serviceLabel}</span>
+                                        <span className="font-semibold text-app-text">{selected.service || t.specificService}</span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>التاريخ</span>
+                                        <span>{t.bookingDate}</span>
                                         <span className="font-normal text-app-text" dir="ltr">
                                             {`${selected.start_date} ${formatTime(selected.start_time)}`.trim()}
                                         </span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>الحالة</span>
+                                        <span>{t.status}</span>
                                         <span className={`text-[11px] font-semibold px-3 py-1 rounded-full ${statusPillClass(selected.status, selected.is_confirmed)}`}>
                                             {mapStatusLabel(selected.status, selected.is_confirmed)}
                                         </span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>الدفع</span>
+                                        <span>{t.payment}</span>
                                         <span className="font-semibold text-app-text">{selected.payment_type || "-"}</span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>حالة الدفع</span>
+                                        <span>{t.paymentStatus}</span>
                                         <span className="font-semibold text-app-text">{selected.payment_status || "-"}</span>
                                     </div>
                                 </div>
@@ -150,17 +156,17 @@ export default function HistoryScreen({
                             <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30">
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>السعر الأساسي</span>
+                                        <span>{t.basePrice}</span>
                                         <span className="font-semibold text-app-text">{formatMoney(String(selected.base_price ?? "0"))}</span>
                                     </div>
 
                                     <div className="flex justify-between text-xs text-app-textSec">
-                                        <span>سعر الإضافات</span>
+                                        <span>{t.addonsPrice}</span>
                                         <span className="font-semibold text-app-text">{formatMoney(String(selected.options_price ?? "0"))}</span>
                                     </div>
 
                                     <div className="pt-3 flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-app-text">الإجمالي الكلي</span>
+                                        <span className="text-sm font-semibold text-app-text">{t.grandTotal}</span>
                                         <span className="text-base font-semibold text-app-gold">{formatMoney(String(selected.final_price ?? "0"))}</span>
                                     </div>
                                 </div>
@@ -170,7 +176,7 @@ export default function HistoryScreen({
                                 onClick={() => setOpenId(null)}
                                 className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform"
                             >
-                                إغلاق
+                                {t.close}
                             </button>
                         </div>
                     </div>
@@ -189,12 +195,12 @@ export default function HistoryScreen({
                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 text-app-gold/40 border border-app-card/30">
                             <ClipboardList size={48} strokeWidth={1.5} />
                         </div>
-                        <h2 className="text-base font-semibold text-app-text mb-6">لا يوجد أي حجوزات حتى الآن</h2>
+                        <h2 className="text-base font-semibold text-app-text mb-6">{t.noBookings}</h2>
                         <button
                             onClick={onNavigateToHome}
                             className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform"
                         >
-                            استعراض الخدمات
+                            {t.exploreServices}
                         </button>
                     </div>
                 ) : (
@@ -207,23 +213,23 @@ export default function HistoryScreen({
                             return (
                                 <div key={order.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-semibold text-app-text">رقم الحجز: {order.request_number}</span>
+                                        <span className="text-sm font-semibold text-app-text">{t.bookingId}: {order.request_number}</span>
                                         <span className={`text-[10px] font-semibold px-3 py-1 rounded-full ${pill}`}>{label}</span>
                                     </div>
 
                                     <div className="space-y-2 mb-6">
                                         <div className="flex justify-between text-xs text-app-textSec">
-                                            <span>تاريخ الحجز:</span>
+                                            <span>{t.bookingDate}:</span>
                                             <span className="font-normal" dir="ltr">
                                                 {dateStr}
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-xs text-app-textSec">
-                                            <span>الخدمة:</span>
-                                            <span className="font-normal">{order.service || "خدمة محددة"}</span>
+                                            <span>{t.serviceLabel}:</span>
+                                            <span className="font-normal">{order.service || t.specificService}</span>
                                         </div>
                                         <div className="flex justify-between text-sm font-semibold text-app-text">
-                                            <span>الإجمالي:</span>
+                                            <span>{t.total}:</span>
                                             <span className="text-app-gold">{formatMoney(order.final_price)}</span>
                                         </div>
                                     </div>
@@ -232,7 +238,7 @@ export default function HistoryScreen({
                                         onClick={() => setOpenId(String(order.id))}
                                         className="w-full py-3 text-app-gold font-semibold text-sm bg-app-bg rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
                                     >
-                                        عرض تفاصيل الحجز
+                                        {t.viewBookingDetails}
                                     </button>
                                 </div>
                             );

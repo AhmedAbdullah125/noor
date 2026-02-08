@@ -7,7 +7,8 @@ import AppImage from "../AppImage";
 import HomeDrawer from "./HomeDrawer";
 import { useHomeData } from "./useHomeData";
 import type { Product, ServiceAddon, ServicePackageOption } from "@/types";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, Globe } from "lucide-react";
+import { getLang, setLang, translations, Locale } from "../../services/i18n";
 import HomeLanding from "./HomeLanding";
 import CategoryServicesGrid from "./CategoryServicesGrid";
 import ServiceDetails from "./ServiceDetails";
@@ -25,7 +26,16 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const lang = "ar"; // خليه من state/localStorage زي عندك
+    const [lang, setCurrentLang] = useState<Locale>(getLang());
+    const t = translations[lang];
+
+    const toggleLang = () => {
+        const newLang = lang === 'ar' ? 'en' : 'ar';
+        setCurrentLang(newLang);
+        setLang(newLang);
+        window.location.reload(); // Simple reload to ensure all data refetches with new lang
+    };
+
     const { categories, banners, products, isLoading, socialLinks } = useHomeData(lang, 1);
 
     const selectedProduct = useMemo(() => {
@@ -42,6 +52,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                 onClose={() => setIsMenuOpen(false)}
                 socialLinks={socialLinks}
                 onNavigate={(path) => navigate(path)}
+                lang={lang}
             />
 
             <AppHeader
@@ -55,25 +66,34 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                                 }}
                                 className="p-2 bg-white rounded-full shadow-sm  text-app-text hover:bg-app-card transition-colors flex items-center gap-2"
                             >
-                                <span className="text-sm font-normal">العودة</span>
+                                <span className="text-sm font-normal">{t.back}</span>
                                 <ArrowLeft size={20} />
                             </button>
                         </div>
-                        : null
+                        :
+                        <button
+                            onClick={toggleLang}
+                            className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
+                        >
+                            <Globe size={24} />
+                        </button>
                 }
                 title={
                     <div className="flex items-center justify-center gap-2 px-2 cursor-pointer w-full" onClick={() => navigate("/")}>
-                        <AppImage src="https://raiyansoft.com/wp-content/uploads/2025/12/fav.png" alt="Mezo Do Noor logo" className="h-7 w-7 object-contain" />
-                        <span className="text-lg font-semibold text-app-text font-active truncate">ميزو دو نور</span>
+                        <AppImage src="https://raiyansoft.com/wp-content/uploads/2025/12/fav.png" alt="Maison de Noor logo" className="h-7 w-7 object-contain" />
+                        <span className="text-lg font-semibold text-app-text font-active truncate">{t.appName}</span>
                     </div>
                 }
                 actionEnd={
-                    <button
-                        onClick={() => setIsMenuOpen(true)}
-                        className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
-                    >
-                        <Menu size={24} />
-                    </button>
+                    <div className="flex items-center gap-2">
+
+                        <button
+                            onClick={() => setIsMenuOpen(true)}
+                            className="p-2 text-app-text hover:bg-app-card rounded-full transition-colors flex-shrink-0"
+                        >
+                            <Menu size={24} />
+                        </button>
+                    </div>
                 }
             />
 
@@ -96,6 +116,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                         banners={banners}
                         categories={categories}
                         onCategoryClick={(id) => navigate(`/brand/${id}`)}
+                        lang={lang}
                     />
                 ) : (
                     <CategoryServicesGrid
@@ -106,6 +127,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                         onBook={onBook}
                         onBack={() => navigate("/")}
                         onProductClick={(p) => navigate(`/product/${p.id}`, { state: { from: `/category/${activeCategory}` } })}
+                        lang={lang}
                     />
                 )}
             </main>

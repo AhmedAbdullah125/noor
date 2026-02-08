@@ -19,6 +19,7 @@ import OrderDetailsScreen from "./OrderDetailsScreen";
 import FavoritesScreen from "./FavoritesScreen";
 import ProductDetailsScreen from "./ProductDetailsScreen";
 import DeleteAccountModal from "./DeleteAccountModal";
+import { getLang } from "@/services/i18n";
 
 interface AccountTabProps {
     orders: Order[];
@@ -39,14 +40,13 @@ const AccountTab: React.FC<AccountTabProps> = ({
     initialOrderId,
     onClearInitialOrder,
     favourites,
-    onToggleFavourite,
     onBook,
     onLogout,
     isGuest = false,
-    lang = "ar",
+
 }) => {
     const navigate = useNavigate();
-
+    const lang = getLang();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isHairProfileComplete, setIsHairProfileComplete] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -166,7 +166,6 @@ const AccountTab: React.FC<AccountTabProps> = ({
                             onNavigateToHome={onNavigateToHome}
                             onBook={onBook}
                             onOpenProduct={(id) => navigate(`/account/favorites/product/${id}`)}
-                            lang={lang}
                         />
                     }
                 />

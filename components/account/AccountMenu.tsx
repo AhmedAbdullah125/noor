@@ -15,6 +15,7 @@ import {
     FileText,
     AlertTriangle,
     UserCog,
+    ChevronRight,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetQuestionnaire } from "../services/useGetQuestionnaire";
@@ -23,6 +24,7 @@ import { useGetQuestionnaire } from "../services/useGetQuestionnaire";
 import AppHeader from "../AppHeader";
 import AppImage from "../AppImage";
 import { APP_COLORS } from "../../constants";
+import { translations, getLang } from "../../services/i18n";
 
 type Props = {
     isGuest: boolean;
@@ -42,11 +44,13 @@ type Props = {
 export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete,
 }: Props) {
     console.log(profile);
-    const userName = isGuest ? "زائر" : profile?.name || "—";
+    const lang = getLang();
+    const t = translations[lang] || translations['ar'];
+
+    const userName = isGuest ? t.guestName : profile?.name || "—";
     const userPhone = isGuest ? "" : profile?.phone || "";
     const userPhoto = isGuest ? "" : profile?.photo || "https://maison-de-noor.com/assets/img/unknown.svg";
     const wallet = isGuest ? "0.00" : profile?.wallet || "0.00";
-    const lang = "ar";
 
     const {
         questionnaireId,
@@ -58,8 +62,8 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
     const hairPercent = progress?.percentage ?? 0;
 
     return (
-        <div className="animate-fadeIn flex flex-col h-full bg-app-bg">
-            <AppHeader title="الحساب" />
+        <div className="animate-fadeIn flex flex-col h-full bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            <AppHeader title={t.tabBarAccount} />
 
             <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-28 pt-24">
                 {/* Profile Card */}
@@ -75,7 +79,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                             )}
                         </div>
 
-                        <div className="flex flex-col text-right">
+                        <div className="flex flex-col text-start">
                             <span className="font-semibold text-sm text-app-text">
                                 {!isGuest && profileLoading ? "..." : userName}
                             </span>
@@ -91,7 +95,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                         onClick={onAuthClick}
                         className="flex items-center gap-1.5 text-red-500 font-semibold text-xs hover:bg-red-50 px-3 py-2 rounded-xl transition-all active:scale-95"
                     >
-                        <span className="mt-0.5">{isGuest ? "تسجيل الدخول" : "تسجيل الخروج"}</span>
+                        <span className="mt-0.5">{isGuest ? t.login : t.logout}</span>
                         {isGuest ? <LogOut size={18} className="text-red-500 rotate-180" /> : <XCircle size={18} className="text-red-500" />}
                     </button>
                 </div>
@@ -101,13 +105,13 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                     onClick={onOpenHairProfile}
                     className="bg-white rounded-[2rem] p-4 flex items-center justify-between shadow-sm mb-6 border border-app-card/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
-                    <div className="flex flex-col text-right">
-                        <span className="font-semibold text-sm text-app-text">استبيان العناية بالفروة و الشعر</span>
+                    <div className="flex flex-col text-start">
+                        <span className="font-semibold text-sm text-app-text">{t.hairProfileTitle}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <span className={`text-[11px] font-semibold ${hairComplete ? "text-green-600" : "text-app-textSec/60"}`}>
-                            {!isGuest && questionnaireLoading ? "..." : hairComplete ? "مكتمل" : "غير مكتمل"}
+                            {!isGuest && questionnaireLoading ? "..." : hairComplete ? t.completed : t.incomplete}
                         </span>
 
                         <div className={`p-2.5 rounded-2xl flex items-center justify-center transition-colors ${hairComplete ? "bg-green-50 text-green-600" : "bg-app-bg text-app-gold"}`}>
@@ -125,11 +129,11 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                 {!isGuest && (
                     <div className="grid grid-cols-2 gap-3 mb-6">
                         <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-app-card/30 flex flex-col items-center justify-center text-center">
-                            <h2 className="text-xs font-semibold text-app-text mb-3">QR الحساب</h2>
+                            <h2 className="text-xs font-semibold text-app-text mb-3">{t.qrTitle}</h2>
                             <div className="p-2 bg-white rounded-xl border border-app-card/20 shadow-sm mb-3">
                                 <QRCodeSVG value={`noor://account/${profile?.id}`} size={100} fgColor={APP_COLORS.gold} bgColor="#ffffff" level="M" />
                             </div>
-                            <p className="text-[9px] text-app-textSec opacity-70 leading-tight">امسحي الكود للفتح السريع</p>
+                            <p className="text-[9px] text-app-textSec opacity-70 leading-tight">{t.scanQrCode}</p>
                         </div>
 
                         <div className="relative bg-white rounded-[2rem] p-4 shadow-sm border border-app-card/30 overflow-hidden group">
@@ -142,15 +146,15 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                                         <div className="p-1.5 bg-app-gold/10 rounded-full text-app-gold">
                                             <Wallet size={14} />
                                         </div>
-                                        <span className="text-xs font-semibold text-app-text">محفظتي</span>
+                                        <span className="text-xs font-semibold text-app-text">{t.myWallet}</span>
                                     </div>
 
                                     <div className="flex items-baseline gap-1 mb-2">
                                         <span className="text-xl font-semibold text-app-gold font-active tracking-tight">{wallet}</span>
-                                        <span className="text-[10px] font-normal text-app-textSec">د.ك</span>
+                                        <span className="text-[10px] font-normal text-app-textSec">{t.currency}</span>
                                     </div>
 
-                                    <p className="text-[12px] text-app-textSec leading-snug opacity-90 font-normal">رصيدك الحالي في المحفظة</p>
+                                    <p className="text-[12px] text-app-textSec leading-snug opacity-90 font-normal">{t.currentBalance}</p>
                                 </div>
                             </div>
                         </div>
@@ -160,14 +164,14 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                 {/* List */}
                 <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-app-card/30 mb-8">
                     {!isGuest && (
-                        <MenuRow icon={<UserCog size={20} />} label="تعديل الحساب" onClick={onOpenEdit} />
+                        <MenuRow icon={<UserCog size={20} />} label={t.editAccount} onClick={onOpenEdit} />
                     )}
 
-                    <MenuRow icon={<Heart size={20} />} label="الخدمات المفضلة" onClick={onOpenFavorites} />
-                    <MenuRow icon={<ClipboardList size={20} />} label="سجل الحجوزات" onClick={onOpenHistory} />
-                    <MenuRow icon={<Video size={20} />} label="تجارب عميلاتنا" onClick={onOpenReviews} />
+                    <MenuRow icon={<Heart size={20} />} label={t.favoriteServices} onClick={onOpenFavorites} />
+                    <MenuRow icon={<ClipboardList size={20} />} label={t.bookingHistory} onClick={onOpenHistory} />
+                    <MenuRow icon={<Video size={20} />} label={t.customerReviews} onClick={onOpenReviews} />
 
-                    <MenuRow icon={<Info size={20} />} label="عن Mezo Do Noor" onClick={() => { }} />
+                    <MenuRow icon={<Info size={20} />} label={t.aboutApp} onClick={() => { }} />
                     <MenuRow icon={<Mail size={20} />} label="contact@mezodonoor.com" onClick={() => { }} />
                     <MenuRow icon={<Phone size={20} />} label="96554647655" onClick={() => { }} dir="ltr" last />
                 </div>
@@ -178,7 +182,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                             onClick={onOpenDelete}
                             className="text-[10px] font-semibold text-red-400/80 hover:text-red-500 underline underline-offset-4 active:opacity-60 transition-all font-active"
                         >
-                            حذف الحساب
+                            {t.deleteAccount}
                         </button>
                     </div>
                 )}
@@ -211,7 +215,11 @@ function MenuRow({
                 </div>
                 <span className="text-sm font-semibold text-app-text" dir={dir}>{label}</span>
             </div>
-            <ChevronLeft className="text-app-textSec opacity-40" size={18} />
+            {
+                dir === "rtl" ?
+                    <ChevronLeft className="text-app-textSec opacity-40" size={18} />
+                    : <ChevronRight className="text-app-textSec opacity-40" size={18} />
+            }
         </div>
     );
 }

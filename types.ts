@@ -4,7 +4,9 @@
 export interface ServiceAddon {
   id: string;
   title_ar: string;
+  title_en?: string;
   desc_ar?: string;
+  desc_en?: string;
   price_kwd: number;
   is_active: boolean;
 }
@@ -12,6 +14,7 @@ export interface ServiceAddon {
 export interface ServiceAddonGroup {
   id: string;
   title_ar: string;
+  title_en?: string;
   type: 'single' | 'multi';
   required: boolean;
   options: ServiceAddon[];

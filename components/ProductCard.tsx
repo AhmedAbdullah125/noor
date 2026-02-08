@@ -7,13 +7,16 @@ import { FALLBACK_IMAGE_URL } from "@/constants";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
 
+import { translations, Locale } from "../services/i18n";
+
 interface ProductCardProps {
   product: Product;
   isFavourite: boolean; // initial / external
   onBook: (product: Product, quantity: number) => void; // kept
   onClick: (product: Product) => void;
-  lang?: string; // ✅ optional (default ar)
+  lang?: Locale; // ✅ optional (default ar)
 }
+
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
@@ -22,6 +25,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onClick,
   lang = "ar",
 }) => {
+
+  const t = translations[lang];
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -96,7 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent z-10" />
 
         <div className="absolute inset-x-0 bottom-0 px-3 pb-7 pt-4 z-20 pointer-events-none">
-          <h3 className="text-xs font-semibold text-app-text text-right w-full line-clamp-2 font-active leading-relaxed">
+          <h3 className="text-xs font-semibold text-app-text text-left w-full line-clamp-2 font-active leading-relaxed">
             {product.name}
           </h3>
           {/* <LazyLoadImage src={product?.image || FALLBACK_IMAGE_URL} alt={`${product.name}`} className="w-full h-full object-cover" /> */}
@@ -129,12 +134,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="p-3 pt-2 mt-auto flex items-center justify-between bg-white relative z-10">
         <div className="flex flex-col items-start">
           <span className="text-sm font-semibold text-app-gold font-active leading-none">
-            {product.price} د.ك
+            {product.price} {t.currency}
 
           </span>
           {product.oldPrice && (
             <span className="text-[9px] text-app-textSec line-through font-active opacity-60 mt-0.5">
-              {product.oldPrice} د.ك
+              {product.oldPrice} {t.currency}
             </span>
           )}
         </div>
@@ -146,7 +151,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
           className="bg-app-bg text-app-text font-semibold text-[10px] py-1.5 px-3 rounded-xl border border-app-card hover:bg-app-card transition-colors shadow-sm flex items-center gap-1 active:scale-90"
         >
-          <span>التفاصيل</span>
+          <span>{t.details}</span>
         </button>
       </div>
     </div>

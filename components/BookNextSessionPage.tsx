@@ -115,7 +115,7 @@ const BookNextSessionPage: React.FC = () => {
             <div className="relative">
               <input
                 type="date"
-                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-right"
+                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-left"
                 value={selectedDate}
                 onChange={e => setSelectedDate(e.target.value)}
               />
@@ -125,7 +125,7 @@ const BookNextSessionPage: React.FC = () => {
             <div className="relative">
               <input
                 type="time"
-                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-right"
+                className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-sm text-left"
                 value={selectedTime}
                 onChange={e => setSelectedTime(e.target.value)}
               />

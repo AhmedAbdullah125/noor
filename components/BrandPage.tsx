@@ -7,6 +7,7 @@ import AppImage from './AppImage';
 import AppHeader from './AppHeader';
 import { useGetServiceByCategory } from './services/useGetServiceByCategory';
 import { useGetLookups } from './services/useGetLookups';
+import { getLang, translations, Locale } from '../services/i18n';
 
 interface BrandPageProps {
   onBook: (product: Product, quantity: number) => void;
@@ -20,11 +21,13 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
   const { brandId } = useParams();
 
   const [page, setPage] = useState(1);
+  const lang = getLang();
+  const t = translations[lang];
 
   const { data, isLoading, isError, isFetching, error } =
-    useGetServiceByCategory("ar", brandId, page);
+    useGetServiceByCategory(lang, brandId, page);
 
-  const lookupsQuery = useGetLookups("ar");
+  const lookupsQuery = useGetLookups(lang);
 
   const unauthorized = (error as any)?.isUnauthorized === true;
 
@@ -47,7 +50,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
     const cat = first?.category;
 
     return {
-      name: category?.name || cat?.name || "القسم",
+      name: category?.name || cat?.name || t.section,
       image: category?.image || "",
     };
   }, [services, lookupsQuery.data, brandId]);
@@ -101,23 +104,23 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
         <div className="w-20 h-20 bg-app-card rounded-full flex items-center justify-center mb-6">
           <Search size={40} className="text-app-textSec" />
         </div>
-        <h2 className="text-lg font-semibold text-app-text mb-4">حدث خطأ أثناء تحميل القسم</h2>
+        <h2 className="text-lg font-semibold text-app-text mb-4">{t.errorLoadingCategory}</h2>
         <button
           onClick={() => navigate('/')}
           className="bg-app-gold text-white px-6 py-3 rounded-2xl font-semibold flex items-center gap-2"
         >
           <Home size={18} />
-          <span>العودة للرئيسية</span>
+          <span>{t.backToHome}</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden">
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden" >
       <AppHeader title={brandInfo.name} onBack={handleBack} />
 
-      <main className="flex-1 overflow-y-auto w-full pb-28 px-6 pt-24">
+      <main className="flex-1 overflow-y-auto w-full pb-28 px-6 pt-24" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="flex flex-col items-center mb-8">
           <div className="w-32 h-32 rounded-[2rem] bg-white shadow-md border border-app-card/30 overflow-hidden mb-4 p-2">
             <AppImage
@@ -130,19 +133,19 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
         </div>
 
         <div className="mb-6">
-          {/* <h3 className="text-base font-semibold text-app-text mb-4 text-right">
+          {/* <h3 className="text-base font-semibold text-app-text mb-4 text-left">
             خدمات {brandInfo.name}
           </h3> */}
 
           {(isLoading || isFetching) && (
             <div className="text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
-              <p>جاري تحميل الخدمات...</p>
+              <p>{t.loadingServices}</p>
             </div>
           )}
 
           {isEmpty && (
             <div className="text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
-              <p>لا توجد خدمات متوفرة حالياً لهذا القسم.</p>
+              <p>{t.noServicesAvailable}</p>
             </div>
           )}
 
@@ -156,6 +159,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
                     isFavourite={favourites.includes(product.id)}
                     onBook={onBook}
                     onClick={handleProductClick}
+                    lang={lang}
                   />
                 ))}
               </div>
@@ -168,11 +172,11 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
                     className="px-4 py-2 rounded-xl bg-white border border-app-card/30 text-app-text disabled:opacity-50 flex items-center gap-2"
                   >
                     <ChevronRight size={18} />
-                    السابق
+                    {t.previous}
                   </button>
 
                   <span className="text-sm text-app-textSec">
-                    صفحة {pagination.current_page} من {pagination.total_pages}
+                    {t.page} {pagination.current_page} {t.of} {pagination.total_pages}
                   </span>
 
                   <button
@@ -180,7 +184,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
                     onClick={() => setPage((p) => Math.min(pagination.total_pages, p + 1))}
                     className="px-4 py-2 rounded-xl bg-white border border-app-card/30 text-app-text disabled:opacity-50 flex items-center gap-2"
                   >
-                    التالي
+                    {t.next}
                     <ChevronLeft size={18} />
                   </button>
                 </div>

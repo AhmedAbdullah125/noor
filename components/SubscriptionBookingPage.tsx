@@ -14,7 +14,7 @@ const SubscriptionBookingPage: React.FC = () => {
         >
           <ArrowRight size={20} />
         </button>
-        <h1 className="text-lg font-semibold text-app-text flex-1 truncate text-right">
+        <h1 className="text-lg font-semibold text-app-text flex-1 truncate text-left">
           حجز الجلسة القادمة
         </h1>
       </header>

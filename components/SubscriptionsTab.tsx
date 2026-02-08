@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Ticket, CalendarDays, ChevronLeft, ShoppingBag, Timer, Check } from "lucide-react";
+import { Ticket, CalendarDays, ShoppingBag, Timer, Check } from "lucide-react";
 
 import AppHeader from "./AppHeader";
 import { DEMO_PRODUCTS } from "../constants";
 import type { UserSubscription } from "../types";
 import { http } from "./services/http";
+import { translations, getLang } from "../services/i18n";
 
 type ApiSession = {
   id: number;
@@ -76,6 +77,8 @@ async function getSubscriptions(lang = "ar") {
 const SubscriptionsTab: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const lang = getLang();
+  const t = translations[lang] || translations['ar'];
 
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
@@ -95,7 +98,7 @@ const SubscriptionsTab: React.FC = () => {
 
     (async () => {
       try {
-        const items = await getSubscriptions("ar");
+        const items = await getSubscriptions(lang);
         if (!mounted) return;
 
         const mapped: UserSubscription[] = items.map((it) => {
@@ -131,7 +134,7 @@ const SubscriptionsTab: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [lang]);
 
   const getService = (id: number) => DEMO_PRODUCTS.find((p) => p.id === id);
 
@@ -153,13 +156,13 @@ const SubscriptionsTab: React.FC = () => {
   const getStatusLabel = (status: UserSubscription["status"]) => {
     switch (status) {
       case "active":
-        return "نشط";
+        return t.activeStatus;
       case "expired":
-        return "منتهي";
+        return t.expiredStatus;
       case "paused":
-        return "متوقف مؤقتاً";
+        return t.pausedStatus;
       case "pending":
-        return "قيد الانتظار";
+        return t.pendingStatus;
       default:
         return "";
     }
@@ -188,16 +191,16 @@ const SubscriptionsTab: React.FC = () => {
       <div className="w-24 h-24 bg-app-card/50 rounded-full flex items-center justify-center mb-6 text-app-gold">
         <Ticket size={48} strokeWidth={1.5} />
       </div>
-      <h2 className="text-lg font-semibold text-app-text mb-2">لا يوجد لديك أي اشتراك</h2>
+      <h2 className="text-lg font-semibold text-app-text mb-2">{t.noSubscriptions}</h2>
       <p className="text-sm text-app-textSec mb-8 max-w-[280px] leading-relaxed">
-        عند شراء أي باقة ستظهر هنا ويمكنك حجز الجلسات منها
+        {t.noSubscriptionsDesc}
       </p>
       <button
         onClick={() => navigate("/")}
         className="bg-app-bg border border-app-gold text-app-gold px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 active:scale-95 transition-transform"
       >
         <ShoppingBag size={20} />
-        <span>استكشفي خدماتنا</span>
+        <span>{t.exploreServices}</span>
       </button>
     </div>
   );
@@ -213,8 +216,8 @@ const SubscriptionsTab: React.FC = () => {
   }, [subscriptions]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-fadeIn relative bg-app-bg">
-      <AppHeader title="اشتراكاتي" />
+    <div className="flex flex-col h-full overflow-hidden animate-fadeIn relative bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <AppHeader title={t.mySubscriptionsTitle} />
 
       {toastMessage && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[90%] max-w-[380px] bg-app-gold text-white py-3 px-4 rounded-2xl shadow-xl flex items-center gap-3 z-[100] animate-slideUp">
@@ -236,8 +239,6 @@ const SubscriptionsTab: React.FC = () => {
               const service = getService(sub.serviceId);
               const remaining = sub.sessionsTotal - sub.sessionsUsed;
               const progressPercent = sub.sessionsTotal > 0 ? (remaining / sub.sessionsTotal) * 100 : 0;
-              const isActive = sub.status === "active";
-              console.log(sub);
               return (
                 <div
                   key={sub.id}
@@ -247,7 +248,7 @@ const SubscriptionsTab: React.FC = () => {
                   <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-app-bg/60">
                     <div>
                       <span className="block text-[10px] font-semibold text-app-textSec mb-1">
-                        {service?.name ?? sub.serviceId ? service?.name : "الخدمة"}
+                        {service?.name ?? sub.serviceId ? service?.name : t.serviceLabel}
                       </span>
                       <h3 className="text-base font-semibold text-app-text leading-tight">{sub.packageTitle}</h3>
                     </div>
@@ -260,7 +261,7 @@ const SubscriptionsTab: React.FC = () => {
                     <div className="col-span-2">
                       <div className="flex items-center gap-2 mb-1.5">
                         <CalendarDays size={16} className="text-app-gold" />
-                        <span className="text-xs font-semibold text-app-text">الجلسة القادمة</span>
+                        <span className="text-xs font-semibold text-app-text">{t.nextSession}</span>
                       </div>
                       {sub.nextSession ? (
                         <div className="bg-app-bg/50 rounded-xl px-3 py-2 flex items-center justify-between border border-app-card/30">
@@ -273,9 +274,9 @@ const SubscriptionsTab: React.FC = () => {
                         </div>
                       ) : (
                         <div className="bg-gray-50 rounded-xl px-3 py-2 border border-gray-100 flex flex-col justify-center text-center">
-                          <span className="text-xs font-semibold text-app-textSec">غير محدد</span>
+                          <span className="text-xs font-semibold text-app-textSec">{t.undefinedSession}</span>
                           <p className="text-[8px] text-app-textSec/60 mt-1 font-normal">
-                            احجزي الجلسة القادمة من زر "احجزي الجلسة القادمة"
+                            {t.bookNextSessionDesc}
                           </p>
                         </div>
                       )}
@@ -284,10 +285,10 @@ const SubscriptionsTab: React.FC = () => {
                     <div className="col-span-2">
                       <div className="flex items-center gap-1.5 mb-1 opacity-70">
                         <Timer size={13} />
-                        <span className="text-[10px] font-semibold">صلاحية الاشتراك</span>
+                        <span className="text-[10px] font-semibold">{t.validitySubscription}</span>
                       </div>
                       <span className="text-xs font-semibold text-app-text block" dir="ltr">
-                        ينتهي: {sub.expiryDate}
+                        {t.expiresOn.replace('{date}', sub.expiryDate)}
                       </span>
                     </div>
 
@@ -295,10 +296,10 @@ const SubscriptionsTab: React.FC = () => {
                       <div className="flex justify-between items-end mb-2">
                         <div className="flex items-center gap-1.5">
                           <Ticket size={14} className="text-app-gold" />
-                          <span className="text-xs font-semibold text-app-text">الجلسات المتبقية</span>
+                          <span className="text-xs font-semibold text-app-text">{t.subscriptionReamining}</span>
                         </div>
                         <span className="text-xs font-semibold text-app-gold">
-                          {remaining} من {sub.sessionsTotal}
+                          {remaining} {t.of} {sub.sessionsTotal}
                         </span>
                       </div>
                       <div className="w-full h-2 bg-app-bg rounded-full overflow-hidden border border-app-card/20">
@@ -308,46 +309,13 @@ const SubscriptionsTab: React.FC = () => {
                           style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }}
                         />
                       </div>
-                      <p className="text-[9px] text-app-textSec mt-1.5 text-left">
+                      <p className="text-[9px] text-app-textSec mt-1.5 text-start">
                         {sub.status === "expired"
-                          ? "انتهت صلاحية الجلسات المتبقية"
-                          : `تم استخدام ${sub.sessionsUsed} من أصل ${sub.sessionsTotal} جلسات`}
+                          ? t.subscriptionExpiredDesc
+                          : t.subscriptionUsed.replace('{used}', String(sub.sessionsUsed)).replace('{total}', String(sub.sessionsTotal))}
                       </p>
                     </div>
                   </div>
-
-                  {/* <div className="px-6 py-4 bg-app-bg/30 border-t border-app-card/20">
-                    {isActive && remaining > 0 ? (
-                      <div className="flex gap-3">
-                        {sub.nextSession ? (
-                          <button
-                            onClick={(e) => handleEditAppointment(e, sub.id)}
-                            className="flex-1 bg-app-gold text-white font-semibold py-3 rounded-xl shadow-sm text-sm active:scale-[0.98] transition-all"
-                          >
-                            تعديل الموعد
-                          </button>
-                        ) : (
-                          <button onClick={(e) => handleBookNext(e, sub.id)} className="flex-1 bg-app-gold text-white font-semibold py-3 rounded-xl shadow-sm text-sm active:scale-[0.98] transition-all">
-                            احجزي الجلسة القادمة
-                          </button>
-                        )}
-
-                        <div className="w-12 h-11 flex items-center justify-center rounded-xl bg-white border border-app-card/30 text-app-gold">
-                          <ChevronLeft size={20} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-app-textSec">
-                          {sub.status === "expired" ? "هذا الاشتراك منتهي" : "تم استخدام جميع الجلسات"}
-                        </span>
-                        <div className="flex items-center gap-1 text-[10px] text-app-gold font-semibold">
-                          <span>عرض التفاصيل</span>
-                          <ChevronLeft size={14} />
-                        </div>
-                      </div>
-                    )}
-                  </div> */}
                 </div>
               );
             })}

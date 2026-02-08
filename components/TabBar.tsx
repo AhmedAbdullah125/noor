@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { Home, Bell, Calendar, User, Ticket } from 'lucide-react';
 import { TabId } from '../types';
+import { getLang, translations } from '../services/i18n';
 
 interface TabBarProps {
   currentTab: TabId;
@@ -9,12 +10,15 @@ interface TabBarProps {
 }
 
 const TabBar: React.FC<TabBarProps> = ({ currentTab, onTabChange }) => {
+  const lang = getLang();
+  const t = translations[lang];
+
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: 'الرئيسية', icon: <Home size={22} /> },
-    { id: 'subscriptions', label: 'اشتراكاتي', icon: <Ticket size={22} /> },
-    { id: 'notifications', label: 'التنبيهات', icon: <Bell size={22} /> },
-    { id: 'appointments', label: 'مواعيدي', icon: <Calendar size={22} /> },
-    { id: 'account', label: 'الحساب', icon: <User size={22} /> },
+    { id: 'home', label: t.tabBarHome, icon: <Home size={22} /> },
+    { id: 'subscriptions', label: t.tabBarSubscriptions, icon: <Ticket size={22} /> },
+    { id: 'notifications', label: t.tabBarNotifications, icon: <Bell size={22} /> },
+    { id: 'appointments', label: t.tabBarAppointments, icon: <Calendar size={22} /> },
+    { id: 'account', label: t.tabBarAccount, icon: <User size={22} /> },
   ];
 
   const activeIndex = useMemo(() => {
@@ -25,8 +29,6 @@ const TabBar: React.FC<TabBarProps> = ({ currentTab, onTabChange }) => {
   return (
     <div className="absolute bottom-0 left-0 w-full bg-app-bg border-t border-app-card pb-safe pt-2 px-4 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-50">
       <div className="flex justify-between items-end pb-2 md:pb-4 mx-auto relative w-full">
-
-        {/* Animated Active Background Pill */}
         <div
           className="absolute top-0 bottom-2 md:bottom-4 transition-[right] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"
           style={{

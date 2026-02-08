@@ -6,6 +6,7 @@ import ProductCard from "../ProductCard";
 import type { Product, ServiceAddon, ServicePackageOption } from "@/types";
 import { useGetService } from "../services/useGetService";
 import { useSearchParams } from "react-router-dom";
+import { translations, Locale } from "../../services/i18n";
 
 type Props = {
     title: string;
@@ -26,6 +27,7 @@ type Props = {
 
     categoryId?: number;     // ✅ هنستخدمها كـ serviceId
     categoryName?: string;   // optional
+    lang?: Locale;
 };
 
 export default function CategoryServicesGrid({
@@ -38,8 +40,10 @@ export default function CategoryServicesGrid({
     onProductClick,
     categoryId,
     categoryName,
+    lang = 'ar',
 }: Props) {
     const [searchParams] = useSearchParams();
+    const t = translations[lang];
 
     // ✅ اعتبر categoryId هو الـ serviceId اللي جاي من HomeDrawer (?id=...)
     const serviceId = Number(searchParams.get("id"));
@@ -48,7 +52,7 @@ export default function CategoryServicesGrid({
         isLoading,
         isFetching,
         isError,
-    } = useGetService("ar", serviceId); // لو عندك lang في صفحة أعلى ومش عايز تثبيت "ar" قولي
+    } = useGetService(lang, serviceId); // لو عندك lang في صفحة أعلى ومش عايز تثبيت "ar" قولي
 
     // ✅ خريطة بسيطة لتحويل service response إلى Product مناسب لـ ProductCard
     const mappedFromService: Product[] = useMemo(() => {
@@ -109,11 +113,11 @@ export default function CategoryServicesGrid({
 
             {/* حالات التحميل/الخطأ فقط لما يكون فيه serviceId */}
             {serviceId && (isLoading || isFetching) ? (
-                <div className="px-6 text-sm text-app-textSec">جاري تحميل...</div>
+                <div className="px-6 text-sm text-app-textSec">{t.loadingData}</div>
             ) : null}
 
             {serviceId && isError && !(isLoading || isFetching) ? (
-                <div className="px-6 text-sm text-red-500">حدث خطأ أثناء تحميل البيانات</div>
+                <div className="px-6 text-sm text-red-500">{t.errorLoading}</div>
             ) : null}
 
             <div className="px-6 grid grid-cols-2 gap-4 pb-10">
@@ -124,6 +128,7 @@ export default function CategoryServicesGrid({
                         isFavourite={favourites.includes(product.id)}
                         onBook={onBook}
                         onClick={onProductClick}
+                        lang={lang}
                     />
                 ))}
             </div>

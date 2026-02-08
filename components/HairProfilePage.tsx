@@ -9,13 +9,16 @@ import { useGetQuestionnaire, getSavedQuestionnaireId } from "./services/useGetQ
 import { postQuestionnaireAnswer, QuestionnaireProgress } from "./services/questionnaireAnswer";
 import { completeQuestionnaire } from "./services/completeQuestionnaire";
 
+import { translations, getLang } from "@/services/i18n";
+
 type AnswersMap = Record<number, any>;
 
 const STORAGE_KEY = "mezo_hair_profile_answers";
 
 const HairProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const lang = "ar";
+  const lang = getLang();
+  const t = translations[lang] || translations['ar'];
 
   const qHook = useGetQuestionnaire(lang, true);
   const questionnaireId = qHook.questionnaireId ?? getSavedQuestionnaireId();
@@ -223,12 +226,12 @@ const HairProfilePage: React.FC = () => {
                 submitAnswer(q, answers[q.id]);
                 lastSubmittedTextRef.current[q.id] = current;
               }}
-              placeholder="اكتبي هنا..."
+              placeholder={t.writeHere}
             />
 
             {hasError && (
               <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
-                <AlertCircle size={10} /> هذا الحقل مطلوب
+                <AlertCircle size={10} /> {t.fieldRequired}
               </p>
             )}
           </div>
@@ -267,7 +270,7 @@ const HairProfilePage: React.FC = () => {
                     />
 
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ml-3 ${active ? "border-app-gold" : "border-app-textSec/30"
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center me-3 ${active ? "border-app-gold" : "border-app-textSec/30"
                         }`}
                     >
                       {active && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
@@ -283,7 +286,7 @@ const HairProfilePage: React.FC = () => {
 
             {hasError && (
               <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1">
-                <AlertCircle size={10} /> هذا الحقل مطلوب
+                <AlertCircle size={10} /> {t.fieldRequired}
               </p>
             )}
           </div>
@@ -307,36 +310,42 @@ const HairProfilePage: React.FC = () => {
   }, [answers, requiredIds]);
 
   const headerProgressText = useMemo(() => {
-    if (isLoading || isFetching) return "تحميل الأسئلة...";
-    if (!questionnaireId) return "جاري تجهيز الاستبيان...";
+    if (isLoading || isFetching) return t.loadingQuestions;
+    if (!questionnaireId) return t.preparingQuestionnaire;
 
     if (serverProgress?.answered != null && serverProgress?.total != null) {
-      return `تمت الإجابة: ${serverProgress.answered} / ${serverProgress.total} (${(serverProgress.percentage ?? 0).toFixed(0)}%)`;
+      return t.answeredProgress
+        .replace('{answered}', String(serverProgress.answered))
+        .replace('{total}', String(serverProgress.total))
+        .replace('{percentage}', (serverProgress.percentage ?? 0).toFixed(0));
     }
 
-    return `تمت الإجابة: ${answeredRequiredLocal} / ${requiredIds.length}`;
-  }, [isLoading, isFetching, questionnaireId, serverProgress, answeredRequiredLocal, requiredIds.length]);
+    return t.answeredProgress
+      .replace('{answered}', String(answeredRequiredLocal))
+      .replace('{total}', String(requiredIds.length))
+      .replace('{percentage}', requiredIds.length > 0 ? ((answeredRequiredLocal / requiredIds.length) * 100).toFixed(0) : '0');
+  }, [isLoading, isFetching, questionnaireId, serverProgress, answeredRequiredLocal, requiredIds.length, t]);
 
   return (
-    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen">
-      <AppHeader title="ملف العناية بالفروة و الشعر" onBack={() => navigate("/account")} />
+    <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <AppHeader title={t.hairCareProfile} onBack={() => navigate("/account")} />
 
       <main className="flex-1 overflow-y-auto no-scrollbar p-6 pt-24 pb-32 overscroll-contain">
         <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-sm border border-app-card/30">
           <p className="text-[11px] text-app-textSec leading-loose text-center">
-            يرجى تعبئة جميع البيانات المطلوبة بدقة لنتمكن من تقديم أفضل استشارة وعناية مخصصة.
+            {t.hairProfileDesc}
           </p>
 
           <div className="mt-4 text-center text-[10px] font-semibold text-app-textSec/70">{headerProgressText}</div>
 
           {serverProgress?.is_complete && (
-            <div className="mt-3 text-center text-[11px] font-semibold text-green-600">✅ تم إكمال الاستبيان</div>
+            <div className="mt-3 text-center text-[11px] font-semibold text-green-600">{t.questionnaireCompleted}</div>
           )}
         </div>
 
         {(isLoading || isFetching) && questions.length === 0 ? (
           <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30 text-center text-sm text-app-textSec">
-            جاري تحميل الأسئلة...
+            {t.loadingQuestions}
           </div>
         ) : (
           renderQuestions
@@ -354,7 +363,7 @@ const HairProfilePage: React.FC = () => {
           ) : (
             <>
               <Check size={18} />
-              حفظ
+              {t.save}
             </>
           )}
         </button>

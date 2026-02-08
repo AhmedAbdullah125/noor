@@ -8,6 +8,7 @@ import { toast as sonnerToast } from "sonner";
 
 // ✅ use your existing http (same one used in createRequest)
 import { http } from "./services/http";
+import { translations, getLang } from "../services/i18n";
 
 type ApiAppointmentsResponse = {
   status: boolean;
@@ -79,6 +80,8 @@ const AppointmentsTab: React.FC = () => {
 
   const location = useLocation();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const lang = getLang();
+  const t = translations[lang] || translations['ar'];
 
   useEffect(() => {
     if (location.state?.toastMessage) {
@@ -95,11 +98,11 @@ const AppointmentsTab: React.FC = () => {
 
       const res = await http.get<ApiAppointmentsResponse>("/requests", {
         params: { type: "appointments" },
-        headers: { lang: "ar" },
+        headers: { lang },
       });
 
       if (!res?.data?.status) {
-        const msg = res?.data?.message || "فشل تحميل المواعيد";
+        const msg = res?.data?.message || t.failedToLoadAppointments;
         sonnerToast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
         setAppointments([]);
         return;
@@ -143,7 +146,7 @@ const AppointmentsTab: React.FC = () => {
   useEffect(() => {
     fetchAppointments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   const upcomingAppointments = useMemo(
     () => appointments.filter((a) => a.status === "upcoming"),
@@ -159,8 +162,8 @@ const AppointmentsTab: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-fadeIn relative bg-app-bg">
-      <AppHeader title="مواعيدي" />
+    <div className="flex flex-col h-full overflow-hidden animate-fadeIn relative bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <AppHeader title={t.myAppointmentsTitle} />
 
       {/* Success Toast (from navigation state) */}
       {toastMessage && (
@@ -194,18 +197,18 @@ const AppointmentsTab: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-app-text">موعد قادم</h3>
+                      <h3 className="font-semibold text-app-text">{t.upcomingAppointment}</h3>
                       <p className="text-xs text-app-textSec text-green-600 font-normal">
-                        حالة الحجز: {appointment.status === "upcoming" ? "مؤكد" : appointment.status}
+                        {t.bookingStatus}: {appointment.status === "upcoming" ? t.confirmed : appointment.status}
                       </p>
                     </div>
                   </div>
 
                   {appointment.source === "subscription" && (
-                    <span className="bg-app-gold text-white text-[10px] font-semibold px-2 py-1 rounded-lg">اشتراك</span>
+                    <span className="bg-app-gold text-white text-[10px] font-semibold px-2 py-1 rounded-lg">{t.subscriptionBadge}</span>
                   )}
                   {appointment.bookingType === "HOME_SERVICE" && (
-                    <span className="bg-green-600 text-white text-[10px] font-semibold px-2 py-1 rounded-lg">زيارة منزلية</span>
+                    <span className="bg-green-600 text-white text-[10px] font-semibold px-2 py-1 rounded-lg">{t.homeServiceBadge}</span>
                   )}
                 </div>
 
@@ -215,7 +218,7 @@ const AppointmentsTab: React.FC = () => {
                       <Info size={20} />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">الخدمات</span>
+                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">{t.servicesLabel}</span>
                       <span className="text-sm font-semibold text-app-text truncate max-w-[220px]">
                         {appointment.serviceName}
                       </span>
@@ -227,7 +230,7 @@ const AppointmentsTab: React.FC = () => {
                       <CalendarDays size={20} />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">تاريخ الموعد</span>
+                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">{t.appointmentDate}</span>
                       <span className="text-sm font-semibold text-app-text" dir="ltr">
                         {appointment.dateISO}
                       </span>
@@ -239,7 +242,7 @@ const AppointmentsTab: React.FC = () => {
                       <Clock size={20} />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">وقت الموعد</span>
+                      <span className="text-[10px] font-semibold text-app-textSec uppercase tracking-wider">{t.appointmentTime}</span>
                       <span className="text-sm font-semibold text-app-text" dir="ltr">
                         {appointment.time24}
                       </span>
@@ -253,13 +256,13 @@ const AppointmentsTab: React.FC = () => {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-[10px] font-semibold text-green-700 uppercase tracking-wider mb-1">
-                          العنوان المسجل
+                          {t.registeredAddress}
                         </span>
                         <p className="text-xs font-semibold text-app-text leading-relaxed">
-                          {appointment.address.area}, قطعة {appointment.address.block}, شارع {appointment.address.street}
+                          {appointment.address.area}, {t.block} {appointment.address.block}, {t.street} {appointment.address.street}
                           <br />
-                          منزل {appointment.address.building}{" "}
-                          {appointment.address.apartment && `, شقة ${appointment.address.apartment}`}
+                          {t.house} {appointment.address.building}{" "}
+                          {appointment.address.apartment && `, ${t.apartment} ${appointment.address.apartment}`}
                         </p>
                       </div>
                     </div>
@@ -269,10 +272,10 @@ const AppointmentsTab: React.FC = () => {
                   {(appointment.requestNumber || appointment.finalPrice) && (
                     <div className="bg-app-bg/40 rounded-2xl p-3 border border-app-card/30 flex items-center justify-between">
                       <div className="text-[10px] font-semibold text-app-textSec">
-                        {appointment.requestNumber ? `رقم الطلب: ${appointment.requestNumber}` : ""}
+                        {appointment.requestNumber ? `${t.orderId}: ${appointment.requestNumber}` : ""}
                       </div>
                       {appointment.finalPrice ? (
-                        <div className="text-xs font-semibold text-app-gold">{Number(appointment.finalPrice).toFixed?.(3) ?? appointment.finalPrice} د.ك</div>
+                        <div className="text-xs font-semibold text-app-gold">{Number(appointment.finalPrice).toFixed?.(3) ?? appointment.finalPrice} {t.currency}</div>
                       ) : null}
                     </div>
                   )}
@@ -286,9 +289,9 @@ const AppointmentsTab: React.FC = () => {
               <CalendarDays size={48} strokeWidth={1.5} />
             </div>
 
-            <h2 className="text-base font-semibold text-app-text mb-2 text-center">لا توجد مواعيد حالياً</h2>
+            <h2 className="text-base font-semibold text-app-text mb-2 text-center">{t.noAppointmentsTitle}</h2>
             <p className="text-sm text-app-textSec text-center max-w-[200px]">
-              يمكنك حجز موعد جديد من خلال اختيار الخدمات من الصفحة الرئيسية أو من اشتراكاتي
+              {t.noAppointmentsDesc}
             </p>
           </div>
         )}

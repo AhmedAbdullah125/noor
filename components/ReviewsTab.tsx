@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AppImage from "./AppImage";
 import AppHeader from "./AppHeader";
 import { useGetReviews } from "./services/useGetReviews";
+import { translations, getLang } from "@/services/i18n";
 
 interface Review {
   id: string;
@@ -18,6 +19,9 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review, onPlay }) => {
+  const lang = getLang();
+  const t = translations[lang] || translations['ar'];
+
   // fallback thumbnail لو مفيش thumbnail من API
   const fallbackThumb =
     "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=400&q=80";
@@ -39,19 +43,21 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, onPlay }) => {
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-        <p className="text-white text-[10px] font-semibold text-right opacity-90">
-          {review.clientName || "مراجعة عميلة"}
+        <p className="text-white text-[10px] font-semibold text-left opacity-90">
+          {review.clientName || t.clientReview}
         </p>
       </div>
     </div>
   );
 };
 
-const ReviewsTab: React.FC<{ lang?: string }> = ({ lang = "ar" }) => {
+const ReviewsTab: React.FC = () => {
   const navigate = useNavigate();
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [activeReview, setActiveReview] = useState<Review | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lang = getLang();
+  const t = translations[lang] || translations['ar'];
 
   // لو عايز Pagination بعدين
   const [page] = useState(1);
@@ -73,8 +79,8 @@ const ReviewsTab: React.FC<{ lang?: string }> = ({ lang = "ar" }) => {
   };
 
   return (
-    <div className="animate-fadeIn flex flex-col h-full bg-app-bg relative">
-      <AppHeader title="تجارب عميلاتنا" onBack={() => navigate("/account")} />
+    <div className="animate-fadeIn flex flex-col h-full bg-app-bg relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <AppHeader title={t.customerReviewsTitle} onBack={() => navigate("/account")} />
 
       <div className="flex-1 overflow-y-auto no-scrollbar pb-28 pt-24">
         {/* Loading */}
@@ -94,12 +100,12 @@ const ReviewsTab: React.FC<{ lang?: string }> = ({ lang = "ar" }) => {
         {/* Error */}
         {reviewsQuery.isError && !reviewsQuery.isLoading && (
           <div className="h-full flex flex-col items-center justify-center text-center px-6">
-            <p className="text-sm font-semibold text-app-text mb-4">حدث خطأ أثناء تحميل المراجعات</p>
+            <p className="text-sm font-semibold text-app-text mb-4">{t.errorLoadingReviews}</p>
             <button
               onClick={() => reviewsQuery.refetch()}
               className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform"
             >
-              إعادة المحاولة
+              {t.retry}
             </button>
           </div>
         )}
@@ -107,7 +113,7 @@ const ReviewsTab: React.FC<{ lang?: string }> = ({ lang = "ar" }) => {
         {/* Empty */}
         {!reviewsQuery.isLoading && !reviewsQuery.isError && reviews.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center px-6">
-            <p className="text-sm font-semibold text-app-text">لا يوجد مراجعات حالياً</p>
+            <p className="text-sm font-semibold text-app-text">{t.noReviews}</p>
           </div>
         )}
 
