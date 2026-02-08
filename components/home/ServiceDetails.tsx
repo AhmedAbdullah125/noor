@@ -370,10 +370,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                         onClick={() => setPaymentType(p)}
                                                         className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
                                                             ${isActive
-                                                                ? "bg-app-gold text-white border-app-gold"
-                                                                : isApple
-                                                                    ? "bg-black text-white border-black hover:bg-gray-900"
-                                                                    : "bg-white text-app-text border-app-card/30"
+                                                                ? isApple
+                                                                    ? "bg-black text-white border-black"
+                                                                    : "bg-app-gold text-white border-app-gold"
+                                                                : "bg-white text-app-text border-app-card/30"
                                                             }`}
                                                     >
                                                         {isApple ? (
