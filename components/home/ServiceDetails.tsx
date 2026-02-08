@@ -324,7 +324,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
                                                 value={startDate}
                                                 min={getTodayDate()}
-                                                onChange={(e) => setStartDate(e.target.value)}
+                                                onChange={(e) => {
+                                                    if (e.target.value && e.target.value < getTodayDate()) return;
+                                                    setStartDate(e.target.value);
+                                                }}
                                             />
                                         </div>
 
