@@ -39,6 +39,11 @@ function getTomorrowDate() {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+function getTodayDate() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
 function getNowTime() {
     const d = new Date();
     return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
@@ -318,7 +323,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 type="date"
                                                 className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
                                                 value={startDate}
-                                                min={getNowTime()}
+                                                min={getTodayDate()}
                                                 onChange={(e) => setStartDate(e.target.value)}
                                             />
                                         </div>
