@@ -382,7 +382,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                                 <img
                                                                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQesa2rF2WhrA7Sl3iIoznL-gFpA0y0GB-tQ&s"
                                                                     alt="Apple Pay"
-                                                                    className="h-5 object-contain bg-white rounded-sm px-1"
+                                                                    className="h-5 object-contain bg-white rounded-sm"
                                                                 />
                                                             </>
                                                         ) : (
