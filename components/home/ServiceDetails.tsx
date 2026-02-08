@@ -318,7 +318,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 type="date"
                                                 className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
                                                 value={startDate}
-                                                min={getTomorrowDate()}
+                                                min={getNowTime()}
                                                 onChange={(e) => setStartDate(e.target.value)}
                                             />
                                         </div>
