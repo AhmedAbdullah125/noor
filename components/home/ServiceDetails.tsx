@@ -358,7 +358,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                     <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-right">
                                         <label className="block text-[11px] font-semibold text-app-text mb-2">طريقة الدفع</label>
                                         <div className="flex gap-2">
-                                            {(["cash", "knet", "wallet"] as const).map((p) => (
+                                            {(["knet", "wallet"] as const).map((p) => (
                                                 <button
                                                     key={p}
                                                     type="button"
@@ -368,7 +368,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                         : "bg-white text-app-text border-app-card/30"
                                                         }`}
                                                 >
-                                                    {p === "cash" ? "كاش" : p === "knet" ? "كي نت" : "المحفظة"}
+                                                    {p === "knet" ? "كي نت" : "المحفظة"}
                                                 </button>
                                             ))}
                                         </div>
