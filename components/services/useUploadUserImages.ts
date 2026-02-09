@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
 import Cookies from "js-cookie";
+import imageCompression from "browser-image-compression";
 import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
 import { translations, getLang } from "@/services/i18n";
 
@@ -12,6 +13,23 @@ type UploadImagesPayload = {
     images: File[];
 };
 
+async function compressImage(file: File): Promise<File> {
+    const options = {
+        maxSizeMB: 1, // Max file size 1MB
+        maxWidthOrHeight: 1920, // Max dimension
+        useWebWorker: true,
+        fileType: "image/webp", // Convert to WebP
+    };
+
+    try {
+        const compressedFile = await imageCompression(file, options);
+        return compressedFile;
+    } catch (error) {
+        console.error("Error compressing image:", error);
+        return file; // Return original if compression fails
+    }
+}
+
 async function uploadUserImages(
     payload: UploadImagesPayload,
     lang: string
@@ -19,7 +37,12 @@ async function uploadUserImages(
     const formData = new FormData();
     formData.append("user_id", payload.userId.toString());
 
-    payload.images.forEach((image, index) => {
+    // Compress images before uploading
+    const compressedImages = await Promise.all(
+        payload.images.map((image) => compressImage(image))
+    );
+
+    compressedImages.forEach((image, index) => {
         formData.append(`images[${index}]`, image);
     });
 
