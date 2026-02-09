@@ -1,4 +1,3 @@
-// src/components/services/useUploadUserImages.ts
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,7 +26,6 @@ async function uploadUserImages(
     const token = getAccessToken();
     const res = await axios.post(`${DASHBOARD_API_BASE_URL}/user-images`, formData, {
         headers: {
-            "Content-Type": "multipart/form-data",
             lang,
             Authorization: token ? `Bearer ${token}` : undefined,
         },

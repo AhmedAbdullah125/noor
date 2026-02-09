@@ -33,20 +33,27 @@ export default function GalleryScreen({ userId, onBack }: Props) {
     const hasPrevPage = meta && meta.current_page > 1;
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files || files.length === 0 || !userId) return;
+        try {
+            const files = e.target.files;
+            if (!files || files.length === 0 || !userId) return;
 
-        const imageFiles: File[] = (Array.from(files) as File[]).filter((file: File) =>
-            file.type.startsWith("image/")
-        );
+            const imageFiles: File[] = (Array.from(files) as File[]).filter((file: File) =>
+                file.type.startsWith("image/")
+            );
 
-        if (imageFiles.length > 0) {
-            uploadMutation.mutate({ userId, images: imageFiles });
-        }
+            if (imageFiles.length > 0) {
+                uploadMutation.mutate({ userId, images: imageFiles });
+            }
 
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+            // Reset input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        } catch (error) {
+            console.error("Error selecting files:", error);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
 
