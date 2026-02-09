@@ -3,8 +3,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
-import { isLoggedIn, getAccessToken } from "../auth/authStorage";
+import { isLoggedIn } from "../auth/authStorage";
 
 export type UserImage = {
     id: number;
@@ -55,12 +56,12 @@ async function fetchUserImages(
         throw new Error("Not authenticated");
     }
 
-    const token = getAccessToken();
+    const token = Cookies.get("token");
     const res = await axios.get(`${DASHBOARD_API_BASE_URL}/user-images`, {
         params: { user_id: userId, page },
         headers: {
             lang,
-            Authorization: token ? `Bearer ${token}` : undefined,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     });
 
