@@ -14,7 +14,7 @@ export async function refreshToken(lang: string) {
 
     try {
         const res = await http.post("/refresh-token", formData, {
-            headers: { lang, "x-skip-auth": "1" }, // ✅ مهم
+            headers: { lang, "x-skip-auth": "1" },
         });
 
         if (!res?.data?.status) {

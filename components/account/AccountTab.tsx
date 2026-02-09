@@ -19,6 +19,7 @@ import OrderDetailsScreen from "./OrderDetailsScreen";
 import FavoritesScreen from "./FavoritesScreen";
 import ProductDetailsScreen from "./ProductDetailsScreen";
 import DeleteAccountModal from "./DeleteAccountModal";
+import GalleryScreen from "./GalleryScreen";
 import { getLang } from "@/services/i18n";
 
 interface AccountTabProps {
@@ -123,6 +124,7 @@ const AccountTab: React.FC<AccountTabProps> = ({
                             onOpenReviews={() => navigate("/account/reviews")}
                             onOpenHairProfile={() => navigate("/hair-profile")}
                             onOpenDelete={() => setShowDeleteModal(true)}
+                            onOpenGallery={() => navigate("/account/gallery")}
                         />
                     }
                 />
@@ -182,6 +184,15 @@ const AccountTab: React.FC<AccountTabProps> = ({
 
                 <Route path="reviews" element={<ReviewsTab />} />
                 <Route path="subscriptions" element={<SubscriptionsTab />} />
+                <Route
+                    path="gallery"
+                    element={
+                        <GalleryScreen
+                            userId={profile?.id}
+                            onBack={() => navigate("/account")}
+                        />
+                    }
+                />
             </Routes>
 
             {showDeleteModal && (

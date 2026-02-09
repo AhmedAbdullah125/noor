@@ -1,22 +1,5 @@
 import React from "react";
-import {
-    Heart,
-    ClipboardList,
-    Info,
-    Mail,
-    Phone,
-    ChevronLeft,
-    XCircle,
-    Wallet,
-    Video,
-    Check,
-    ShoppingBag,
-    LogOut,
-    FileText,
-    AlertTriangle,
-    UserCog,
-    ChevronRight,
-} from "lucide-react";
+import { Heart, ClipboardList, Info, Mail, Phone, ChevronLeft, XCircle, Wallet, Video, Check, ShoppingBag, LogOut, FileText, AlertTriangle, UserCog, ChevronRight, Image } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetQuestionnaire } from "../services/useGetQuestionnaire";
 
@@ -39,11 +22,12 @@ type Props = {
     onOpenReviews: () => void;
     onOpenHairProfile: () => void;
     onOpenDelete: () => void;
+    onOpenGallery: () => void;
 };
 
-export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete,
+export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete, onOpenGallery,
 }: Props) {
-    console.log(profile);
+    console.log(profile?.id);
     const lang = getLang();
     const t = translations[lang] || translations['ar'];
 
@@ -170,6 +154,8 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                     <MenuRow icon={<Heart size={20} />} label={t.favoriteServices} onClick={onOpenFavorites} />
                     <MenuRow icon={<ClipboardList size={20} />} label={t.bookingHistory} onClick={onOpenHistory} />
                     <MenuRow icon={<Video size={20} />} label={t.customerReviews} onClick={onOpenReviews} />
+                    <MenuRow icon={<Image size={20} />} label={t.myGallery} onClick={onOpenGallery} />
+
 
                     <MenuRow icon={<Info size={20} />} label={t.aboutApp} onClick={() => { }} />
                     <MenuRow icon={<Mail size={20} />} label="contact@mezodonoor.com" onClick={() => { }} />
@@ -191,13 +177,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
     );
 }
 
-function MenuRow({
-    icon,
-    label,
-    onClick,
-    last,
-    dir,
-}: {
+function MenuRow({ icon, label, onClick, last, dir, }: {
     icon: React.ReactNode;
     label: string;
     onClick: () => void;
