@@ -1,6 +1,7 @@
 // src/components/account/GalleryScreen.tsx
 import React, { useState, useRef } from "react";
 import { ChevronLeft, Upload, ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 import AppHeader from "../AppHeader";
 import AppImage from "../AppImage";
 import { translations, getLang } from "@/services/i18n";
@@ -32,7 +33,7 @@ export default function GalleryScreen({ userId, onBack }: Props) {
     const hasNextPage = meta && meta.current_page < meta.last_page;
     const hasPrevPage = meta && meta.current_page > 1;
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         try {
             const files = e.target.files;
             if (!files || files.length === 0 || !userId) return;
@@ -41,16 +42,23 @@ export default function GalleryScreen({ userId, onBack }: Props) {
                 file.type.startsWith("image/")
             );
 
+            if (imageFiles.length === 0) {
+                toast.error(t.uploadFailed || "Please select valid image files", {
+                    style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
+                });
+                return;
+            }
+
             if (imageFiles.length > 0) {
                 uploadMutation.mutate({ userId, images: imageFiles });
             }
-
-            // Reset input
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
         } catch (error) {
             console.error("Error selecting files:", error);
+            toast.error(t.uploadFailed || "Error selecting images", {
+                style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
+            });
+        } finally {
+            // Always reset input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }

@@ -14,19 +14,37 @@ type UploadImagesPayload = {
 };
 
 async function compressImage(file: File): Promise<File> {
+    // Skip compression for small files
+    if (file.size < 500 * 1024) { // Less than 500KB
+        return file;
+    }
+
     const options = {
-        maxSizeMB: 1, // Max file size 1MB
-        maxWidthOrHeight: 1920, // Max dimension
+        maxSizeMB: 2, // Increased from 1MB to reduce processing load
+        maxWidthOrHeight: 1280, // Reduced from 1920 for better mobile performance
         useWebWorker: true,
-        fileType: "image/webp", // Convert to WebP
+        initialQuality: 0.8, // Add initial quality setting
+        alwaysKeepResolution: false,
     };
 
     try {
+        console.log(`Compressing image: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
         const compressedFile = await imageCompression(file, options);
+        console.log(`Compressed to: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
         return compressedFile;
     } catch (error) {
         console.error("Error compressing image:", error);
-        return file; // Return original if compression fails
+        // If compression fails, try basic resize without quality reduction
+        try {
+            const fallbackOptions = {
+                maxWidthOrHeight: 1280,
+                useWebWorker: false, // Disable worker on fallback
+            };
+            return await imageCompression(file, fallbackOptions);
+        } catch (fallbackError) {
+            console.error("Fallback compression also failed:", fallbackError);
+            return file; // Return original if all compression attempts fail
+        }
     }
 }
 
@@ -77,6 +95,7 @@ export function useUploadUserImages(lang: string = "ar") {
             toast(t.uploadSuccess, {
                 style: { background: "#1B8354", color: "#fff", borderRadius: "10px" },
             });
+
 
             // Invalidate queries to refetch the images
             qc.invalidateQueries({ queryKey: ["user-images", variables.userId] });
