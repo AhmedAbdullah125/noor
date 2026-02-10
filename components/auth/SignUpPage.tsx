@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { User, Phone, Lock } from "lucide-react";
 import { registerRequest } from "../services/register";
 import { translations, Locale, getLang } from "../../services/i18n";
+import { setAuth } from "../auth/authStorage";
 
 interface SignUpPageProps {
   onLoginSuccess?: () => void;
@@ -17,6 +18,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    phoneConfirm: "",
     password: "",
     confirmPassword: "",
   });
@@ -29,12 +31,17 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone || !formData.password || !formData.confirmPassword) {
+    if (!formData.name || !formData.phone || !formData.phoneConfirm || !formData.password || !formData.confirmPassword) {
       setError(t.fillAllFields);
       return;
     }
-    if (!/^\+?\d{8,}$/.test(formData.phone)) {
-      setError(t.phoneValidation);
+    if (!/^\d{8}$/.test(formData.phone)) {
+      setError(lang === 'ar' ? 'رقم الهاتف يجب أن يكون 8 أرقام فقط' : 'Phone must be exactly 8 digits');
+      return;
+    }
+
+    if (formData.phone !== formData.phoneConfirm) {
+      setError(lang === 'ar' ? 'رقم الهاتف غير متطابق' : 'Phone numbers do not match');
       return;
     }
 
@@ -45,7 +52,12 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
 
     // Call register API
     const res = await registerRequest(
-      { name: formData.name, phone: formData.phone, password: formData.password },
+      {
+        name: formData.name,
+        phone: formData.phone,
+        phone_confirm: formData.phoneConfirm,
+        password: formData.password
+      },
       setLoading,
       lang
     );
@@ -55,14 +67,12 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    // Navigate to OTP page after successful registration
-    navigate("/verify", {
-      state: {
-        name: formData.name,
-        phone: formData.phone,
-        password: formData.password,
-      },
-    });
+    // Store authentication token and user data
+    setAuth(res.token, res.user);
+
+    // User is now logged in, navigate to home
+    onLoginSuccess?.();
+    navigate("/", { replace: true });
   };
 
   const handleGuestLogin = () => {
@@ -98,6 +108,19 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
               placeholder={t.phone}
               className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.phone}
+              onChange={handleChange}
+              dir="ltr"
+            />
+            <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+          </div>
+
+          <div className="relative">
+            <input
+              type="tel"
+              name="phoneConfirm"
+              placeholder={lang === 'ar' ? 'تأكيد رقم الهاتف' : 'Confirm Phone'}
+              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
+              value={formData.phoneConfirm}
               onChange={handleChange}
               dir="ltr"
             />
