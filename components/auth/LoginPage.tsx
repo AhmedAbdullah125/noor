@@ -56,8 +56,32 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
     };
   }, [lang, navigate, from, onLoginSuccess]);
 
+  // Convert Arabic-Indic numerals (٠-٩) to English numerals (0-9)
+  const convertArabicToEnglishNumbers = (str: string): string => {
+    const arabicToEnglish: { [key: string]: string } = {
+      '٠': '0',
+      '١': '1',
+      '٢': '2',
+      '٣': '3',
+      '٤': '4',
+      '٥': '5',
+      '٦': '6',
+      '٧': '7',
+      '٨': '8',
+      '٩': '9',
+    };
+    return str.replace(/[٠-٩]/g, (digit) => arabicToEnglish[digit] || digit);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+    let value = e.target.value;
+
+    // Convert Arabic numerals to English for phone field
+    if (e.target.name === 'phone') {
+      value = convertArabicToEnglishNumbers(value);
+    }
+
+    setFormData((p) => ({ ...p, [e.target.name]: value }));
     setError(null);
   };
 
@@ -107,7 +131,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
               className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.phone}
               onChange={handleChange}
-              dir="ltr"
+              dir={lang === 'ar' ? 'rtl' : 'ltr'}
             />
             <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
           </div>
@@ -120,7 +144,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
               className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.password}
               onChange={handleChange}
-              dir="ltr"
+              dir={lang === 'ar' ? 'rtl' : 'ltr'}
             />
             <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
           </div>
