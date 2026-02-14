@@ -59,7 +59,7 @@ function getNowTime() {
 
 const timeSlots: string[] = [];
 const startHour = 11;
-const endHour = 18;
+const endHour = 20;
 
 for (let h = startHour; h <= endHour; h++) {
     timeSlots.push(`${String(h).padStart(2, "0")}:00`);
