@@ -269,7 +269,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         if (!validateRequiredGroups()) return;
 
         if (paymentType === 'wallet' && isWalletInsufficient) {
-            toast(t.insufficientBalance || "لا يوجد رصيد كافي", { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            toast.error(t.insufficientBalance, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
             return;
         }
 
@@ -454,7 +454,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         </div>
                                         {isWalletInsufficient && (
                                             <p className="text-[10px] text-red-500 mt-2 font-medium">
-                                                {t.insufficientBalance || "لا يوجد رصيد كافي"} ({walletBalance.toFixed(3)} {t.currency})
+                                                {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
                                             </p>
                                         )}
                                     </div>

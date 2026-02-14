@@ -403,7 +403,8 @@ export const translations = {
     customerReviewsTitle: 'Customer Reviews',
     clientReview: 'Client Review',
     errorLoadingReviews: 'Error loading reviews',
-    noReviews: 'No reviews currently'
+    noReviews: 'No reviews currently',
+    insufficientBalance: 'Insufficient Balance',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -798,6 +799,7 @@ export const translations = {
     payment: 'الدفع',
     paymentStatus: 'حالة الدفع',
     addonsPrice: 'سعر الإضافات',
+    insufficientBalance: 'لا يوجد رصيد كافي',
     grandTotal: 'الإجمالي الكلي',
     customerReviewsTitle: 'تجارب عميلاتنا',
     clientReview: 'مراجعة عميلة',
