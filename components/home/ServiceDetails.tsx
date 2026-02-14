@@ -10,6 +10,7 @@ import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription, } from "
 import { createRequest } from "../services/createRequest";
 import { getLang, translations } from "../../services/i18n";
 import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { useGetProfile } from "../services/useGetProfile";
 
 type Props = {
     product: Product;
@@ -85,7 +86,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         finalTotal: number;
     } | null>(null);
 
-    const [paymentType, setPaymentType] = useState<string>("cash");
+    const [paymentType, setPaymentType] = useState<string>("wallet");
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
     useEffect(() => {
@@ -124,10 +125,22 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [startTime, setStartTime] = useState<string>("");
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
 
+    const { data: profile } = useGetProfile(lang);
+
+    // Parse wallet balance safely
+    const walletBalance = useMemo(() => {
+        return parsePrice(profile?.wallet ?? 0);
+    }, [profile?.wallet]);
+
+    const isWalletInsufficient = useMemo(() => {
+        if (paymentType !== 'wallet' || !bookingModal) return false;
+        return walletBalance < bookingModal.finalTotal;
+    }, [paymentType, bookingModal, walletBalance]);
+
     useEffect(() => {
         setSelectedAddonIds(new Set());
         setBookingModal(null);
-        setPaymentType("cash");
+        setPaymentType("wallet");
         setStartDate("");
         setStartTime("");
         setShowPolicyConfirm(false);
@@ -246,7 +259,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         if (!validateRequiredGroups()) return;
         setStartDate("");
         setStartTime("");
-        setPaymentType("cash");
+        setPaymentType("wallet");
         setBookingModal(data);
     };
 
@@ -254,6 +267,11 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         if (creating) return;
         if (!bookingModal) return;
         if (!validateRequiredGroups()) return;
+
+        if (paymentType === 'wallet' && isWalletInsufficient) {
+            toast(t.insufficientBalance || "لا يوجد رصيد كافي", { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            return;
+        }
 
         const time = startTime.length === 5 ? `${startTime}:00` : startTime;
         if (!startDate) {
@@ -434,6 +452,11 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 );
                                             })}
                                         </div>
+                                        {isWalletInsufficient && (
+                                            <p className="text-[10px] text-red-500 mt-2 font-medium">
+                                                {t.insufficientBalance || "لا يوجد رصيد كافي"} ({walletBalance.toFixed(3)} {t.currency})
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
@@ -485,7 +508,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                 <div className="flex gap-3 w-full">
                                     <button
                                         onClick={doCreateRequest}
-                                        disabled={creating}
+                                        disabled={creating || isWalletInsufficient}
                                         className="flex-[2] bg-app-gold text-white font-semibold py-3 rounded-xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
                                     >
                                         {creating ? t.bookingInProgress : t.agreeAndConfirm}
