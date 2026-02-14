@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, ShoppingBag, X } from "lucide-react";
+import { Check, ShoppingBag, Wallet, Wallet2, X } from "lucide-react";
 import { toast } from "sonner";
 import parse from "html-react-parser";
 
@@ -9,12 +9,23 @@ import ImageCarousel from "../ImageCarousel";
 import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription, } from "../../types";
 import { createRequest } from "../services/createRequest";
 import { getLang, translations } from "../../services/i18n";
+import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
 
 type Props = {
     product: Product;
     onBack: () => void;
     onCreated?: (data: any) => void;
 };
+
+interface PaymentMethod {
+    id: number;
+    name_ar: string;
+    name_en: string;
+    code: string;
+    icon: string;
+    is_active: boolean;
+    sort_order: number;
+}
 
 function parsePrice(val: any): number {
     if (val == null) return 0;
@@ -74,7 +85,41 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         finalTotal: number;
     } | null>(null);
 
-    const [paymentType, setPaymentType] = useState<"cash" | "knet" | "wallet" | "apple_pay">("cash");
+    const [paymentType, setPaymentType] = useState<string>("cash");
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+    useEffect(() => {
+        async function fetchPaymentMethods() {
+            try {
+                const res = await fetch(`${DASHBOARD_API_BASE_URL}/payment-methods?is_active=1`);
+                const data = await res.json();
+
+                if (data.status && Array.isArray(data.data?.data)) {
+                    let methods: PaymentMethod[] = data.data.data;
+
+                    // Add wallet if not present
+                    if (!methods.find(m => m.code === 'wallet')) {
+                        methods.push({
+                            id: 9991,
+                            name_ar: t.wallet, // Using translation
+                            name_en: t.wallet, // Using translation - assumes t.wallet handles both or is just text
+                            code: "wallet",
+                            icon: "",
+                            is_active: true,
+                            sort_order: 999
+                        });
+                    }
+
+                    setPaymentMethods(methods);
+                }
+            } catch (error) {
+                console.error("Failed to fetch payment methods", error);
+            }
+        }
+
+        fetchPaymentMethods();
+    }, [lang, t.wallet]);
+
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
@@ -315,8 +360,8 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-left">
-                                            <label className="block text-[11px] font-semibold text-app-text mb-2">{t.date}</label>
+                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
+                                            <label className="block text-[11px] font-semibold text mb-2">{t.date}</label>
                                             <input
                                                 type="date"
                                                 className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
@@ -329,10 +374,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                             />
                                         </div>
 
-                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-left">
+                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
                                             <label className="block text-[11px] font-semibold text-app-text mb-2">{t.time}</label>
                                             <select
-                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none text-left"
+                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
                                                 value={startTime.slice(0, 5)}
                                                 onChange={(e) => setStartTime(e.target.value)}
                                             >
@@ -353,18 +398,18 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         </div>
                                     </div>
 
-                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1 text-left">
+                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1" >
                                         <label className="block text-[11px] font-semibold text-app-text mb-2">{t.paymentMethod}</label>
                                         <div className="flex gap-2">
-                                            {(["knet", "wallet", "apple_pay"] as const).map((p) => {
-                                                const isApple = p === "apple_pay";
-                                                const isActive = paymentType === p;
+                                            {paymentMethods.map((p) => {
+                                                const isApple = p.code === "apple_pay";
+                                                const isActive = paymentType === p.code;
 
                                                 return (
                                                     <button
-                                                        key={p}
+                                                        key={p.code}
                                                         type="button"
-                                                        onClick={() => setPaymentType(p)}
+                                                        onClick={() => setPaymentType(p.code)}
                                                         className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
                                                             ${isActive
                                                                 ? isApple
@@ -373,18 +418,18 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                                 : "bg-white text-app-text border-app-card/30"
                                                             }`}
                                                     >
-                                                        {isApple ? (
-                                                            <>
-                                                                <span className="font-medium text-[11px]">Apple Pay</span>
+
+                                                        <span className="font-medium text-[11px]"> {isAr ? p.name_ar : p.name_en}</span>
+                                                        {
+                                                            p.code == "wallet" ? <Wallet /> :
                                                                 <img
-                                                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQesa2rF2WhrA7Sl3iIoznL-gFpA0y0GB-tQ&s"
-                                                                    alt="Apple Pay"
+                                                                    src={p.icon}
+                                                                    alt={p.name_en}
                                                                     className="h-5 object-contain bg-white rounded-sm"
                                                                 />
-                                                            </>
-                                                        ) : (
-                                                            p === "knet" ? t.knet : t.wallet
-                                                        )}
+                                                        }
+
+
                                                     </button>
                                                 );
                                             })}
@@ -395,6 +440,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         <span className="text-xs text-app-textSec font-normal">{t.total}</span>
                                         <span className="text-sm font-semibold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
                                     </div>
+
 
                                     {bookingModal.subscriptionId != null && (
                                         <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
