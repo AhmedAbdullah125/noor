@@ -418,7 +418,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                                     <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1" >
                                         <label className="block text-[11px] font-semibold text-app-text mb-2">{t.paymentMethod}</label>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 items-center justify-center flex-wrap">
                                             {paymentMethods.map((p) => {
                                                 const isApple = p.code === "apple_pay";
                                                 const isActive = paymentType === p.code;
