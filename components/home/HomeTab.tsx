@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import AppHeader from "../AppHeader";
 import AppImage from "../AppImage";
 import HomeDrawer from "./HomeDrawer";
@@ -23,11 +24,48 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const navigate = useNavigate();
     const location = useLocation();
     const { productId, categoryName } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [lang, setCurrentLang] = useState<Locale>(getLang());
     const t = translations[lang];
+
+    // Handle payment callback
+    useEffect(() => {
+        const orderId = searchParams.get('orderId');
+        const status = searchParams.get('status');
+        const paymentStatus = searchParams.get('paymentStatus');
+
+        if (orderId && status) {
+            // Display appropriate message based on payment status
+            if (status === 'success' || paymentStatus === 'paid') {
+                toast.success(
+                    lang === 'ar' ? 'تمت عملية الدفع بنجاح!' : 'Payment completed successfully!',
+                    {
+                        style: { background: "#198754", color: "#fff", borderRadius: "10px" },
+                        duration: 4000
+                    }
+                );
+            } else if (status === 'failed' || paymentStatus === 'unpaid') {
+                toast.error(
+                    lang === 'ar' ? 'فشلت عملية الدفع. يرجى المحاولة مرة أخرى.' : 'Payment failed. Please try again.',
+                    {
+                        style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
+                        duration: 5000
+                    }
+                );
+            }
+
+            // Clean up query parameters
+            setSearchParams({});
+
+            // Navigate to account/appointments page after a short delay
+            setTimeout(() => {
+                navigate('/appointments', { replace: true });
+            }, 1500);
+        }
+    }, [searchParams, setSearchParams, navigate, lang]);
 
     const toggleLang = () => {
         const newLang = lang === 'ar' ? 'en' : 'ar';

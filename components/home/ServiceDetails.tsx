@@ -89,38 +89,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [paymentType, setPaymentType] = useState<string>("wallet");
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
-    useEffect(() => {
-        async function fetchPaymentMethods() {
-            try {
-                const res = await fetch(`${DASHBOARD_API_BASE_URL}/payment-methods?is_active=1`);
-                const data = await res.json();
-
-                if (data.status && Array.isArray(data.data?.data)) {
-                    let methods: PaymentMethod[] = data.data.data;
-
-                    // Add wallet if not present
-                    if (!methods.find(m => m.code === 'wallet')) {
-                        methods.push({
-                            id: 9991,
-                            name_ar: t.wallet, // Using translation
-                            name_en: t.wallet, // Using translation - assumes t.wallet handles both or is just text
-                            code: "wallet",
-                            icon: "",
-                            is_active: true,
-                            sort_order: 999
-                        });
-                    }
-
-                    setPaymentMethods(methods);
-                }
-            } catch (error) {
-                console.error("Failed to fetch payment methods", error);
-            }
-        }
-
-        fetchPaymentMethods();
-    }, [lang, t.wallet]);
-
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
@@ -183,6 +151,40 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         }),
         [basePrice, addonsTotal, total, product, t.currency]
     );
+
+    // Fetch payment methods based on the total amount
+    useEffect(() => {
+        async function fetchPaymentMethods() {
+            try {
+                const res = await fetch(`${DASHBOARD_API_BASE_URL}/payment-methods?per_page=10&is_active=1&amounts=${total}`);
+                const data = await res.json();
+
+                if (data.status && Array.isArray(data.data?.data)) {
+                    let methods: PaymentMethod[] = data.data.data;
+
+                    // Add wallet if not present
+                    if (!methods.find(m => m.code === 'wallet')) {
+                        methods.push({
+                            id: 9991,
+                            name_ar: t.wallet,
+                            name_en: t.wallet,
+                            code: "wallet",
+                            icon: "",
+                            is_active: true,
+                            sort_order: 999
+                        });
+                    }
+
+                    setPaymentMethods(methods);
+                }
+            } catch (error) {
+                console.error("Failed to fetch payment methods", error);
+            }
+        }
+
+        fetchPaymentMethods();
+    }, [total, lang, t.wallet]);
+
 
     const getImages = () => {
         const imgs = (product as any)?.images ?? [];
