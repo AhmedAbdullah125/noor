@@ -428,7 +428,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                         key={p.code}
                                                         type="button"
                                                         onClick={() => setPaymentType(p.code)}
-                                                        className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
+                                                        className={` min-w-[80px] flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
                                                             ${isActive
                                                                 ? isApple
                                                                     ? "bg-black text-white border-black"
