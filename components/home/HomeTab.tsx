@@ -56,7 +56,6 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                     }
                 );
             }
-
             // Clean up query parameters
             setSearchParams({});
 

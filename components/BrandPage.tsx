@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Search, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Home, ChevronLeft, ChevronRight, Loader2, Inbox } from 'lucide-react';
 import { Product } from '../types';
 import ProductCard from './ProductCard';
 import AppImage from './AppImage';
@@ -136,15 +136,16 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
           {/* <h3 className="text-base font-semibold text-app-text mb-4 text-left">
             خدمات {brandInfo.name}
           </h3> */}
-
           {(isLoading || isFetching) && (
-            <div className="text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
+            <div className="flex flex-col items-center justify-center text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
+              <Loader2 className="w-6 h-6 animate-spin mb-2 text-app-gold" />
               <p>{t.loadingServices}</p>
             </div>
           )}
 
           {isEmpty && (
-            <div className="text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
+            <div className="flex flex-col items-center justify-center text-center py-10 text-app-textSec bg-white rounded-2xl border border-app-card/30">
+              <Inbox className="w-10 h-10 mb-3 text-app-card" />
               <p>{t.noServicesAvailable}</p>
             </div>
           )}

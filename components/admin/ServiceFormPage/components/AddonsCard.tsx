@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutGrid, ChevronDown, Check } from "lucide-react";
+import { LayoutGrid, ChevronDown, Check, Loader2, Inbox } from "lucide-react";
 import { Locale } from "../../../../services/i18n";
 
 export default function AddonsCard({
@@ -46,15 +46,17 @@ export default function AddonsCard({
                     <div className="h-px w-full bg-gray-50 mb-6" />
 
                     {optionsLoading ? (
-                        <div className="py-10 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        <div className="py-10 flex flex-col items-center justify-center text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                            <Loader2 className="w-6 h-6 text-[#483383] animate-spin mb-2" />
                             <p className="text-sm text-gray-400 font-semibold">
                                 {lang === "ar" ? "جاري تحميل الخيارات..." : "Loading options..."}
                             </p>
                         </div>
                     ) : options.length === 0 ? (
-                        <div className="py-10 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        <div className="py-10 flex flex-col items-center justify-center text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                            <Inbox className="w-10 h-10 text-gray-300 mb-3" />
                             <p className="text-sm text-gray-400 font-semibold">
-                                {lang === "ar" ? "لا يوجد خيارات حالياً" : "No options available"}
+                                {lang === "ar" ? "لم يتم العثور على خيارات" : "No options found"}
                             </p>
                         </div>
                     ) : (
