@@ -58,15 +58,21 @@ function getNowTime() {
 }
 
 const timeSlots: string[] = [];
-const startHour = 11;
-const endHour = 20.5;
 
-for (let h = startHour; h <= endHour; h++) {
+// 12 PM to 4 PM
+for (let h = 12; h <= 16; h++) {
     timeSlots.push(`${String(h).padStart(2, "0")}:00`);
-    if (h < endHour) {
+    if (h < 16) {
         timeSlots.push(`${String(h).padStart(2, "0")}:30`);
     }
 }
+
+// 9 PM to 12 AM
+for (let h = 21; h <= 23; h++) {
+    timeSlots.push(`${String(h).padStart(2, "0")}:00`);
+    timeSlots.push(`${String(h).padStart(2, "0")}:30`);
+}
+timeSlots.push("00:00");
 
 export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
@@ -393,7 +399,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 }}
                                             />
                                         </div>
-
                                         <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
                                             <label className="block text-[11px] font-semibold text-app-text mb-2">{t.time}</label>
                                             <select
