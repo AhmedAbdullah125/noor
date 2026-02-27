@@ -100,6 +100,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
 
     const { data: profile } = useGetProfile(lang);
+    const [couponCode, setCouponCode] = useState("");
+    const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+    const [couponStatus, setCouponStatus] = useState<{ valid: boolean; message: string; discount_type?: string; discount_value?: number } | null>(null);
+    const [isCouponApplied, setIsCouponApplied] = useState(false);
 
     // Parse wallet balance safely
     const walletBalance = useMemo(() => {
@@ -118,6 +122,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         setStartDate("");
         setStartTime("");
         setShowPolicyConfirm(false);
+        setCouponCode("");
+        setIsCheckingCoupon(false);
+        setCouponStatus(null);
+        setIsCouponApplied(false);
     }, [product?.id]);
 
     const resolvedAddonGroups: ServiceAddonGroup[] = useMemo(() => {
@@ -257,6 +265,18 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         return out;
     };
 
+    const discountedTotal = useMemo(() => {
+        if (!bookingModal || !isCouponApplied || !couponStatus?.valid) return null;
+        const subTotal = bookingModal.finalTotal;
+        if (couponStatus.discount_type === "fixed") {
+            return Math.max(0, subTotal - (couponStatus.discount_value || 0));
+        }
+        if (couponStatus.discount_type === "percentage") {
+            return subTotal * (1 - (couponStatus.discount_value || 0) / 100);
+        }
+        return null;
+    }, [bookingModal, isCouponApplied, couponStatus]);
+
     const openBookingModal = (data: {
         subscriptionId: number | null;
         title: string;
@@ -269,6 +289,49 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         setStartTime("");
         setPaymentType("wallet");
         setBookingModal(data);
+        setCouponCode("");
+        setIsCheckingCoupon(false);
+        setCouponStatus(null);
+        setIsCouponApplied(false);
+    };
+
+    const handleCheckCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsCheckingCoupon(true);
+        setCouponStatus(null);
+        setIsCouponApplied(false);
+
+        try {
+            const formData = new FormData();
+            formData.append("code", couponCode);
+            formData.append("service_id", String(product.id));
+
+            const res = await fetch(`${DASHBOARD_API_BASE_URL}/coupons/check`, {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (data.status && data.data?.valid) {
+                const coupon = data.data.coupon;
+                setCouponStatus({
+                    valid: true,
+                    message: t.couponValid,
+                    discount_type: coupon.discount_type,
+                    discount_value: parsePrice(coupon.discount_value),
+                });
+                setIsCouponApplied(true);
+            } else {
+                setCouponStatus({ valid: false, message: data.data?.message || t.couponInvalid });
+                setIsCouponApplied(false);
+            }
+        } catch (error) {
+            console.error("Coupon check failed", error);
+            setCouponStatus({ valid: false, message: t.couponInvalid });
+            setIsCouponApplied(false);
+        } finally {
+            setIsCheckingCoupon(false);
+        }
     };
 
     const doCreateRequest = async () => {
@@ -300,6 +363,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             start_date: startDate,
             start_time: time,
             payment_type: paymentType,
+            coupon_code: isCouponApplied ? couponCode : undefined,
         };
 
         const res = await createRequest(payload, "ar", "json");
@@ -423,6 +487,36 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         </div>
                                     </div>
 
+                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
+                                        <label className="block text-[11px] font-semibold text-app-text mb-2 px-1">{t.couponCode}</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                className="flex-1 bg-white rounded-xl p-3 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                placeholder={t.couponCode}
+                                                value={couponCode}
+                                                onChange={(e) => {
+                                                    setCouponCode(e.target.value);
+                                                    setCouponStatus(null);
+                                                    setIsCouponApplied(false);
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleCheckCoupon}
+                                                disabled={isCheckingCoupon || !couponCode.trim()}
+                                                className="bg-app-gold text-white text-xs font-bold px-4 rounded-xl disabled:opacity-50 transition-opacity whitespace-nowrap"
+                                            >
+                                                {isCheckingCoupon ? t.checkingCoupon : t.apply}
+                                            </button>
+                                        </div>
+                                        {couponStatus && (
+                                            <p className={`text-[10px] mt-1.5 px-1 font-medium ${couponStatus.valid ? "text-green-600" : "text-red-500"}`}>
+                                                {couponStatus.message}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1" >
                                         <label className="block text-[11px] font-semibold text-app-text mb-2">{t.paymentMethod}</label>
                                         <div className="flex gap-2 items-center justify-center flex-wrap">
@@ -468,7 +562,22 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                                     <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
                                         <span className="text-xs text-app-textSec font-normal">{t.total}</span>
-                                        <span className="text-sm font-semibold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
+                                        <div className="flex flex-col items-end">
+                                            {discountedTotal !== null ? (
+                                                <>
+                                                    <span className="text-[10px] text-app-textSec line-through opacity-60">
+                                                        {bookingModal.finalTotal.toFixed(3)} {t.currency}
+                                                    </span>
+                                                    <span className="text-sm font-semibold text-app-gold">
+                                                        {discountedTotal.toFixed(3)} {t.currency}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-sm font-semibold text-app-gold">
+                                                    {bookingModal.finalTotal.toFixed(3)} {t.currency}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
 
 
