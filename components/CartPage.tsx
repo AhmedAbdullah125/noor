@@ -344,8 +344,8 @@ export default function CartPage() {
                                                 key={method.id}
                                                 onClick={() => setSelectedPayment(method.code)}
                                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isSelected
-                                                        ? "border-app-gold bg-app-gold/5"
-                                                        : "border-app-card/30 bg-white"
+                                                    ? "border-app-gold bg-app-gold/5"
+                                                    : "border-app-card/30 bg-white"
                                                     }`}
                                             >
                                                 <PaymentIcon code={method.code} icon={method.icon} />

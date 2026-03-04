@@ -411,7 +411,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                     <>
                         {/* Backdrop */}
                         <motion.div
-                            className="absolute inset-0 bg-black/40 z-[140]"
+                            className="fixed inset-0 bg-black/40 z-[140]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -420,12 +420,13 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                         {/* Bottom Sheet */}
                         <motion.div
-                            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
+                            className="fixed max-w-[420px] bottom-0 left-1/2 -translate-x-1/2 w-full bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 28, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
+                            style={{ left: "50%", transform: "translateX(-50%)" }}
                         >
                             {/* Sheet Handle */}
                             <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
