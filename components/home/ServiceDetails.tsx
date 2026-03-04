@@ -420,13 +420,12 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                         {/* Bottom Sheet */}
                         <motion.div
-                            className="fixed max-w-[420px] bottom-0 left-1/2 -translate-x-1/2 w-full bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
-                            initial={{ y: "100%" }}
-                            animate={{ y: 0 }}
-                            exit={{ y: "100%" }}
+                            className="fixed max-w-[420px] bottom-0 left-1/2 w-full bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
+                            initial={{ y: "100%", x: "-50%" }}
+                            animate={{ y: 0, x: "-50%" }}
+                            exit={{ y: "100%", x: "-50%" }}
                             transition={{ type: "spring", damping: 28, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ left: "50%", transform: "translateX(-50%)" }}
                         >
                             {/* Sheet Handle */}
                             <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
