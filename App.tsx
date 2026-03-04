@@ -159,6 +159,7 @@ const AppContent: React.FC = () => {
     !location.pathname.startsWith('/signup') &&
     !location.pathname.startsWith('/verify') &&
     !location.pathname.startsWith('/cart') &&
+    !location.pathname.startsWith('/product/') &&
     !location.pathname.startsWith('/technician/online');
 
   const isAdminRoute = location.pathname.startsWith('/admin');
