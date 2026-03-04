@@ -420,7 +420,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                         {/* Bottom Sheet */}
                         <motion.div
-                            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[150] flex flex-col max-h-[85vh]"
+                            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
