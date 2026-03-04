@@ -1,16 +1,20 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, ShoppingBag, Wallet, Wallet2, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import parse from "html-react-parser";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ImageCarousel from "../ImageCarousel";
 import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription, } from "../../types";
 import { createRequest } from "../services/createRequest";
+import { useAddToCart } from "../services/useAddToCart";
+import { useNavigate } from "react-router-dom";
 import { getLang, translations } from "../../services/i18n";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
+import { useGetPaymentMethods, PaymentMethod } from "../services/useGetPaymentMethods";
 
 type Props = {
     product: Product;
@@ -18,15 +22,7 @@ type Props = {
     onCreated?: (data: any) => void;
 };
 
-interface PaymentMethod {
-    id: number;
-    name_ar: string;
-    name_en: string;
-    code: string;
-    icon: string;
-    is_active: boolean;
-    sort_order: number;
-}
+
 
 function parsePrice(val: any): number {
     if (val == null) return 0;
@@ -40,22 +36,11 @@ function pad2(n: number) {
     return String(n).padStart(2, "0");
 }
 
-function getTomorrowDate() {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    const pad2 = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
 function getTodayDate() {
     const d = new Date();
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
-function getNowTime() {
-    const d = new Date();
-    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
-}
 
 const timeSlots: string[] = [];
 
@@ -80,7 +65,17 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const t = translations[lang];
     const isAr = lang === 'ar';
 
+    const navigate = useNavigate();
     const [creating, setCreating] = useState(false);
+    const [cartAdded, setCartAdded] = useState(false);
+
+    const { mutate: addToCart, isPending: addingToCart } = useAddToCart({
+        successMessage: t.addToCartSuccess,
+        onSuccess: () => {
+            setCartAdded(true);
+            setBookingStep(3);
+        },
+    });
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const descriptionCharLimit = 150;
 
@@ -93,11 +88,11 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     } | null>(null);
 
     const [paymentType, setPaymentType] = useState<string>("wallet");
-    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
+    const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
     const { data: profile } = useGetProfile(lang);
     const [couponCode, setCouponCode] = useState("");
@@ -166,38 +161,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         [basePrice, addonsTotal, total, product, t.currency]
     );
 
-    // Fetch payment methods based on the total amount
-    useEffect(() => {
-        async function fetchPaymentMethods() {
-            try {
-                const res = await fetch(`${DASHBOARD_API_BASE_URL}/payment-methods?per_page=10&is_active=1&amounts=${total}`);
-                const data = await res.json();
-
-                if (data.status && Array.isArray(data.data?.data)) {
-                    let methods: PaymentMethod[] = data.data.data;
-
-                    // Add wallet if not present
-                    if (!methods.find(m => m.code === 'wallet')) {
-                        methods.push({
-                            id: 9991,
-                            name_ar: t.wallet,
-                            name_en: t.wallet,
-                            code: "wallet",
-                            icon: "",
-                            is_active: true,
-                            sort_order: 999
-                        });
-                    }
-
-                    setPaymentMethods(methods);
-                }
-            } catch (error) {
-                console.error("Failed to fetch payment methods", error);
-            }
-        }
-
-        fetchPaymentMethods();
-    }, [total, lang, t.wallet]);
+    const { data: paymentMethods = [] } = useGetPaymentMethods(total);
 
 
     const getImages = () => {
@@ -293,6 +257,8 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         setIsCheckingCoupon(false);
         setCouponStatus(null);
         setIsCouponApplied(false);
+        setBookingStep(1);
+        setCartAdded(false);
     };
 
     const handleCheckCoupon = async () => {
@@ -306,7 +272,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             formData.append("code", couponCode);
             formData.append("service_id", String(product.id));
 
-            const res = await fetch(`${DASHBOARD_API_BASE_URL}/coupons/check`, {
+            const res = await fetch(`${API_BASE_URL}/coupons/check`, {
                 method: "POST",
                 body: formData,
             });
@@ -382,6 +348,31 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         onCreated?.(res.data);
     };
 
+    const handleAddToCart = () => {
+        if (!bookingModal) return;
+        if (!validateRequiredGroups()) return;
+
+        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+        if (!startDate) {
+            toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            return;
+        }
+        if (!time || time.length < 5) {
+            toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            return;
+        }
+
+        addToCart({
+            service_id: Number(product.id),
+            subscription_id: bookingModal.subscriptionId,
+            options: buildRequestOptions(),
+            start_date: startDate,
+            start_time: time,
+            coupon_code: isCouponApplied && couponCode.trim() ? couponCode : undefined,
+            lang,
+        });
+    };
+
     const handleSubscriptionClick = (sub: ServiceSubscription) => {
         const sessionsCount = (sub as any).sessionsCount ?? (sub as any).session_count ?? 1;
         const pricePercent = parsePrice((sub as any).pricePercent ?? (sub as any).price_percentage ?? 100);
@@ -414,235 +405,341 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     };
 
     return (
-        <div className="animate-fadeIn pt-2" dir={lang == "ar" ? "rtl" : "ltr"}>
-            {bookingModal && (
-                <div
-                    className="absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn"
-                    onClick={() => setBookingModal(null)}
-                >
-                    <div
-                        className="bg-white w-full max-w-full rounded-[24px] max-h-[80vh] overflow-y-auto p-6 shadow-2xl relative flex flex-col text-center animate-scaleIn"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => {
-                                if (showPolicyConfirm) setShowPolicyConfirm(false);
-                                else setBookingModal(null);
-                            }}
-                            className="absolute top-4 left-4 p-2 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-full transition-colors active:scale-95"
+        <div className="pt-2" dir={lang == "ar" ? "rtl" : "ltr"}>
+            <AnimatePresence>
+                {bookingModal && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            className="absolute inset-0 bg-black/40 z-[140]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setBookingModal(null)}
+                        />
+
+                        {/* Bottom Sheet */}
+                        <motion.div
+                            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-[150] flex flex-col max-h-[85vh]"
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <X size={20} />
-                        </button>
+                            {/* Sheet Handle */}
+                            <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
+                                <div className="w-10 h-1 bg-app-card/50 rounded-full" />
+                            </div>
 
-                        {!showPolicyConfirm ? (
-                            <>
-                                <h2 className="text-base font-semibold text-app-text mb-4 mt-2">{t.confirmBooking}</h2>
-
-                                <div className="w-full space-y-3 mb-5">
-                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                        <span className="text-xs text-app-textSec font-normal">{t.service}</span>
-                                        <span className="text-sm font-semibold text-app-text">{product.name}</span>
+                            {/* Step header */}
+                            <div className="flex-shrink-0 flex items-center justify-between px-5 pb-3">
+                                <div className="flex items-center gap-2">
+                                    {bookingStep > 1 && (
+                                        <button
+                                            onClick={() => setBookingStep((s) => (s - 1) as 1 | 2 | 3)}
+                                            className="p-1.5 rounded-full hover:bg-app-bg transition-colors"
+                                        >
+                                            {isAr ? <ChevronRight size={20} className="text-app-textSec" /> : <ChevronLeft size={20} className="text-app-textSec" />}
+                                        </button>
+                                    )}
+                                    <h3 className="text-base font-bold text-app-text">
+                                        {bookingStep === 1 && (isAr ? "التفاصيل والموعد" : "Details & Appointment")}
+                                        {bookingStep === 2 && (isAr ? "كود الخصم والدفع" : "Coupon & Checkout")}
+                                        {bookingStep === 3 && (isAr ? "طريقة الدفع" : "Payment Method")}
+                                    </h3>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {/* Step dots */}
+                                    <div className="flex gap-1.5">
+                                        {[1, 2, 3].map((s) => (
+                                            <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${bookingStep === s ? "w-5 bg-app-gold" : "w-1.5 bg-app-card/40"}`} />
+                                        ))}
                                     </div>
+                                    <button onClick={() => setBookingModal(null)} className="p-1.5 rounded-full hover:bg-app-bg transition-colors">
+                                        <X size={18} className="text-app-textSec" />
+                                    </button>
+                                </div>
+                            </div>
 
-                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                        <span className="text-xs text-app-textSec font-normal">{t.package}</span>
-                                        <span className="text-sm font-semibold text-app-text">{bookingModal.title}</span>
-                                    </div>
+                            {/* Scrollable content */}
+                            <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
-                                            <label className="block text-[11px] font-semibold text mb-2">{t.date}</label>
-                                            <input
-                                                type="date"
-                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                                value={startDate}
-                                                min={getTodayDate()}
-                                                onChange={(e) => {
-                                                    if (e.target.value && e.target.value < getTodayDate()) return;
-                                                    setStartDate(e.target.value);
-                                                }}
-                                            />
+                                {/* ── STEP 1: Service, Date, Time ─────────────────── */}
+                                {bookingStep === 1 && (
+                                    <>
+                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec">{t.service}</span>
+                                            <span className="text-sm font-semibold text-app-text">{product.name}</span>
                                         </div>
-                                        <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
-                                            <label className="block text-[11px] font-semibold text-app-text mb-2">{t.time}</label>
-                                            <select
-                                                className="w-full bg-white rounded-xl p-1 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
-                                                value={startTime.slice(0, 5)}
-                                                onChange={(e) => setStartTime(e.target.value)}
-                                            >
-                                                <option value="">{t.chooseTime}</option>
-                                                {timeSlots.map((time) => {
-                                                    const [hStr, mStr] = time.split(":");
-                                                    const h = parseInt(hStr, 10);
-                                                    const period = h < 12 ? "ص" : "م";
-                                                    const displayH = h % 12 || 12;
-                                                    const label = `${displayH}:${mStr} ${period}`;
-                                                    return (
-                                                        <option key={time} value={time}>
-                                                            {label}
-                                                        </option>
-                                                    );
-                                                })}
-                                            </select>
+                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec">{t.package}</span>
+                                            <span className="text-sm font-semibold text-app-text">{bookingModal.title}</span>
                                         </div>
-                                    </div>
+                                        {bookingModal.subscriptionId != null && (
+                                            <>
+                                                <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                                    <span className="text-xs text-app-textSec">{t.sessionsCount}</span>
+                                                    <span className="text-sm font-semibold text-app-text">{bookingModal.sessionsCount}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                                    <span className="text-xs text-app-textSec">{t.validity}</span>
+                                                    <span className="text-sm font-semibold text-app-text">{bookingModal.validityDays || 30} {t.day}</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec">{t.total}</span>
+                                            <span className="text-sm font-bold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
+                                        </div>
 
-                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1">
-                                        <label className="block text-[11px] font-semibold text-app-text mb-2 px-1">{t.couponCode}</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="flex-1 bg-white rounded-xl p-3 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                                placeholder={t.couponCode}
-                                                value={couponCode}
-                                                onChange={(e) => {
-                                                    setCouponCode(e.target.value);
-                                                    setCouponStatus(null);
-                                                    setIsCouponApplied(false);
-                                                }}
-                                            />
+                                        {/* Date + Time */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
+                                                <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.date}</label>
+                                                <input
+                                                    type="date"
+                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                    value={startDate}
+                                                    min={getTodayDate()}
+                                                    onChange={(e) => {
+                                                        if (e.target.value && e.target.value < getTodayDate()) return;
+                                                        setStartDate(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
+                                                <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.time}</label>
+                                                <select
+                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
+                                                    value={startTime.slice(0, 5)}
+                                                    onChange={(e) => setStartTime(e.target.value)}
+                                                >
+                                                    <option value="">{t.chooseTime}</option>
+                                                    {timeSlots.map((time) => {
+                                                        const [hStr, mStr] = time.split(":");
+                                                        const h = parseInt(hStr, 10);
+                                                        const period = h < 12 ? "ص" : "م";
+                                                        const displayH = h % 12 || 12;
+                                                        return (
+                                                            <option key={time} value={time}>{displayH}:{mStr} {period}</option>
+                                                        );
+                                                    })}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+                                                if (!startDate) { toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } }); return; }
+                                                if (!time || time.length < 5) { toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } }); return; }
+                                                setBookingStep(2);
+                                            }}
+                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform mt-1"
+                                        >
+                                            {isAr ? "التالي" : "Next"} →
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* ── STEP 2: Coupon + Add to Cart vs Checkout ─────── */}
+                                {bookingStep === 2 && (
+                                    <>
+                                        {/* Coupon */}
+                                        <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-3">
+                                            <label className="block text-[11px] font-semibold text-app-text mb-2">{t.couponCode}</label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    className="flex-1 bg-white rounded-xl px-3 py-2 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                    placeholder={t.couponCode}
+                                                    value={couponCode}
+                                                    onChange={(e) => { setCouponCode(e.target.value); setCouponStatus(null); setIsCouponApplied(false); }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCheckCoupon}
+                                                    disabled={isCheckingCoupon || !couponCode.trim()}
+                                                    className="bg-app-gold text-white text-xs font-bold px-4 rounded-xl disabled:opacity-50 whitespace-nowrap"
+                                                >
+                                                    {isCheckingCoupon ? t.checkingCoupon : t.apply}
+                                                </button>
+                                            </div>
+                                            {couponStatus && (
+                                                <p className={`text-[10px] mt-1.5 font-medium ${couponStatus.valid ? "text-green-600" : "text-red-500"}`}>
+                                                    {couponStatus.message}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Total with discount */}
+                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
+                                            <span className="text-xs text-app-textSec">{t.total}</span>
+                                            <div className="flex flex-col items-end">
+                                                {discountedTotal !== null ? (
+                                                    <>
+                                                        <span className="text-[10px] text-app-textSec line-through opacity-60">
+                                                            {bookingModal.finalTotal.toFixed(3)} {t.currency}
+                                                        </span>
+                                                        <span className="text-sm font-bold text-app-gold">{discountedTotal.toFixed(3)} {t.currency}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-sm font-bold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons */}
+                                        <button
+                                            onClick={() => setBookingStep(3)}
+                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                                        >
+                                            <CreditCard size={18} />
+                                            {isAr ? "المتابعة للدفع" : "Proceed to Checkout"}
+                                        </button>
+
+                                        <button
+                                            onClick={handleAddToCart}
+                                            disabled={addingToCart}
+                                            className="w-full bg-white border-2 border-app-gold text-app-gold font-semibold py-4 rounded-2xl active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                                        >
+                                            {addingToCart
+                                                ? <Loader2 size={18} className="animate-spin" />
+                                                : <ShoppingBag size={18} />
+                                            }
+                                            {addingToCart ? t.addingToCart : t.addToCart}
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* ── STEP 3a: Added to Cart — continue or go to cart ─ */}
+                                {bookingStep === 3 && cartAdded && (
+                                    <motion.div
+                                        className="flex flex-col items-center text-center py-4"
+                                        initial={{ opacity: 0, scale: 0.88 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                                    >
+                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                            <ShoppingCart size={32} className="text-green-500" />
+                                        </div>
+                                        <h3 className="text-base font-bold text-app-text mb-1">
+                                            {isAr ? "تمت الإضافة إلى السلة!" : "Added to Cart!"}
+                                        </h3>
+                                        <p className="text-sm text-app-textSec mb-6">
+                                            {isAr ? "يمكنك متابعة التسوق أو الانتقال إلى السلة" : "Continue browsing or head to your cart"}
+                                        </p>
+                                        <div className="w-full space-y-3">
                                             <button
-                                                type="button"
-                                                onClick={handleCheckCoupon}
-                                                disabled={isCheckingCoupon || !couponCode.trim()}
-                                                className="bg-app-gold text-white text-xs font-bold px-4 rounded-xl disabled:opacity-50 transition-opacity whitespace-nowrap"
+                                                onClick={() => navigate("/cart")}
+                                                className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                                             >
-                                                {isCheckingCoupon ? t.checkingCoupon : t.apply}
+                                                <ShoppingCart size={18} />
+                                                {isAr ? "الذهاب إلى السلة" : "Go to Cart"}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setBookingModal(null)
+                                                    navigate("/")
+                                                }}
+                                                className="w-full bg-white border-2 border-app-gold text-app-gold font-semibold py-4 rounded-2xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                                            >
+                                                <ShoppingBag size={18} />
+                                                {isAr ? "متابعة التسوق" : "Continue Shopping"}
                                             </button>
                                         </div>
-                                        {couponStatus && (
-                                            <p className={`text-[10px] mt-1.5 px-1 font-medium ${couponStatus.valid ? "text-green-600" : "text-red-500"}`}>
-                                                {couponStatus.message}
+                                    </motion.div>
+                                )}
+
+                                {/* ── STEP 3b: Payment Method + Confirm ─────────────── */}
+                                {bookingStep === 3 && !cartAdded && (
+                                    <>
+                                        {/* Total reminder */}
+                                        <div className="flex justify-between items-center bg-app-bg/60 px-4 py-3 rounded-xl border border-app-card/30">
+                                            <span className="text-sm text-app-textSec">{isAr ? "المبلغ الإجمالي" : "Total Amount"}</span>
+                                            <span className="text-lg font-bold text-app-gold">
+                                                {(discountedTotal ?? bookingModal.finalTotal).toFixed(3)} {t.currency}
+                                            </span>
+                                        </div>
+
+                                        {/* Wallet warning */}
+                                        {isWalletInsufficient && (
+                                            <p className="text-[11px] text-red-500 font-medium px-1">
+                                                {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
                                             </p>
                                         )}
-                                    </div>
 
-                                    <div className="bg-app-bg/50 rounded-xl border border-app-card/30 p-1" >
-                                        <label className="block text-[11px] font-semibold text-app-text mb-2">{t.paymentMethod}</label>
-                                        <div className="flex gap-2 items-center justify-center flex-wrap">
+                                        {/* Payment methods */}
+                                        <div className="space-y-2">
                                             {paymentMethods.map((p) => {
-                                                const isApple = p.code === "apple_pay";
                                                 const isActive = paymentType === p.code;
-
+                                                const isApple = p.code === "apple_pay";
                                                 return (
                                                     <button
                                                         key={p.code}
                                                         type="button"
                                                         onClick={() => setPaymentType(p.code)}
-                                                        className={` min-w-[80px] flex-1 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-center gap-2 
-                                                            ${isActive
-                                                                ? isApple
-                                                                    ? "bg-black text-white border-black"
-                                                                    : "bg-app-gold text-white border-app-gold"
-                                                                : "bg-white text-app-text border-app-card/30"
+                                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isActive
+                                                            ? isApple ? "bg-black text-white border-black" : "border-app-gold bg-app-gold/5"
+                                                            : "border-app-card/30 bg-white"
                                                             }`}
                                                     >
-
-                                                        <span className="font-medium text-[11px]"> {isAr ? p.name_ar : p.name_en}</span>
-                                                        {
-                                                            p.code == "wallet" ? <Wallet /> :
-                                                                <img
-                                                                    src={p.icon}
-                                                                    alt={p.name_en}
-                                                                    className="h-5 object-contain bg-white rounded-sm"
-                                                                />
+                                                        {p.code === "wallet"
+                                                            ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
+                                                            : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
                                                         }
-
-
+                                                        <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>
+                                                            {isAr ? p.name_ar : p.name_en}
+                                                        </span>
+                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? "border-app-gold bg-app-gold" : "border-app-card/50"}`}>
+                                                            {isActive && <div className="w-2 h-2 bg-white rounded-full" />}
+                                                        </div>
                                                     </button>
                                                 );
                                             })}
                                         </div>
-                                        {isWalletInsufficient && (
-                                            <p className="text-[10px] text-red-500 mt-2 font-medium">
-                                                {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
-                                            </p>
-                                        )}
-                                    </div>
 
-                                    <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                        <span className="text-xs text-app-textSec font-normal">{t.total}</span>
-                                        <div className="flex flex-col items-end">
-                                            {discountedTotal !== null ? (
-                                                <>
-                                                    <span className="text-[10px] text-app-textSec line-through opacity-60">
-                                                        {bookingModal.finalTotal.toFixed(3)} {t.currency}
-                                                    </span>
-                                                    <span className="text-sm font-semibold text-app-gold">
-                                                        {discountedTotal.toFixed(3)} {t.currency}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span className="text-sm font-semibold text-app-gold">
-                                                    {bookingModal.finalTotal.toFixed(3)} {t.currency}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-
-                                    {bookingModal.subscriptionId != null && (
-                                        <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec font-normal">{t.sessionsCount}</span>
-                                            <span className="text-sm font-semibold text-app-text">{bookingModal.sessionsCount}</span>
-                                        </div>
-                                    )}
-
-                                    {bookingModal.subscriptionId != null && (
-                                        <div className="flex justify-between items-center bg-app-bg/50 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec font-normal">{t.validity}</span>
-                                            <span className="text-sm font-semibold text-app-text">{bookingModal.validityDays || 30} {t.day}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
-                                        if (!startDate) {
-                                            toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-                                            return;
-                                        }
-                                        if (!time || time.length < 5) {
-                                            toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-                                            return;
-                                        }
-                                        setShowPolicyConfirm(true);
-                                    }}
-                                    disabled={creating}
-                                    className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
-                                >
-                                    {creating ? t.bookingInProgress : t.confirmBooking}
-                                </button>
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-center animate-fadeIn">
-                                <h2 className="text-base font-semibold text-app-text mb-4 mt-2">{t.bookingPolicy}</h2>
-                                <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium leading-relaxed mb-6 border border-red-100">
-                                    {t.policyText}
-                                </div>
-                                <div className="flex gap-3 w-full">
-                                    <button
-                                        onClick={doCreateRequest}
-                                        disabled={creating || isWalletInsufficient}
-                                        className="flex-[2] bg-app-gold text-white font-semibold py-3 rounded-xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform disabled:opacity-60"
-                                    >
-                                        {creating ? t.bookingInProgress : t.agreeAndConfirm}
-                                    </button>
-                                </div>
+                                        {/* Confirm */}
+                                        <button
+                                            onClick={doCreateRequest}
+                                            disabled={creating || isWalletInsufficient}
+                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                                        >
+                                            {creating
+                                                ? <Loader2 size={18} className="animate-spin" />
+                                                : <Check size={18} />
+                                            }
+                                            {creating ? t.bookingInProgress : t.agreeAndConfirm}
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </div>
-            )}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
-            <div className="px-6 mb-6">
+
+            {/* Image */}
+            <motion.div
+                className="px-6 mb-6"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            >
                 <div className="w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-md bg-white border border-app-card/30">
                     <ImageCarousel images={getImages()} alt={product.name} className="w-full h-full" />
                 </div>
-            </div>
+            </motion.div>
 
-            <div className="px-8 mb-4">
+            {/* Product info */}
+            <motion.div
+                className="px-8 mb-4"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.38, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+            >
                 <h2 className="text-xl font-semibold text-app-text font-active leading-tight mb-2">{product.name}</h2>
                 <div>
                     <div className="text-sm text-app-text/70">
@@ -695,7 +792,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {resolvedAddonGroups.length > 0 && (
                 <div className="px-6 mb-6 space-y-6">
@@ -764,7 +861,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             )}
 
             {(priceData.base > 0 || resolvedAddonGroups.length > 0 || ((product as any)?.addons?.length ?? 0) > 0) && (
-                <div className="px-8 mb-10 space-y-3">
+                <div className="px-8 mb-10 space-y-3 pb-28">
                     {product.subscriptions && product.subscriptions.length > 0 ? (
                         <div className="space-y-4">
                             {product.subscriptions.map((sub: any) => {
@@ -824,6 +921,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                     )}
                 </div>
             )}
-        </div >
+        </div>
     );
 }

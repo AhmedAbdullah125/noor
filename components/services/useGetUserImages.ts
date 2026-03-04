@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { isLoggedIn } from "../auth/authStorage";
 
 export type UserImage = {
@@ -57,7 +57,7 @@ async function fetchUserImages(
     }
 
     const token = Cookies.get("token");
-    const res = await axios.get(`${DASHBOARD_API_BASE_URL}/user-images`, {
+    const res = await axios.get(`${API_BASE_URL}/user-images`, {
         params: { user_id: userId, page },
         headers: {
             lang,

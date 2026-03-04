@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { http } from "../../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { Locale } from "../../../services/i18n";
 
 export type ApiCategory = {
@@ -34,7 +34,7 @@ export function toastApi(status: boolean, message: string) {
 
 export async function getCategoriesSimple(params: { lang: Locale; per_page: number }) {
     try {
-        const res = await http.get<ApiCategoriesResponse>(`${DASHBOARD_API_BASE_URL}/categories`, {
+        const res = await http.get<ApiCategoriesResponse>(`${API_BASE_URL}/categories`, {
             params: { per_page: params.per_page },
             headers: { lang: params.lang },
         });

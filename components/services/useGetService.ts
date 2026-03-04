@@ -10,7 +10,7 @@ const fetchService = async (lang: string, id: number | string) => {
   const headers: Record<string, string> = { lang };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await axios.get(`${API_BASE_URL}/services/${id}`, { headers });
+  const response = await axios.get(`${API_BASE_URL}/v1/services/${id}`, { headers });
 
   // ✅ items: { id, name, main_image, sub_services: [...] ... }
   return response.data.items;

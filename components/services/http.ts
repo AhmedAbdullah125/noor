@@ -27,7 +27,7 @@ function isAuthEndpoint(url?: string) {
     return url.includes("/login") || url.includes("/refresh-token");
 }
 
-export const http: AxiosInstance = axios.create({ baseURL: API_BASE_URL });
+export const http: AxiosInstance = axios.create({ baseURL: API_BASE_URL + "/v1" });
 
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const skipAuth = (config.headers as any)?.["x-skip-auth"];

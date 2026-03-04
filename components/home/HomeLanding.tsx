@@ -7,6 +7,7 @@ import type { Brand } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useGetServices } from "../services/useGetServices";
 import { translations, Locale } from "../../services/i18n";
+import { motion } from "framer-motion";
 
 type BannerUI = {
     id: number;
@@ -120,10 +121,30 @@ export default function HomeLanding({
         if (isRightSwipe) setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
     };
 
+    const containerVariants = {
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.07 } },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, scale: 0.7 },
+        visible: (i: number) => ({
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.35, delay: i * 0.07, ease: [0.4, 0.4, 0.2, 1] },
+        }),
+    };
+
     return (
-        <div className="pt-2 animate-fadeIn" dir={lang === "ar" ? "rtl" : "ltr"}>
+        <div className="pt-2" dir={lang === "ar" ? "rtl" : "ltr"}>
             {/* Search Bar + Results */}
-            <div className="px-6 mb-6" ref={wrapperRef}>
+            <motion.div
+                className="px-6 mb-6"
+                ref={wrapperRef}
+                initial={{ opacity: 0, y: -14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            >
                 <div className="relative w-full">
                     <input
                         type="text"
@@ -223,12 +244,18 @@ export default function HomeLanding({
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {/* Banner */}
-            <div className="px-6" dir={'rtl'}>
+            <motion.div
+                className="px-6"
+                dir="rtl"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.45, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+            >
                 {isLoading ? (
-                    <div className="w-full h-[200px] rounded-[2rem] bg-gray-200 animate-shimmer overflow-hidden shadow-md border border-app-card/20" />
+                    <div className="w-full h-[162px] rounded-[2rem] bg-gray-200 animate-shimmer overflow-hidden shadow-md border border-app-card/20" />
                 ) : (
                     <div className="relative w-full h-auto rounded-[2rem] overflow-hidden shadow-md bg-white border border-app-card/20"
                         onTouchStart={onTouchStart}
@@ -274,24 +301,39 @@ export default function HomeLanding({
                             {Array(2).map((_, index) => (
                                 <div
                                     key={index}
-                                    className={`h-1.5 rounded-full transition-all duration-300 ${currentBanner === index ? "w-6 bg-app-gold" : "w-1.5 bg-app-gold/30"
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${currentBanner === index ? "w-6 bg-app-gold" : "w-1.5 bg-app-gold/10"
                                         }`}
                                 />
                             ))}
                         </div>
                     </div>
                 )}
-            </div>
+            </motion.div>
 
             {/* Categories */}
             <div className="px-6 mt-8" dir={lang === "ar" ? "rtl" : "ltr"}>
-                <h2 className="text-base font-semibold text-app-text mb-4 text-center sm:text-start">{t.categories}</h2>
-                <div className="grid grid-cols-3 gap-4 pb-20">
-                    {categories.map((cat) => (
-                        <button
+                <motion.h2
+                    className="text-base font-semibold text-app-text mb-4 text-center sm:text-start"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                >
+                    {t.categories}
+                </motion.h2>
+                <motion.div
+                    className="grid grid-cols-3 gap-4 pb-20"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    {categories.map((cat, index) => (
+                        <motion.button
                             key={cat.id}
+                            custom={index}
                             onClick={() => onCategoryClick(cat.id)}
                             className="flex flex-col items-center group active:scale-[0.98] transition-transform"
+                            variants={itemVariants}
+                            whileTap={{ scale: 0.95 }}
                         >
                             <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden bg-white shadow-sm border border-app-card/30 group-hover:shadow-md transition-all">
                                 <AppImage
@@ -300,12 +342,12 @@ export default function HomeLanding({
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                 />
                             </div>
-                            <span className="mt-2 text-xs font-semibold text-app-text text-center  w-full px-1">
+                            <span className="mt-2 text-xs font-semibold text-app-text text-center w-full px-1">
                                 {cat.name}
                             </span>
-                        </button>
+                        </motion.button>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </div>
     );

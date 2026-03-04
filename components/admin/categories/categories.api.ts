@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { http } from "../../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { Locale } from "../../../services/i18n";
 
 export type ApiCategory = {
@@ -51,7 +51,7 @@ export function isFullUrl(s: string) {
 export function resolveImageUrl(img: string) {
     if (!img) return "";
     if (isFullUrl(img)) return img;
-    const base = DASHBOARD_API_BASE_URL;
+    const base = API_BASE_URL;
     return `${base}${img.startsWith("/") ? "" : "/"}${img}`;
 }
 
@@ -71,7 +71,7 @@ export async function getCategories(params: {
 }) {
     try {
         const res = await http.get<ApiCategoriesResponse>(
-            `${DASHBOARD_API_BASE_URL}/categories`,
+            `${API_BASE_URL}/categories`,
             {
                 params: {
                     page: params.page,
@@ -115,7 +115,7 @@ export async function createCategory(
         fd.append("image", input.imageUrl || "");
 
         const res = await http.post<ApiSimpleResponse>(
-            `${DASHBOARD_API_BASE_URL}/categories`,
+            `${API_BASE_URL}/categories`,
             fd,
             {
                 headers: {
@@ -161,7 +161,7 @@ export async function updateCategoryPatch(
         if (input.imageUrl) fd.append("image", input.imageUrl);
 
         const res = await http.post<ApiSimpleResponse>(
-            `${DASHBOARD_API_BASE_URL}/categories/${id}`,
+            `${API_BASE_URL}/categories/${id}`,
             fd,
             {
                 headers: {
@@ -189,7 +189,7 @@ export async function updateCategoryPatch(
 export async function deleteCategory(id: number, lang: Locale) {
     try {
         const res = await http.delete<ApiSimpleResponse>(
-            `${DASHBOARD_API_BASE_URL}/categories/${id}`,
+            `${API_BASE_URL}/categories/${id}`,
             { headers: { lang } }
         );
 

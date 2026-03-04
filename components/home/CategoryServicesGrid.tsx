@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "../ProductCard";
 import type { Product, ServiceAddon, ServicePackageOption } from "@/types";
@@ -99,9 +100,23 @@ export default function CategoryServicesGrid({
 
     const listToRender = serviceId ? mappedFromService : fallbackFiltered;
 
+    const cardVariants = {
+        hidden: { opacity: 0, y: 22 },
+        visible: (i: number) => ({
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.35, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] },
+        }),
+    };
+
     return (
-        <div className="animate-fadeIn pt-2">
-            <div className="px-6 mb-6 flex items-center gap-2">
+        <div className="pt-2">
+            <motion.div
+                className="px-6 mb-6 flex items-center gap-2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            >
                 <button
                     onClick={onBack}
                     className="p-2 bg-white rounded-full shadow-sm text-app-text hover:bg-app-card transition-colors"
@@ -109,7 +124,7 @@ export default function CategoryServicesGrid({
                     <ArrowRight size={20} />
                 </button>
                 <h2 className="text-base font-semibold text-app-text font-active truncate">{title}</h2>
-            </div>
+            </motion.div>
 
             {/* حالات التحميل/الخطأ فقط لما يكون فيه serviceId */}
             {serviceId && (isLoading || isFetching) ? (
@@ -121,15 +136,22 @@ export default function CategoryServicesGrid({
             ) : null}
 
             <div className="px-6 grid grid-cols-2 gap-4 pb-10">
-                {listToRender.map((product) => (
-                    <ProductCard
+                {listToRender.map((product, i) => (
+                    <motion.div
                         key={product.id}
-                        product={product}
-                        isFavourite={favourites.includes(product.id)}
-                        onBook={onBook}
-                        onClick={onProductClick}
-                        lang={lang}
-                    />
+                        custom={i}
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <ProductCard
+                            product={product}
+                            isFavourite={favourites.includes(product.id)}
+                            onBook={onBook}
+                            onClick={onProductClick}
+                            lang={lang}
+                        />
+                    </motion.div>
                 ))}
             </div>
         </div>

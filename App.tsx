@@ -13,13 +13,12 @@ import BookingPage from './components/CartFlow';
 import SubscriptionDetailsPage from './components/SubscriptionDetailsPage';
 import EditAppointmentPage from './components/EditAppointmentPage';
 import BookNextSessionPage from './components/BookNextSessionPage';
+import CartPage from './components/CartPage';
 import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
 import Cookies from "js-cookie";
 import HairProfilePage from './components/HairProfilePage';
-import AdminDashboard from './components/admin/AdminDashboard';
-import AdminLogin from './components/admin/AdminLogin';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
 import { cacheService } from './services/cacheService';
@@ -113,15 +112,7 @@ const AppContent: React.FC = () => {
       navigate('/login');
       return;
     }
-
-    const bookingItem: BookingItem = {
-      product,
-      quantity,
-      selectedAddons,
-      packageOption,
-      customFinalPrice
-    };
-
+    const bookingItem: BookingItem = { product, quantity, selectedAddons, packageOption, customFinalPrice };
     navigate('/booking', { state: bookingItem });
   };
 
@@ -167,6 +158,7 @@ const AppContent: React.FC = () => {
     !location.pathname.startsWith('/login') &&
     !location.pathname.startsWith('/signup') &&
     !location.pathname.startsWith('/verify') &&
+    !location.pathname.startsWith('/cart') &&
     !location.pathname.startsWith('/technician/online');
 
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -218,6 +210,7 @@ const AppContent: React.FC = () => {
           <Route path="/subscriptions" element={<SubscriptionsTab />} />
           <Route path="/notifications" element={<NotificationsTab />} />
           <Route path="/appointments" element={<AppointmentsTab orders={orders} />} />
+          <Route path="/cart" element={<CartPage />} />
 
           <Route path="/account/*" element={
             <AccountTab

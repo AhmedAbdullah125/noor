@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { translations, Locale } from "../../services/i18n";
 import { useServices } from "./services/useServices";
 import { toast } from "sonner";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
 interface ServicesModuleProps {
   lang: Locale;
@@ -110,7 +110,7 @@ const ServicesModule: React.FC<ServicesModuleProps> = ({ lang }) => {
 
   // ✅ DELETE /services/:id (same file)
   const deleteService = async (id: number) => {
-    const res = await fetch(`${DASHBOARD_API_BASE_URL}/services/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/services/${id}`, {
       method: "DELETE",
       headers: {
         lang,

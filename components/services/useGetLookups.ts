@@ -9,7 +9,7 @@ const fetchLookups = async (lang: string) => {
     const headers: Record<string, string> = { lang };
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const response = await axios.post(`${API_BASE_URL}/lookups`, null, { headers });
+    const response = await axios.post(`${API_BASE_URL}/v1/lookups`, null, { headers });
 
     return response.data.items;
 };

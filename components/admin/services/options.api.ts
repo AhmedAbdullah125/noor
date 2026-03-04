@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { http } from "../../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { Locale } from "../../../services/i18n";
 
 export type ApiOptionTranslation = {
@@ -65,7 +65,7 @@ export function toastApi(status: boolean, message: string) {
 
 export async function getOptions(params: { lang: Locale; page: number; per_page: number }) {
     try {
-        const res = await http.get<ApiOptionsResponse>(`${DASHBOARD_API_BASE_URL}/options`, {
+        const res = await http.get<ApiOptionsResponse>(`${API_BASE_URL}/options`, {
             params: { page: params.page, per_page: params.per_page },
             headers: { lang: params.lang },
         });

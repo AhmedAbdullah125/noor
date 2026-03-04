@@ -410,6 +410,9 @@ export const translations = {
     couponValid: 'Coupon is valid',
     couponInvalid: 'Coupon is invalid or not applicable for this service',
     checkingCoupon: 'Checking coupon...',
+    addToCart: 'Add to Cart',
+    addingToCart: 'Adding...',
+    addToCartSuccess: 'Added to cart successfully',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -814,7 +817,10 @@ export const translations = {
     customerReviewsTitle: 'تجارب عميلاتنا',
     clientReview: 'مراجعة عميلة',
     errorLoadingReviews: 'حدث خطأ أثناء تحميل المراجعات',
-    noReviews: 'لا يوجد مراجعات حالياً'
+    noReviews: 'لا يوجد مراجعات حالياً',
+    addToCart: 'أضف إلى السلة',
+    addingToCart: 'جاري الإضافة...',
+    addToCartSuccess: 'تمت الإضافة إلى السلة بنجاح',
   }
 };
 

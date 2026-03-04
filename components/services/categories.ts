@@ -1,6 +1,6 @@
 // services/categories.ts
 import { http } from "../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import type { Locale } from "../../services/i18n";
 
 type CreateCategoryInput = {
@@ -28,7 +28,7 @@ export async function createCategory(input: CreateCategoryInput, lang: Locale) {
             fd.append("image", input.imageUrl);
         }
 
-        const res = await http.post(`${DASHBOARD_API_BASE_URL}/categories`, fd, {
+        const res = await http.post(`${API_BASE_URL}/categories`, fd, {
             headers: {
                 lang,
                 // سيبها كده أو احذفها؛ axios غالباً يضبط boundary تلقائياً

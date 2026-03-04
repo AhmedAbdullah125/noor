@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { http } from "../../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { Locale } from "../../../services/i18n";
 
 export type ApiServiceTranslation = {
@@ -61,7 +61,7 @@ export async function getServices(params: {
 }) {
     try {
         const res = await http.get<ApiServicesResponse>(
-            `${DASHBOARD_API_BASE_URL}/services`,
+            `${API_BASE_URL}/services`,
             {
                 params: {
                     per_page: params.per_page,
@@ -89,7 +89,7 @@ export async function getServices(params: {
 export async function deleteService(id: number, lang: Locale) {
     try {
         const res = await http.delete<ApiSimpleResponse>(
-            `${DASHBOARD_API_BASE_URL}/services/${id}`,
+            `${API_BASE_URL}/services/${id}`,
             { headers: { lang } }
         );
 

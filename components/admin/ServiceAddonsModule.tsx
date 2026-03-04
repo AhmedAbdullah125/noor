@@ -14,7 +14,7 @@ import {
 import { translations, Locale } from "../../services/i18n";
 import { toast } from "sonner";
 import { http } from "../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
 // -------------------
 // Types from API
@@ -150,7 +150,7 @@ async function fetchOptionsPage(params: {
   page: number;
   per_page: number;
 }) {
-  const res = await http.get<ApiOptionsResponse>(`${DASHBOARD_API_BASE_URL}/options`, {
+  const res = await http.get<ApiOptionsResponse>(`${API_BASE_URL}/options`, {
     params: { page: params.page, per_page: params.per_page },
     headers: { lang: params.lang },
   });
@@ -220,7 +220,7 @@ function buildOptionFormData(args: { form: Partial<GlobalAddon>; mode: "create" 
 async function createOption(params: { lang: Locale; form: Partial<GlobalAddon> }) {
   const fd = buildOptionFormData({ form: params.form, mode: "create" });
 
-  const res = await http.post(`${DASHBOARD_API_BASE_URL}/options`, fd, {
+  const res = await http.post(`${API_BASE_URL}/options`, fd, {
     headers: { lang: params.lang, Accept: "application/json" },
   });
 
@@ -233,7 +233,7 @@ async function createOption(params: { lang: Locale; form: Partial<GlobalAddon> }
 async function updateOption(params: { lang: Locale; id: string | number; form: Partial<GlobalAddon> }) {
   const fd = buildOptionFormData({ form: params.form, mode: "edit" });
 
-  const res = await http.post(`${DASHBOARD_API_BASE_URL}/options/${params.id}`, fd, {
+  const res = await http.post(`${API_BASE_URL}/options/${params.id}`, fd, {
     headers: { lang: params.lang, Accept: "application/json" },
   });
 
@@ -245,7 +245,7 @@ async function updateOption(params: { lang: Locale; id: string | number; form: P
 
 // ✅ DELETE endpoint: {{url}}/options/:id
 async function deleteOption(params: { lang: Locale; id: string | number }) {
-  const res = await http.delete(`${DASHBOARD_API_BASE_URL}/options/${params.id}`, {
+  const res = await http.delete(`${API_BASE_URL}/options/${params.id}`, {
     headers: { lang: params.lang, Accept: "application/json" },
   });
 

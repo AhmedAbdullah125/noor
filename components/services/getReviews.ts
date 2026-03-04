@@ -22,7 +22,7 @@ type ReviewsResponse = {
 const toAbsUrl = (path?: string) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    return `${API_BASE_URL.replace(/\/$/, "")}/storage/${path.replace(/^\//, "")}`;
+    return `${(API_BASE_URL + "/v1").replace(/\/$/, "")}/storage/${path.replace(/^\//, "")}`;
 };
 
 export async function getReviewsRequest(lang: string = "ar", page: number = 1) {

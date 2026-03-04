@@ -8,6 +8,7 @@ import AppHeader from './AppHeader';
 import { useGetServiceByCategory } from './services/useGetServiceByCategory';
 import { useGetLookups } from './services/useGetLookups';
 import { getLang, translations, Locale } from '../services/i18n';
+import { motion } from 'framer-motion';
 
 interface BrandPageProps {
   onBook: (product: Product, quantity: number) => void;
@@ -118,10 +119,21 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
 
   return (
     <div className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden" >
-      <AppHeader title={brandInfo.name} onBack={handleBack} />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <AppHeader title={brandInfo.name} onBack={handleBack} />
+      </motion.div>
 
       <main className="flex-1 overflow-y-auto w-full pb-28 px-6 pt-24" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-        <div className="flex flex-col items-center mb-8">
+        <motion.div
+          className="flex flex-col items-center mb-8"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+        >
           <div className="w-32 h-32 rounded-[2rem] bg-white shadow-md border border-app-card/30 overflow-hidden mb-4 p-2">
             <AppImage
               src={brandInfo.image}
@@ -130,7 +142,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
             />
           </div>
           <h2 className="text-xl font-semibold text-app-text">{brandInfo.name}</h2>
-        </div>
+        </motion.div>
 
         <div className="mb-6">
           {/* <h3 className="text-base font-semibold text-app-text mb-4 text-left">
@@ -153,15 +165,21 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
           {mappedProducts.length > 0 && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                {mappedProducts.map((product) => (
-                  <ProductCard
+                {mappedProducts.map((product, i) => (
+                  <motion.div
                     key={product.id}
-                    product={product}
-                    isFavourite={favourites.includes(product.id)}
-                    onBook={onBook}
-                    onClick={handleProductClick}
-                    lang={lang}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <ProductCard
+                      product={product}
+                      isFavourite={favourites.includes(product.id)}
+                      onBook={onBook}
+                      onClick={handleProductClick}
+                      lang={lang}
+                    />
+                  </motion.div>
                 ))}
               </div>
 

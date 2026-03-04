@@ -10,7 +10,7 @@ export const useQuestionnaireStart = (lang: string, enabled: boolean) => {
         enabled,
         queryFn: async () => {
             const token = Cookies.get("token");
-            const { data } = await axios.post(`${API_BASE_URL}/questionnaire/start`, null, {
+            const { data } = await axios.post(`${API_BASE_URL}/v1/questionnaire/start`, null, {
                 headers: {
                     lang,
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),

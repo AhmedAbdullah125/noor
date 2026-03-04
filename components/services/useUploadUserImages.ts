@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import Cookies from "js-cookie";
 import imageCompression from "browser-image-compression";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 import { translations, getLang } from "@/services/i18n";
 
 type UploadImagesPayload = {
@@ -65,7 +65,7 @@ async function uploadUserImages(
     });
 
     const token = Cookies.get("token");
-    const res = await axios.post(`${DASHBOARD_API_BASE_URL}/user-images`, formData, {
+    const res = await axios.post(`${API_BASE_URL}/user-images`, formData, {
         headers: {
             lang,
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

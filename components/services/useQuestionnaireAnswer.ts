@@ -13,7 +13,7 @@ export const usePostAnswer = (lang: string, questionnaireId: number) => {
             if (payload.answer_id != null) fd.append("answer_id", String(payload.answer_id));
             if (payload.text_answer != null) fd.append("text_answer", payload.text_answer);
 
-            const { data } = await axios.post(`${API_BASE_URL}/questionnaire/${questionnaireId}/answer`, fd, {
+            const { data } = await axios.post(`${API_BASE_URL}/v1/questionnaire/${questionnaireId}/answer`, fd, {
                 headers: {
                     lang,
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -29,7 +29,7 @@ export const useDeleteAnswer = (lang: string, questionnaireId: number) => {
     return useMutation({
         mutationFn: async (answerRecordId: number) => {
             const token = Cookies.get("token");
-            const { data } = await axios.delete(`${API_BASE_URL}/questionnaire/${questionnaireId}/answer/${answerRecordId}`, {
+            const { data } = await axios.delete(`${API_BASE_URL}/v1/questionnaire/${questionnaireId}/answer/${answerRecordId}`, {
                 headers: {
                     lang,
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -44,7 +44,7 @@ export const useCompleteQuestionnaire = (lang: string, questionnaireId: number) 
     return useMutation({
         mutationFn: async () => {
             const token = Cookies.get("token");
-            const { data } = await axios.post(`${API_BASE_URL}/questionnaire/${questionnaireId}/complete`, null, {
+            const { data } = await axios.post(`${API_BASE_URL}/v1/questionnaire/${questionnaireId}/complete`, null, {
                 headers: {
                     lang,
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),

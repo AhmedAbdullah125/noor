@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, User, Video, ShoppingBag, BookOpen, HelpCircle, MessageCircle } from "lucide-react";
+import { X, User, Video, ShoppingBag, BookOpen, HelpCircle, MessageCircle, Globe } from "lucide-react";
 import { translations, Locale } from "../../services/i18n";
 
 interface Props {
@@ -10,9 +10,10 @@ interface Props {
     onNavigate: (path: string) => void;
     socialLinks?: { id: number; name: string; link: string; icon: string }[];
     lang?: Locale;
+    onToggleLang?: () => void;
 }
 
-export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = [], lang = 'ar' }: Props) {
+export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = [], lang = 'ar', onToggleLang }: Props) {
     if (!open) return null;
     const t = translations[lang];
 
@@ -26,6 +27,15 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                     <button onClick={onClose} className="p-2 hover:bg-app-bg rounded-full transition-colors text-app-text">
                         <X size={24} />
                     </button>
+                    {onToggleLang && (
+                        <button
+                            onClick={() => { onToggleLang(); onClose(); }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-app-card/30 text-xs font-semibold text-app-text hover:bg-app-bg transition-colors"
+                        >
+                            <Globe size={15} />
+                            {lang === 'ar' ? 'English' : 'عربي'}
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto no-scrollbar py-4 flex flex-col">

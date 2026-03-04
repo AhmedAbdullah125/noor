@@ -10,7 +10,7 @@ import { useOptionsOptions } from "./services/useOptionsOptions";
 
 import { toast } from "sonner";
 import { http } from "../services/http";
-import { DASHBOARD_API_BASE_URL } from "@/lib/apiConfig";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
 import PageHeader from "./ServiceFormPage/components/PageHeader";
 import BasicInfoCard from "./ServiceFormPage/components/BasicInfoCard";
@@ -176,7 +176,7 @@ const ServiceFormPage: React.FC<ServiceFormPageProps> = ({ lang }) => {
 
   // ----------------- API: GET service by id -----------------
   async function fetchServiceById(serviceId: string) {
-    const res = await http.get(`${DASHBOARD_API_BASE_URL}/services/${serviceId}`, {
+    const res = await http.get(`${API_BASE_URL}/services/${serviceId}`, {
       headers: { lang },
     });
     const ok = !!res?.data?.status;
@@ -383,7 +383,7 @@ const ServiceFormPage: React.FC<ServiceFormPageProps> = ({ lang }) => {
       fd.append(`subscriptions[${i}][translations][1][description]`, "");
     });
 
-    const res = await http.post(`${DASHBOARD_API_BASE_URL}/services`, fd, {
+    const res = await http.post(`${API_BASE_URL}/services`, fd, {
       headers: { lang, "Content-Type": "multipart/form-data" },
     });
 
@@ -459,7 +459,7 @@ const ServiceFormPage: React.FC<ServiceFormPageProps> = ({ lang }) => {
       fd.append(`subscriptions[${i}][translations][1][description]`, "");
     });
 
-    const res = await http.post(`${DASHBOARD_API_BASE_URL}/services/${serviceId}`, fd, {
+    const res = await http.post(`${API_BASE_URL}/services/${serviceId}`, fd, {
       headers: { lang, Accept: "application/json" },
     });
 
