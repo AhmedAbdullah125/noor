@@ -1,7 +1,8 @@
 // src/pages/LoginPage.tsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Phone, Lock } from "lucide-react";
+import { Phone, Lock, ChevronDown } from "lucide-react";
+import { countries, getEmojiFlag, TCountryCode } from "countries-list";
 import { loginRequest } from "../services/loginRequest";
 import { getRefreshToken } from "./authStorage";
 import { refreshToken } from "../services/refreshToken";
@@ -12,6 +13,13 @@ interface LoginPageProps {
   lang?: Locale;
 }
 
+const countryOptions = Object.entries(countries).map(([code, data]) => ({
+  code,
+  name: data.name,
+  dialCode: `+${data.phone[0]}`,
+  emoji: getEmojiFlag(code as TCountryCode)
+})).sort((a, b) => a.name.localeCompare(b.name));
+
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang }) => {
   const lang = propLang || getLang();
   const navigate = useNavigate();
@@ -21,6 +29,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
   const from = (location.state as any)?.from || "/";
 
   const [formData, setFormData] = useState({ phone: "", password: "" });
+  const [countryCode, setCountryCode] = useState("+965");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -93,7 +102,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
       return;
     }
 
-    const res = await loginRequest(formData, setLoading, lang);
+    const phoneWithCode = countryCode === "+965" ? formData.phone : `${countryCode}${formData.phone}`;
+
+    const payload = {
+      ...formData,
+      // Concatenate country code and phone
+      phone: phoneWithCode
+    };
+
+    const res = await loginRequest(payload, setLoading, lang);
 
     if (!res.ok) {
       setError(res.error || t.loginError);
@@ -123,17 +140,37 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
         </div>
 
         <div className="space-y-4 mb-8">
-          <div className="relative">
-            <input
-              type="tel"
-              name="phone"
-              placeholder={t.phone}
-              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
-              value={formData.phone}
-              onChange={handleChange}
-              dir={lang === 'ar' ? 'rtl' : 'ltr'}
-            />
-            <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+          <div className="flex gap-2" dir="ltr">
+            <div className="relative w-[35%] shrink-0">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-full p-4 pr-8 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-center text-app-text appearance-none cursor-pointer"
+                dir="ltr"
+              >
+                {countryOptions.map(option => (
+                  <option key={option.code} value={option.dialCode}>
+                    {option.emoji} {option.dialCode}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none text-app-textSec/50">
+                <ChevronDown size={16} />
+              </div>
+            </div>
+
+            <div className="relative flex-1">
+              <input
+                type="tel"
+                name="phone"
+                placeholder={t.phone}
+                className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
+                value={formData.phone}
+                onChange={handleChange}
+                dir={lang === 'ar' ? 'rtl' : 'ltr'}
+              />
+              <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+            </div>
           </div>
 
           <div className="relative">

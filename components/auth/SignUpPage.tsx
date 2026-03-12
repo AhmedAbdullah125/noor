@@ -1,10 +1,18 @@
 // src/pages/SignUpPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, Lock } from "lucide-react";
+import { User, Phone, Lock, ChevronDown } from "lucide-react";
+import { countries, getEmojiFlag, TCountryCode } from "countries-list";
 import { registerRequest } from "../services/register";
 import { translations, Locale, getLang } from "../../services/i18n";
 import { setAuth } from "../auth/authStorage";
+
+const countryOptions = Object.entries(countries).map(([code, data]) => ({
+  code,
+  name: data.name,
+  dialCode: `+${data.phone[0]}`,
+  emoji: getEmojiFlag(code as TCountryCode)
+})).sort((a, b) => a.name.localeCompare(b.name));
 
 interface SignUpPageProps {
   onLoginSuccess?: () => void;
@@ -22,6 +30,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
     password: "",
     confirmPassword: "",
   });
+  const [countryCode, setCountryCode] = useState("+965");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,12 +83,15 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
+    const phoneWithCode = countryCode === "+965" ? formData.phone : `${countryCode}${formData.phone}`;
+    const phoneConfirmWithCode = countryCode === "+965" ? formData.phoneConfirm : `${countryCode}${formData.phoneConfirm}`;
+
     // Call register API
     const res = await registerRequest(
       {
         name: formData.name,
-        phone: formData.phone,
-        phone_confirm: formData.phoneConfirm,
+        phone: phoneWithCode,
+        phone_confirm: phoneConfirmWithCode,
         password: formData.password
       },
       setLoading,
@@ -125,32 +137,70 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
             <User className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
           </div>
 
-          <div className="relative">
-            <input
-              dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              type="tel"
-              name="phone"
-              placeholder={t.phone}
-              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
-              value={formData.phone}
-              onChange={handleChange}
+          <div className="flex gap-2" dir="ltr">
+            <div className="relative w-[35%] shrink-0">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-full p-4 pr-8 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-center text-app-text appearance-none cursor-pointer"
+                dir="ltr"
+              >
+                {countryOptions.map(option => (
+                  <option key={option.code} value={option.dialCode}>
+                    {option.emoji} {option.dialCode}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none text-app-textSec/50">
+                <ChevronDown size={16} />
+              </div>
+            </div>
 
-            />
-            <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+            <div className="relative flex-1">
+              <input
+                dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                type="tel"
+                name="phone"
+                placeholder={t.phone}
+                className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+              <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+            </div>
           </div>
 
-          <div className="relative">
-            <input
-              dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              type="tel"
-              name="phoneConfirm"
-              placeholder={lang === 'ar' ? 'تأكيد رقم الهاتف' : 'Confirm Phone'}
-              className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
-              value={formData.phoneConfirm}
-              onChange={handleChange}
+          <div className="flex gap-2" dir="ltr">
+            <div className="relative w-[35%] shrink-0">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-full p-4 pr-8 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-center text-app-text appearance-none cursor-pointer"
+                dir="ltr"
+              >
+                {countryOptions.map(option => (
+                  <option key={option.code} value={option.dialCode}>
+                    {option.emoji} {option.dialCode}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none text-app-textSec/50">
+                <ChevronDown size={16} />
+              </div>
+            </div>
 
-            />
-            <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+            <div className="relative flex-1">
+              <input
+                dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                type="tel"
+                name="phoneConfirm"
+                placeholder={lang === 'ar' ? 'تأكيد رقم الهاتف' : 'Confirm Phone'}
+                className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
+                value={formData.phoneConfirm}
+                onChange={handleChange}
+              />
+              <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-app-textSec/50" size={20} />
+            </div>
           </div>
 
           <div className="relative">
