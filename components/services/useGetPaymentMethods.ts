@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { getLang, translations } from "../../services/i18n";
+import { getAccessToken } from "../auth/authStorage";
 
 export interface PaymentMethod {
     id: number;
@@ -12,10 +13,10 @@ export interface PaymentMethod {
     sort_order: number;
 }
 
-async function fetchPaymentMethods(amount: number, lang: string, walletLabel: string): Promise<PaymentMethod[]> {
+async function fetchPaymentMethods(amount: number, lang: string, walletLabel: string, headers: any): Promise<PaymentMethod[]> {
     const res = await fetch(
         `${API_BASE_URL}/payment-methods?per_page=10&is_active=1&amounts=${amount}`,
-        { headers: { lang } }
+        { headers }
     );
     const data = await res.json();
 
@@ -42,10 +43,14 @@ async function fetchPaymentMethods(amount: number, lang: string, walletLabel: st
 export function useGetPaymentMethods(amount: number) {
     const lang = getLang();
     const t = translations[lang];
-
+    const headers = {
+        lang,
+        "x-skip-auth": "1",
+        "Authorization": `Bearer ${getAccessToken()}`,
+    };
     return useQuery<PaymentMethod[]>({
         queryKey: ["payment-methods", amount, lang],
-        queryFn: () => fetchPaymentMethods(amount, lang, t.wallet),
+        queryFn: () => fetchPaymentMethods(amount, lang, t.wallet, headers),
         enabled: amount > 0,
         staleTime: 1000 * 60 * 5,
     });

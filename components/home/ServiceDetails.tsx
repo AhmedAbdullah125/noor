@@ -163,6 +163,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
     const { data: paymentMethods = [] } = useGetPaymentMethods(total);
 
+    console.log(paymentMethods);
 
     const getImages = () => {
         const imgs = (product as any)?.images ?? [];
