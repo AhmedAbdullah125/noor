@@ -102,12 +102,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
       return;
     }
 
-    const phoneWithCode = countryCode === "+965" ? formData.phone : `${countryCode}${formData.phone}`;
+    // const phoneWithCode = countryCode === "+965" ? formData.phone : `${countryCode}${formData.phone}`;
 
     const payload = {
       ...formData,
       // Concatenate country code and phone
-      phone: phoneWithCode
+      phone: formData.phone,
+      country_code: countryCode
     };
 
     const res = await loginRequest(payload, setLoading, lang);
@@ -150,7 +151,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
               >
                 {countryOptions.map(option => (
                   <option key={option.code} value={option.dialCode}>
-                    {option.emoji} {option.dialCode}
+                    {option.emoji} {option.dialCode} {option.name}
                   </option>
                 ))}
               </select>

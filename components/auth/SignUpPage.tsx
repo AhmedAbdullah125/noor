@@ -83,16 +83,17 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    const phoneWithCode = countryCode === "+965" ? formData.phone : `${countryCode}${formData.phone}`;
-    const phoneConfirmWithCode = countryCode === "+965" ? formData.phoneConfirm : `${countryCode}${formData.phoneConfirm}`;
+    const phoneWithCode = `${countryCode}${formData.phone}`;
+    const phoneConfirmWithCode = `${countryCode}${formData.phoneConfirm}`;
 
     // Call register API
     const res = await registerRequest(
       {
         name: formData.name,
-        phone: phoneWithCode,
-        phone_confirm: phoneConfirmWithCode,
-        password: formData.password
+        phone: formData.phone,
+        phone_confirm: formData.phoneConfirm,
+        password: formData.password,
+        country_code: countryCode
       },
       setLoading,
       lang

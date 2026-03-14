@@ -7,6 +7,7 @@ type RegisterPayload = {
   phone: string; // "0123..." or "+2012..."
   phone_confirm: string;
   password: string;
+  country_code: string;
 };
 
 export async function registerRequest(
@@ -26,6 +27,7 @@ export async function registerRequest(
   formData.append("grant_type", "password");
   formData.append("client_id", "a0ebbcdd-f4d7-4b9b-9ac0-752d55d6d2be");
   formData.append("client_secret", "ZsifN3q9uKXTLPDIIUnMVFQVAFP7umZ7pGCc8VUF");
+  formData.append("country_code", data.country_code);
 
   try {
     const response = await axios.post(url, formData, {

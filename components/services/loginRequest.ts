@@ -3,7 +3,7 @@ import { setAuth } from "../auth/authStorage";
 import { http } from "./http";
 import { toast } from "sonner";
 
-type LoginPayload = { phone: string; password: string };
+type LoginPayload = { phone: string; password: string, country_code: string };
 
 export async function loginRequest(
   data: LoginPayload,
@@ -18,6 +18,7 @@ export async function loginRequest(
   formData.append("client_id", "a0ebbcdd-f4d7-4b9b-9ac0-752d55d6d2be");
   formData.append("client_secret", "ZsifN3q9uKXTLPDIIUnMVFQVAFP7umZ7pGCc8VUF");
   formData.append("grant_type", "password");
+  formData.append("country_code", data.country_code);
 
   try {
     const response = await http.post("/login", formData, {
