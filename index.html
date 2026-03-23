@@ -135,6 +135,15 @@
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
+
+    /* Disable long-press context menu on images in WebView (iOS/Android) */
+    img {
+      -webkit-touch-callout: none; /* Suppresses iOS callout (Share, Save, Copy...) */
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none; /* Blocks tap-and-hold gesture entirely */
+    }
   </style>
   <script>
     tailwind.config = {
