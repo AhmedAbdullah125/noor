@@ -17,7 +17,8 @@ import CartPage from './components/CartPage';
 import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
-import Cookies from "js-cookie";
+import { authEvents, } from "./components/services/http";
+import { clearAuth } from "./components/auth/authStorage";
 import HairProfilePage from './components/HairProfilePage';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
@@ -52,6 +53,22 @@ const AppContent: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [favourites, setFavourites] = useState<number[]>([]);
   const [authStatus, setAuthStatus] = useState<AuthStatus>('anonymous');
+
+  // Wire global 401 / session-expired logout
+  useEffect(() => {
+    authEvents.onLogout = (_reason?: string) => {
+      clearAuth();
+      localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
+      localStorage.removeItem(STORAGE_KEY_AUTH_MODE);
+      localStorage.removeItem("mezo_auth_user_name");
+      localStorage.removeItem("mezo_auth_user_phone");
+      setAuthStatus("anonymous");
+      navigate("/login");
+    };
+    return () => {
+      authEvents.onLogout = () => {};
+    };
+  }, [navigate]);
 
   // Load initial data
   useEffect(() => {
@@ -143,12 +160,11 @@ const AppContent: React.FC = () => {
   };
 
   const handleLogout = () => {
+    clearAuth();
     localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
     localStorage.removeItem(STORAGE_KEY_AUTH_MODE);
     localStorage.removeItem("mezo_auth_user_name");
     localStorage.removeItem("mezo_auth_user_phone");
-    Cookies.remove("token");
-    Cookies.remove("refresh_token");
     setAuthStatus("anonymous");
     navigate("/login");
   };
