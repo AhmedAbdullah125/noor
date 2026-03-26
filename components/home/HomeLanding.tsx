@@ -6,6 +6,7 @@ import AppImage from "../AppImage";
 import type { Brand } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useGetServices } from "../services/useGetServices";
+import { useGetHomeBanners } from "../services/useGetHomeBanners";
 import { translations, Locale } from "../../services/i18n";
 import { motion } from "framer-motion";
 
@@ -88,18 +89,21 @@ export default function HomeLanding({
         navigate(`/product/${id}`);
     };
 
+    const bannersQuery = useGetHomeBanners();
+    const fetchedBanners = bannersQuery.data ?? [];
+    const bannersLoading = isLoading || bannersQuery.isLoading;
+
     // autoplay
     useEffect(() => {
-        if (isLoading) return;
-        if (!banners || banners.length === 0) return;
+        if (bannersLoading) return;
+        if (fetchedBanners.length === 0) return;
 
         const timer = setInterval(() => {
-            // setCurrentBanner((prev) => (prev + 1) % banners.length);
-            setCurrentBanner((prev) => (prev + 1) % 2);
+            setCurrentBanner((prev) => (prev + 1) % fetchedBanners.length);
         }, 4000);
 
         return () => clearInterval(timer);
-    }, [banners?.length, isLoading]);
+    }, [fetchedBanners.length, bannersLoading]);
 
     const minSwipeDistance = 50;
     const onTouchStart = (e: React.TouchEvent) => {
@@ -115,10 +119,10 @@ export default function HomeLanding({
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
 
-        if (banners.length === 0) return;
+        if (fetchedBanners.length === 0) return;
 
-        if (isLeftSwipe) setCurrentBanner((prev) => (prev + 1) % banners.length);
-        if (isRightSwipe) setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+        if (isLeftSwipe) setCurrentBanner((prev) => (prev + 1) % fetchedBanners.length);
+        if (isRightSwipe) setCurrentBanner((prev) => (prev - 1 + fetchedBanners.length) % fetchedBanners.length);
     };
 
     const containerVariants = {
@@ -254,7 +258,7 @@ export default function HomeLanding({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.45, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
             >
-                {isLoading ? (
+                {bannersLoading ? (
                     <div className="w-full h-[162px] rounded-[2rem] bg-gray-200 animate-shimmer overflow-hidden shadow-md border border-app-card/20" />
                 ) : (
                     <div className="relative w-full h-auto rounded-[2rem] overflow-hidden shadow-md bg-white border border-app-card/20"
@@ -266,39 +270,26 @@ export default function HomeLanding({
                             className="flex w-full h-full transition-transform duration-700 ease-in-out"
                             style={{ transform: `translateX(${currentBanner * 100}%)` }}
                         >
-
-                            <button
-                                // key={banner.id}
-                                className="min-w-full h-full flex items-center justify-center"
-                                // onClick={() => onBannerClick?.(banner)}
-                                type="button"
-                            >
-                                <img
-                                    src={"https://raiyansoft.com/wp-content/uploads/2026/01/b1.jpg"}
-                                    alt={""}
-                                    className="w-full h-full object-cover object-center block"
-                                    loading="eager"
-                                    fetchPriority="high"
-                                />
-                            </button>
-                            <button
-                                // key={banner.id}
-                                className="min-w-full h-full flex items-center justify-center"
-                                // onClick={() => onBannerClick?.(banner)}
-                                type="button"
-                            >
-                                <img
-                                    src={"https://raiyansoft.com/wp-content/uploads/2026/01/b2.jpg"}
-                                    alt={""}
-                                    className="w-full h-full object-cover object-center block"
-                                    loading="eager"
-                                    fetchPriority="high"
-                                />
-                            </button>
+                            {fetchedBanners.map((banner, index) => (
+                                <button
+                                    key={banner.id}
+                                    className="min-w-full h-full flex items-center justify-center"
+                                    onClick={() => onBannerClick?.(banner)}
+                                    type="button"
+                                >
+                                    <img
+                                        src={banner.image}
+                                        alt={banner.title}
+                                        className="w-full h-full object-cover object-center block"
+                                        loading={index === 0 ? "eager" : "lazy"}
+                                        fetchPriority={index === 0 ? "high" : "auto"}
+                                    />
+                                </button>
+                            ))}
                         </div>
 
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                            {Array(2).map((_, index) => (
+                            {fetchedBanners.map((_, index) => (
                                 <div
                                     key={index}
                                     className={`h-1.5 rounded-full transition-all duration-300 ${currentBanner === index ? "w-6 bg-app-gold" : "w-1.5 bg-app-gold/10"
