@@ -7,6 +7,7 @@ import { DEMO_PRODUCTS } from "../constants";
 import type { UserSubscription } from "../types";
 import { http } from "./services/http";
 import { translations, getLang } from "../services/i18n";
+import PaymentFailurePage from "./PaymentFailurePage";
 
 type ApiSession = {
   id: number;
@@ -79,6 +80,15 @@ const SubscriptionsTab: React.FC = () => {
   const location = useLocation();
   const lang = getLang();
   const t = translations[lang] || translations['ar'];
+
+  // Detect payment failure redirect params
+  const searchParams = new URLSearchParams(location.search);
+  const paymentStatus = searchParams.get('paymentStatus');
+  const orderStatus = searchParams.get('status');
+  const orderId = searchParams.get('orderId');
+  const isPaymentFailure =
+    orderStatus === 'failed' ||
+    (paymentStatus !== null && paymentStatus !== 'paid' && paymentStatus !== 'success');
 
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
@@ -214,6 +224,17 @@ const SubscriptionsTab: React.FC = () => {
     });
     return copy;
   }, [subscriptions]);
+
+  // Show payment failure page when redirected back from payment gateway
+  if (isPaymentFailure) {
+    return (
+      <PaymentFailurePage
+        orderId={orderId}
+        status={orderStatus}
+        paymentStatus={paymentStatus}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden animate-fadeIn relative bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>

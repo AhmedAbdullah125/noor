@@ -1,11 +1,9 @@
 "use client";
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import parse from "html-react-parser";
 import { motion, AnimatePresence } from "framer-motion";
-
 import ImageCarousel from "../ImageCarousel";
 import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription, } from "../../types";
 import { createRequest } from "../services/createRequest";
@@ -21,8 +19,6 @@ type Props = {
     onBack: () => void;
     onCreated?: (data: any) => void;
 };
-
-
 
 function parsePrice(val: any): number {
     if (val == null) return 0;
