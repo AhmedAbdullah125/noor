@@ -188,6 +188,22 @@
 }
 </script>
   <link rel="stylesheet" href="/index.css">
+
+  <!-- Convert plain-path URLs (e.g. from payment gateway redirects) to HashRouter URLs.
+       Payment gateway sends: /subscriptions/?orderId=436&status=failed&paymentStatus=pending
+       HashRouter needs:      /#/subscriptions/?orderId=436&status=failed&paymentStatus=pending -->
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      // Only redirect if there's a real path (not just "/") and no existing hash route
+      if (path && path !== '/' && (!hash || hash === '#')) {
+        var hashPath = '#' + path + search;
+        window.location.replace('/' + hashPath);
+      }
+    })();
+  </script>
 </head>
 
 <body>
