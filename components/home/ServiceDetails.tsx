@@ -879,22 +879,23 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                             <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
                                         ) : null}
 
-                                        <button
-                                            onClick={() => handleSubscriptionClick(sub)}
-                                            disabled={creating || !canSubscribe}
+                                        <button onClick={() => handleSubscriptionClick(sub)} disabled={creating || !canSubscribe}
                                             className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
                                         >
                                             <div className="flex flex-col items-start gap-1">
+                                                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} {sessionsCount === 1 ? t.session : t.sessions}</div>
                                                 <div className="flex items-center gap-2">
                                                     <ShoppingBag size={18} />
-                                                    {sessionsCount > 1 && (
-                                                        <span className="text-sm">{isAr ? `حجز ${sessionsCount} جلسات` : `${t.book} ${sessionsCount} ${t.sessions}`}</span>
-                                                    )}
                                                     {sessionsCount === 1 && (
                                                         <span className="text-sm">{t.bookSession}</span>
                                                     )}
+                                                    {sessionsCount > 1 && (
+                                                        <div className="flex flex-col gap-1">
+                                                            {/* <span className="text-sm">{isAr ? ` ${sessionsCount} جلسات` : `${t.book} ${sessionsCount} ${t.sessions}`}</span> */}
+                                                            <span className="text-sm">{isAr ? "احجزي الان " : "Book Now"}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} {sessionsCount === 1 ? t.session : t.sessions}</div>
                                             </div>
 
                                             <div className="flex flex-col items-end">
