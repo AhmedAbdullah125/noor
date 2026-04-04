@@ -81,14 +81,16 @@ const SubscriptionsTab: React.FC = () => {
   const lang = getLang();
   const t = translations[lang] || translations['ar'];
 
-  // Detect payment failure redirect params
+  // Detect payment failure redirect params from payment gateway callback
+  // e.g. /subscriptions/?orderId=435&status=failed&paymentStatus=pending
   const searchParams = new URLSearchParams(location.search);
   const paymentStatus = searchParams.get('paymentStatus');
   const orderStatus = searchParams.get('status');
   const orderId = searchParams.get('orderId');
+  const FAILURE_PAYMENT_STATUSES = ['pending', 'failed', 'cancelled', 'canceled', 'error'];
   const isPaymentFailure =
     orderStatus === 'failed' ||
-    (paymentStatus !== null && paymentStatus !== 'paid' && paymentStatus !== 'success');
+    (paymentStatus !== null && FAILURE_PAYMENT_STATUSES.includes(paymentStatus.toLowerCase()));
 
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
