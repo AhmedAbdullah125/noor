@@ -1,18 +1,13 @@
 // src/pages/SignUpPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, Lock, ChevronDown } from "lucide-react";
-import { countries, getEmojiFlag, TCountryCode } from "countries-list";
+import { User, Phone, Lock } from "lucide-react";
 import { registerRequest } from "../services/register";
 import { translations, Locale, getLang } from "../../services/i18n";
 import { setAuth } from "../auth/authStorage";
+import CountryCodeSelect from "./CountryCodeSelect";
 
-const countryOptions = Object.entries(countries).map(([code, data]) => ({
-  code,
-  name: data.name,
-  dialCode: `+${data.phone[0]}`,
-  emoji: getEmojiFlag(code as TCountryCode)
-})).sort((a, b) => a.name.localeCompare(b.name));
+
 
 interface SignUpPageProps {
   onLoginSuccess?: () => void;
@@ -139,23 +134,11 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
           </div>
 
           <div className="flex gap-2" dir="ltr">
-            <div className="relative w-[35%] shrink-0">
-              <select
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-full p-4 pr-8 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-center text-app-text appearance-none cursor-pointer"
-                dir="ltr"
-              >
-                {countryOptions.map(option => (
-                  <option key={option.code} value={option.dialCode}>
-                    {option.emoji} {option.dialCode}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none text-app-textSec/50">
-                <ChevronDown size={16} />
-              </div>
-            </div>
+            <CountryCodeSelect
+              value={countryCode}
+              onChange={setCountryCode}
+              searchPlaceholder={lang === 'ar' ? 'بحث...' : 'Search...'}
+            />
 
             <div className="relative flex-1">
               <input
@@ -172,23 +155,11 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
           </div>
 
           <div className="flex gap-2" dir="ltr">
-            <div className="relative w-[35%] shrink-0">
-              <select
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-full p-4 pr-8 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-center text-app-text appearance-none cursor-pointer"
-                dir="ltr"
-              >
-                {countryOptions.map(option => (
-                  <option key={option.code} value={option.dialCode}>
-                    {option.emoji} {option.dialCode}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none text-app-textSec/50">
-                <ChevronDown size={16} />
-              </div>
-            </div>
+            <CountryCodeSelect
+              value={countryCode}
+              onChange={setCountryCode}
+              searchPlaceholder={lang === 'ar' ? 'بحث...' : 'Search...'}
+            />
 
             <div className="relative flex-1">
               <input

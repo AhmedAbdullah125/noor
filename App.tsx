@@ -17,6 +17,7 @@ import CartPage from './components/CartPage';
 import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, } from "./components/services/http";
 import { clearAuth } from "./components/auth/authStorage";
 import HairProfilePage from './components/HairProfilePage';
@@ -174,6 +175,7 @@ const AppContent: React.FC = () => {
     !location.pathname.startsWith('/login') &&
     !location.pathname.startsWith('/signup') &&
     !location.pathname.startsWith('/verify') &&
+    !location.pathname.startsWith('/forgot-password') &&
     !location.pathname.startsWith('/cart') &&
     !location.pathname.startsWith('/product/') &&
     !location.pathname.startsWith('/technician/online');
@@ -253,6 +255,7 @@ const AppContent: React.FC = () => {
           <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/signup" element={<SignUpPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/verify" element={<OTPPage onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Admin Routes */}
           {/* <Route path="/admin/*" element={<AdminDashboard />} /> */}

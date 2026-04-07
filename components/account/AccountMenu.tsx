@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, ClipboardList, Info, Mail, Phone, ChevronLeft, XCircle, Wallet, Video, Check, ShoppingBag, LogOut, FileText, AlertTriangle, UserCog, ChevronRight, Image } from "lucide-react";
+import { Heart, ClipboardList, Info, Mail, Phone, ChevronLeft, XCircle, Wallet, Video, Check, ShoppingBag, LogOut, FileText, AlertTriangle, UserCog, ChevronRight, Image, KeyRound } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetQuestionnaire } from "../services/useGetQuestionnaire";
 
@@ -23,9 +23,10 @@ type Props = {
     onOpenHairProfile: () => void;
     onOpenDelete: () => void;
     onOpenGallery: () => void;
+    onOpenChangePassword: () => void;
 };
 
-export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete, onOpenGallery,
+export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete, onOpenGallery, onOpenChangePassword,
 }: Props) {
     console.log(profile?.id);
     const lang = getLang();
@@ -148,7 +149,10 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                 {/* List */}
                 <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-app-card/30 mb-8">
                     {!isGuest && (
-                        <MenuRow icon={<UserCog size={20} />} label={t.editAccount} onClick={onOpenEdit} />
+                        <>
+                            <MenuRow icon={<UserCog size={20} />} label={t.editAccount} onClick={onOpenEdit} />
+                            <MenuRow icon={<KeyRound size={20} />} label={t.changePassword} onClick={onOpenChangePassword} />
+                        </>
                     )}
 
                     <MenuRow icon={<Heart size={20} />} label={t.favoriteServices} onClick={onOpenFavorites} />
