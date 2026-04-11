@@ -2,7 +2,7 @@
 import { http } from "./http";
 import { toast } from "sonner";
 
-type ForgotPasswordPayload = { phone: string };
+type ForgotPasswordPayload = { phone: string; country_code: string };
 
 export async function forgotPasswordRequest(
   data: ForgotPasswordPayload,
@@ -13,6 +13,7 @@ export async function forgotPasswordRequest(
 
   const formData = new FormData();
   formData.append("phone", data.phone);
+  formData.append("country_code", data.country_code);
 
   try {
     const response = await http.post("/forgot-password", formData, {

@@ -58,10 +58,8 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
       return;
     }
 
-    const fullPhone = `${countryCode}${phone}`;
-
     const res = await forgotPasswordRequest(
-      { phone: fullPhone },
+      { phone, country_code: countryCode },
       setLoading,
       lang
     );
