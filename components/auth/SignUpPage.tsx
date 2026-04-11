@@ -63,8 +63,8 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       setError(t.fillAllFields);
       return;
     }
-    if (!/^\d{8}$/.test(formData.phone)) {
-      setError(lang === 'ar' ? 'رقم الهاتف يجب أن يكون 8 أرقام فقط' : 'Phone must be exactly 8 digits');
+    if (!/^\d{8,13}$/.test(formData.phone)) {
+      setError(lang === 'ar' ? 'رقم الهاتف يجب أن يكون بين 8 و 13 رقم' : 'Phone must be between 8 and 13 digits');
       return;
     }
 
