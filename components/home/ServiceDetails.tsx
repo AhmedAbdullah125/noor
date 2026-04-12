@@ -13,6 +13,11 @@ import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods, PaymentMethod } from "../services/useGetPaymentMethods";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ar } from "date-fns/locale/ar";
+registerLocale("ar", ar);
+
 
 type Props = {
     product: Product;
@@ -40,20 +45,61 @@ function getTodayDate() {
 
 const timeSlots: string[] = [];
 
-// 12 PM to 4 PM
-for (let h = 12; h <= 16; h++) {
-    timeSlots.push(`${String(h).padStart(2, "0")}:00`);
-    if (h < 16) {
-        timeSlots.push(`${String(h).padStart(2, "0")}:30`);
-    }
-}
+// Custom Styles for Premium DatePicker
+const calendarStyles = `
+  .premium-datepicker {
+    width: 100% !important;
+  }
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+  .premium-calendar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(72, 51, 131, 0.1) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+    font-family: "Readex Pro", sans-serif !important;
+    border: none !important;
+    overflow: hidden;
+  }
+  .react-datepicker__header {
+    background: #483383 !important;
+    border-bottom: none !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    padding-top: 15px !important;
+  }
+  .react-datepicker__current-month, 
+  .react-datepicker__day-name {
+    color: white !important;
+  }
+  .react-datepicker__day--selected {
+    background-color: #483383 !important;
+    border-radius: 10px !important;
+    color: white !important;
+  }
+  .react-datepicker__day:hover {
+    border-radius: 10px !important;
+    background-color: rgba(72, 51, 131, 0.1) !important;
+  }
+  .react-datepicker__navigation--next {
+    border-left-color: white !important;
+  }
+  .react-datepicker__navigation--previous {
+    border-right-color: white !important;
+  }
+  .react-datepicker__triangle {
+    display: none !important;
+  }
+`;
 
-// 9 PM to 12 AM
-for (let h = 21; h <= 23; h++) {
+
+// 10 AM to 8:30 PM
+for (let h = 10; h <= 20; h++) {
     timeSlots.push(`${String(h).padStart(2, "0")}:00`);
     timeSlots.push(`${String(h).padStart(2, "0")}:30`);
 }
-timeSlots.push("00:00");
 
 export default function ServiceDetails({ product, onBack, onCreated }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
@@ -492,17 +538,28 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                                         {/* Date + Time */}
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
+                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2 relative">
+                                                <style>{calendarStyles}</style>
                                                 <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.date}</label>
-                                                <input
-                                                    type="date"
-                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                                    value={startDate}
-                                                    min={getTodayDate()}
-                                                    onChange={(e) => {
-                                                        if (e.target.value && e.target.value < getTodayDate()) return;
-                                                        setStartDate(e.target.value);
+                                                <DatePicker
+                                                    selected={startDate ? new Date(startDate) : null}
+                                                    onChange={(date: Date | null) => {
+                                                        if (date) {
+                                                            const y = date.getFullYear();
+                                                            const m = pad2(date.getMonth() + 1);
+                                                            const d = pad2(date.getDate());
+                                                            setStartDate(`${y}-${m}-${d}`);
+                                                        } else {
+                                                            setStartDate("");
+                                                        }
                                                     }}
+                                                    minDate={new Date()}
+                                                    dateFormat="yyyy-MM-dd"
+                                                    placeholderText={t.chooseDate || "Select Date"}
+                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold"
+                                                    calendarClassName="premium-calendar"
+                                                    wrapperClassName="premium-datepicker"
+                                                    locale={isAr ? "ar" : undefined}
                                                 />
                                             </div>
                                             <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
