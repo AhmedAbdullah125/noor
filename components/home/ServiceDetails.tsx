@@ -15,8 +15,18 @@ import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods, PaymentMethod } from "../services/useGetPaymentMethods";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { ar } from "date-fns/locale/ar";
-registerLocale("ar", ar);
+
+// Minimal manual Arabic locale for DatePicker to avoid date-fns dependency
+const localeAr = {
+    localize: {
+        day: (n: number) => ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'][n],
+        month: (n: number) => ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'][n],
+    },
+    formatLong: {
+        date: () => 'yyyy-MM-dd'
+    }
+} as any;
+registerLocale("ar", localeAr);
 
 
 type Props = {
