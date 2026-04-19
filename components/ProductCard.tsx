@@ -86,7 +86,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     setFavLoading(false);
   };
-  console.log(product);
 
   return (
     <div
