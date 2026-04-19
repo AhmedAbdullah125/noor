@@ -456,6 +456,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             finalTotal: priceData.total,
         });
     };
+    console.log(product);
 
     return (
         <div className="pt-2" dir={lang == "ar" ? "rtl" : "ltr"}>
@@ -836,12 +837,16 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-1 mt-2">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl font-semibold text-app-gold">{priceData.display}</span>
-                        {(product as any).oldPrice && (
-                            <span className="text-sm text-app-textSec line-through opacity-60">{(product as any).oldPrice}</span>
-                        )}
-                    </div>
+                    {
+                        product.price && parsePrice(product.price) > 0 ? (
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl font-semibold text-app-gold">{priceData.display}</span>
+                                {(product as any).oldPrice && (
+                                    <span className="text-sm text-app-textSec line-through opacity-60">{(product as any).oldPrice}</span>
+                                )}
+                            </div>
+                        ) : null
+                    }
 
                     {priceData.addons > 0 && (
                         <div className="text-[10px] text-app-textSec font-normal space-y-0.5">
