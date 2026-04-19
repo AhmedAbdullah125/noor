@@ -516,7 +516,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                             </div>
 
                             {/* Scrollable content */}
-                            <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
+                            <div className="flex-1 overflow-visible px-5 pb-6 space-y-3">
 
                                 {/* ── STEP 1: Service, Date, Time ─────────────────── */}
                                 {bookingStep === 1 && (
