@@ -24,11 +24,11 @@ type Props = {
     onOpenDelete: () => void;
     onOpenGallery: () => void;
     onOpenChangePassword: () => void;
+    onOpenAbout: () => void;
 };
 
-export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete, onOpenGallery, onOpenChangePassword,
+export default function AccountMenu({ isGuest, profile, profileLoading, isHairProfileComplete, onAuthClick, onOpenEdit, onOpenFavorites, onOpenHistory, onOpenReviews, onOpenHairProfile, onOpenDelete, onOpenGallery, onOpenChangePassword, onOpenAbout,
 }: Props) {
-    console.log(profile?.id);
     const lang = getLang();
     const t = translations[lang] || translations['ar'];
 
@@ -161,9 +161,9 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                     <MenuRow icon={<Image size={20} />} label={t.myGallery} onClick={onOpenGallery} />
 
 
-                    <MenuRow icon={<Info size={20} />} label={t.aboutApp} onClick={() => { }} />
-                    <MenuRow icon={<Mail size={20} />} label="contact@mezodonoor.com" onClick={() => { }} />
-                    <MenuRow icon={<Phone size={20} />} label="96554647655" onClick={() => { }} dir="ltr" last />
+                    <MenuRow icon={<Info size={20} />} label={t.aboutApp} onClick={onOpenAbout} />
+                    <MenuRow icon={<Mail size={20} />} label="contact@mezodonoor.com" onClick={() => window.location.href = "mailto:contact@mezodonoor.com"} />
+                    <MenuRow icon={<Phone size={20} />} label="96554647655" onClick={() => window.location.href = "tel:96554647655"} dir="ltr" last />
                 </div>
 
                 {!isGuest && (

@@ -21,6 +21,7 @@ import ProductDetailsScreen from "./ProductDetailsScreen";
 import DeleteAccountModal from "./DeleteAccountModal";
 import GalleryScreen from "./GalleryScreen";
 import ChangePasswordScreen from "./ChangePasswordScreen";
+import AboutScreen from "./AboutScreen";
 import { getLang } from "@/services/i18n";
 
 interface AccountTabProps {
@@ -127,6 +128,7 @@ const AccountTab: React.FC<AccountTabProps> = ({
                             onOpenDelete={() => setShowDeleteModal(true)}
                             onOpenGallery={() => navigate("/account/gallery")}
                             onOpenChangePassword={() => navigate("/account/change-password")}
+                            onOpenAbout={() => navigate("/account/about")}
                         />
                     }
                 />
@@ -201,6 +203,14 @@ const AccountTab: React.FC<AccountTabProps> = ({
                         <ChangePasswordScreen
                             onBack={() => navigate("/account")}
                             onSuccess={() => navigate("/account")}
+                        />
+                    }
+                />
+                <Route
+                    path="about"
+                    element={
+                        <AboutScreen
+                            onBack={() => navigate("/account")}
                         />
                     }
                 />
