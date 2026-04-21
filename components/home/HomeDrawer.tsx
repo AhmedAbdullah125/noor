@@ -99,29 +99,25 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                     </div>
                     <div className="px-6 mt-4 grid grid-cols-2 gap-3">
                         {socialLinks.map((social) => (
-                            <a
+                            <button
                                 key={social.id}
-                                href={social.link}
-                                target="_blank"
-                                rel="noreferrer"
+                                onClick={() => window.open(social.link, "_blank", "noreferrer")}
                                 className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 border border-gray-100/50 hover:bg-gray-100 transition-colors"
                             >
                                 <img src={social.icon} alt={social.name} className="w-5 h-5" />
                                 <span className="text-xs font-semibold text-app-text">{social.name}</span>
-                            </a>
+                            </button>
                         ))}
                     </div>
                 </div>
 
                 <div className="p-6 border-t border-app-card/30 bg-app-bg/30">
-                    <a
-                        href="https://raiyansoft.net"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-app-textSec text-center font-active block hover:opacity-70 active:opacity-50 transition-opacity"
+                    <button
+                        onClick={() => window.open("https://raiyansoft.net", "_blank", "noreferrer")}
+                        className="text-[10px] text-app-textSec text-center font-active block hover:opacity-70 active:opacity-50 transition-opacity w-full"
                     >
                         {t.poweredBy}
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>

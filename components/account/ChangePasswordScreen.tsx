@@ -129,7 +129,7 @@ export default function ChangePasswordScreen({ onBack, onSuccess }: Props) {
                 name="current_password"
               />
               <PasswordField
-                label={t.password}
+                label={t.newPassword}
                 value={newPassword}
                 onChange={(v) => { setNewPassword(v); setError(null); }}
                 placeholder="••••••••"
