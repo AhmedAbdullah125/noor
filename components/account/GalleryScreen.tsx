@@ -74,21 +74,10 @@ export default function GalleryScreen({ userId, onBack }: Props) {
             className="animate-fadeIn flex flex-col h-full bg-app-bg"
             dir={lang === "ar" ? "rtl" : "ltr"}
         >
-            <AppHeader title={t.galleryTitle} />
+            <AppHeader title={t.galleryTitle} onBack={onBack} />
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-28 pt-24">
-                {/* Back Button */}
-                <button
-                    onClick={onBack}
-                    className="flex items-center gap-2 text-app-text mb-4 active:opacity-60 transition-opacity"
-                >
-                    <ChevronLeft
-                        size={20}
-                        className={lang === "ar" ? "rotate-180" : ""}
-                    />
-                    <span className="text-sm font-semibold">{t.back}</span>
-                </button>
 
                 {/* Upload Button */}
                 <button
