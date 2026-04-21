@@ -22,7 +22,7 @@ const TabBar: React.FC<TabBarProps> = ({ currentTab, onTabChange }) => {
   ];
 
   return (
-    <div className="fixed max-w-[420px] w-[90%] border-2 border-app-card bottom-0 rounded-3xl left-1/2 -translate-x-1/2 w-full bg-app-bg border-t border-app-card shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-50">
+    <div className="fixed max-w-[420px] w-[92%] bottom-0 left-1/2 -translate-x-1/2 z-50 bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)]">
       <div className="flex justify-between p-1 flex-nowrap items-end mx-auto gap-2 relative w-full">
         {tabs.map((tab) => {
           const isActive = currentTab === tab.id;
