@@ -160,7 +160,7 @@ const AccountTab: React.FC<AccountTabProps> = ({
 
                 <Route
                     path="order/:orderId"
-                    element={<OrderDetailsRoute orders={orders} onBack={() => navigate("/account/history")} />}
+                    element={<OrderDetailsScreen onBack={() => navigate("/account/history")} />}
                 />
 
                 <Route
@@ -230,15 +230,12 @@ export default AccountTab;
 
 // --- small route wrappers to read URL params ---
 function OrderDetailsRoute({
-    orders,
     onBack,
 }: {
-    orders: Order[];
     onBack: () => void;
 }) {
     const { orderId } = useParams();
-    const selected = orders.find((o) => o.id === orderId);
-    return <OrderDetailsScreen order={selected || null} onBack={onBack} />;
+    return <OrderDetailsScreen onBack={onBack} />;
 }
 
 function ProductDetailsRoute({
