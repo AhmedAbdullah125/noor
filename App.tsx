@@ -67,7 +67,7 @@ const AppContent: React.FC = () => {
       navigate("/login");
     };
     return () => {
-      authEvents.onLogout = () => {};
+      authEvents.onLogout = () => { };
     };
   }, [navigate]);
 
@@ -228,7 +228,7 @@ const AppContent: React.FC = () => {
 
           <Route path="/subscriptions" element={<SubscriptionsTab />} />
           <Route path="/notifications" element={<NotificationsTab />} />
-          <Route path="/appointments" element={<AppointmentsTab orders={orders} />} />
+          <Route path="/appointments" element={<AppointmentsTab />} />
           <Route path="/cart" element={<CartPage />} />
 
           <Route path="/account/*" element={

@@ -151,7 +151,6 @@ const AccountTab: React.FC<AccountTabProps> = ({
                     path="history"
                     element={
                         <HistoryScreen
-                            orders={orders || []}
                             onBack={() => navigate("/account")}
                             onNavigateToHome={onNavigateToHome}
                             onOpenOrder={(id) => navigate(`/account/order/${id}`)}
