@@ -77,21 +77,20 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
 
 
                         {/android/i.test(navigator.userAgent) ? (
-                            <button
-                                onClick={() => {
-                                    onClose();
-                                    window.location.href = "intent://details?id=com.Raiyansoft.TrandyHair#Intent;scheme=market;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.android.vending;end";
-                                }}
+                            <a
+                                href="https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair"
+                                rel="noopener noreferrer"
+                                onClick={onClose}
                                 className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                             >
                                 <ShoppingBag size={18} />
                                 <span>{t.buyProducts}</span>
-                            </button>
+                            </a>
                         ) : (
                             <a
                                 href="https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066"
                                 target="_blank"
-                                rel="noreferrer"
+                                rel="noopener noreferrer"
                                 onClick={onClose}
                                 className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                             >
