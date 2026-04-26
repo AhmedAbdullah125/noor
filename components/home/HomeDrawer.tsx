@@ -78,7 +78,12 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
 
                         <button
                             onClick={() => {
-                                window.open("https://onelink.to/trandyhair", "_blank", "noreferrer");
+                                const isAndroid = /android/i.test(navigator.userAgent);
+                                if (isAndroid) {
+                                    window.open("https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair", "_blank", "noreferrer");
+                                } else {
+                                    window.open("https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066", "_blank", "noreferrer");
+                                }
                                 onClose();
                             }}
                             className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
