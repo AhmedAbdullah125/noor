@@ -76,19 +76,29 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                         </button>
 
 
-                        <a
-                            href={
-                                /android/i.test(navigator.userAgent)
-                                    ? "https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair"
-                                    : "https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066"
-                            }
-                            target="_top"
-                            onClick={onClose}
-                            className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
-                        >
-                            <ShoppingBag size={18} />
-                            <span>{t.buyProducts}</span>
-                        </a>
+                        {/android/i.test(navigator.userAgent) ? (
+                            <button
+                                onClick={() => {
+                                    // Using _system helps Cordova/Capacitor webviews open the external device browser
+                                    window.open("https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair", "_system") || 
+                                    window.open("https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair", "_blank");
+                                    onClose();
+                                }}
+                                className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            >
+                                <ShoppingBag size={18} />
+                                <span>{t.buyProducts}</span>
+                            </button>
+                        ) : (
+                            <a
+                                href="https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066"
+                                onClick={onClose}
+                                className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            >
+                                <ShoppingBag size={18} />
+                                <span>{t.buyProducts}</span>
+                            </a>
+                        )}
                         <button
                             onClick={() => {
                                 onNavigate("/product/94");
