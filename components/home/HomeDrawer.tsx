@@ -99,7 +99,7 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                                 className="w-full py-3.5 rounded-xl border border-app-gold px-2 text-app-gold font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
                             >
                                 <ShoppingBag size={18} />
-                                <span>{t.buyProducts}</span>
+                                <span>{t.buyProducts} 1</span>
                             </a>
                         )}
                         <button
