@@ -80,9 +80,19 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                             onClick={() => {
                                 const isAndroid = /android/i.test(navigator.userAgent);
                                 if (isAndroid) {
-                                    window.open("https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair", "_blank", "noreferrer");
+                                    // Try native market:// scheme first; WebView passes it to Play Store
+                                    window.location.href = "market://details?id=com.Raiyansoft.TrandyHair";
+                                    // Fallback to HTTPS after a short delay in case scheme fails
+                                    setTimeout(() => {
+                                        window.location.href = "https://play.google.com/store/apps/details?id=com.Raiyansoft.TrandyHair";
+                                    }, 1000);
                                 } else {
-                                    window.open("https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066", "_blank", "noreferrer");
+                                    // Try native itms-apps:// scheme first; WebView passes it to App Store
+                                    window.location.href = "itms-apps://itunes.apple.com/kw/app/id6758231066";
+                                    // Fallback to HTTPS after a short delay in case scheme fails
+                                    setTimeout(() => {
+                                        window.location.href = "https://apps.apple.com/kw/app/%D9%86%D9%88%D8%B1-%D8%AA%D8%B1%D9%86%D8%AF%D9%8A-%D9%87%D9%8A%D8%B1/id6758231066";
+                                    }, 1000);
                                 }
                                 onClose();
                             }}
