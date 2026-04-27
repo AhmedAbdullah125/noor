@@ -187,7 +187,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
 
         <button
           onClick={() => navigate("/forgot-password")}
-          className="w-full text-app-gold text-sm font-medium active:opacity-70 mb-4"
+          className="w-full text-red-600 text-sm font-medium active:opacity-70 mb-4"
         >
           {t.forgotPassword}
         </button>
