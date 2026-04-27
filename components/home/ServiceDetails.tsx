@@ -564,7 +564,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                             setStartDate("");
                                                         }
                                                     }}
-                                                    minDate={new Date()}
+                                                    minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
                                                     dateFormat="yyyy-MM-dd"
                                                     placeholderText={t.chooseDate || "Select Date"}
                                                     className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold"
