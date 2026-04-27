@@ -198,6 +198,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
         >
           {t.noAccount}
         </button>
+        <p className="text-xs text-app-textSec/70 text-center mt-2">
+          {t.firstTimeHint}
+        </p>
       </div>
     </div>
   );

@@ -162,8 +162,6 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
 
 
                     <MenuRow icon={<Info size={20} />} label={t.aboutApp} onClick={onOpenAbout} />
-                    <MenuRow icon={<Mail size={20} />} label="contact@mezodonoor.com" onClick={() => window.location.href = "mailto:contact@mezodonoor.com"} />
-                    <MenuRow icon={<Phone size={20} />} label="96554647655" onClick={() => window.location.href = "tel:96554647655"} dir="ltr" last />
                 </div>
 
                 {!isGuest && (
