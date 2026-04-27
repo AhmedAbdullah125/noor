@@ -194,7 +194,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
 
         <button
           onClick={() => navigate("/signup")}
-          className="w-full text-app-gold  text-md font-semibold underline decoration-app-textSec/30 underline-offset-4 active:opacity-70"
+          className="w-full text-red-600 text-md font-semibold underline decoration-red-600/30 underline-offset-4 active:opacity-70"
         >
           {t.noAccount}
         </button>
