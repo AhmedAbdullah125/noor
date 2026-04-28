@@ -571,6 +571,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                     calendarClassName="premium-calendar"
                                                     wrapperClassName="premium-datepicker"
                                                     locale={isAr ? "ar" : undefined}
+                                                    onFocus={(e) => e.target.blur()}
                                                 />
                                             </div>
                                             <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
