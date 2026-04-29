@@ -98,7 +98,7 @@ export default function CartPage() {
                     className="flex flex-col items-center text-center"
                     initial={{ opacity: 0, scale: 0.85 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+                    transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] as const }}
                 >
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
                         <CheckCircle size={44} className="text-green-500" />
@@ -126,7 +126,7 @@ export default function CartPage() {
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
             >
                 <AppHeader
                     title={lang === "ar" ? "سلة التسوق" : "Cart"}
@@ -189,7 +189,7 @@ export default function CartPage() {
                                 className="bg-white rounded-2xl border border-app-card/30 p-4 shadow-sm"
                                 initial={{ opacity: 0, y: 18 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] }}
+                                transition={{ duration: 0.3, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] as const }}
                             >
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">

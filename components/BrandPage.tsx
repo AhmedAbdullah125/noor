@@ -122,7 +122,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
       >
         <AppHeader title={brandInfo.name} onBack={handleBack} />
       </motion.div>
@@ -132,7 +132,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
           className="flex flex-col items-center mb-8"
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] as const }}
         >
           <div className="w-32 h-32 rounded-[2rem] bg-white shadow-md border border-app-card/30 overflow-hidden mb-4 p-2">
             <AppImage
@@ -170,7 +170,7 @@ const BrandPage: React.FC<BrandPageProps> = ({ onBook, favourites, onToggleFavou
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] }}
+                    transition={{ duration: 0.35, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] as const }}
                   >
                     <ProductCard
                       product={product}

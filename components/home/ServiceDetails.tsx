@@ -701,7 +701,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         className="flex flex-col items-center text-center py-4"
                                         initial={{ opacity: 0, scale: 0.88 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                                        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
                                     >
                                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                                             <ShoppingCart size={32} className="text-green-500" />
@@ -808,7 +808,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 className="px-6 mb-6"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
             >
                 <div className="w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-md bg-white border border-app-card/30">
                     <ImageCarousel images={getImages()} alt={product.name} className="w-full h-full" />
@@ -820,7 +820,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                 className="px-8 mb-4"
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.38, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.38, delay: 0.1, ease: [0.4, 0, 0.2, 1] as const }}
             >
                 <h2 className="text-xl font-semibold text-app-text font-active leading-tight mb-2">{product.name}</h2>
                 <div>

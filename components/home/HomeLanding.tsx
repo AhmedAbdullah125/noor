@@ -135,7 +135,7 @@ export default function HomeLanding({
         visible: (i: number) => ({
             opacity: 1,
             scale: 1,
-            transition: { duration: 0.35, delay: i * 0.07, ease: [0.4, 0.4, 0.2, 1] },
+            transition: { duration: 0.35, delay: i * 0.07, ease: [0.4, 0.4, 0.2, 1] as const },
         }),
     };
 
@@ -147,7 +147,7 @@ export default function HomeLanding({
                 ref={wrapperRef}
                 initial={{ opacity: 0, y: -14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
             >
                 <div className="relative w-full">
                     <input
@@ -256,7 +256,7 @@ export default function HomeLanding({
                 dir="rtl"
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.45, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.45, delay: 0.1, ease: [0.4, 0, 0.2, 1] as const }}
             >
                 {bannersLoading ? (
                     <div className="w-full h-[162px] rounded-[2rem] bg-gray-200 animate-shimmer overflow-hidden shadow-md border border-app-card/20" />
