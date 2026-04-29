@@ -13,20 +13,10 @@ import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods, PaymentMethod } from "../services/useGetPaymentMethods";
-import DatePicker, { registerLocale } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
-// Minimal manual Arabic locale for DatePicker to avoid date-fns dependency
-const localeAr = {
-    localize: {
-        day: (n: number) => ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'][n],
-        month: (n: number) => ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'][n],
-    },
-    formatLong: {
-        date: () => 'yyyy-MM-dd'
-    }
-} as any;
-registerLocale("ar", localeAr);
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+import { addDays } from "date-fns";
+import { ar as arLocale } from "date-fns/locale";
 
 
 type Props = {
@@ -65,58 +55,63 @@ const timeSlots: string[] = [];
 
 // Custom Styles for Premium DatePicker
 const calendarStyles = `
-  .premium-datepicker {
-    width: 100% !important;
+  .rdp {
+    --rdp-cell-size: 38px;
+    --rdp-accent-color: #483383;
+    --rdp-background-color: rgba(72, 51, 131, 0.1);
+    --rdp-accent-color-foreground: white;
+    margin: 0;
   }
-  .react-datepicker-wrapper {
-    width: 100%;
+  .premium-calendar-container {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(72, 51, 131, 0.12);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    font-family: "Readex Pro", sans-serif;
+    padding: 12px;
+    width: calc(100vw - 40px);
+    max-width: 340px;
   }
-  .premium-calendar {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(72, 51, 131, 0.1) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
-    font-family: "Readex Pro", sans-serif !important;
-    border: none !important;
-    overflow: hidden;
-  }
-  .react-datepicker__header {
-    background: #483383 !important;
-    border-bottom: none !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
-    padding-top: 15px !important;
-  }
-  .react-datepicker__current-month, 
-  .react-datepicker__day-name {
+  .rdp-day_selected {
+    background-color: var(--rdp-accent-color) !important;
+    border-radius: 12px !important;
     color: white !important;
   }
-  .react-datepicker__day--selected {
-    background-color: #483383 !important;
-    border-radius: 10px !important;
-    color: white !important;
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: var(--rdp-background-color) !important;
+    border-radius: 12px !important;
   }
-  .react-datepicker__day:hover {
-    border-radius: 10px !important;
-    background-color: rgba(72, 51, 131, 0.1) !important;
+  .rdp-caption_label {
+    font-weight: 700;
+    color: #483383;
+    text-transform: capitalize;
   }
-  .react-datepicker__navigation--next {
-    border-left-color: white !important;
-  }
-  .react-datepicker__navigation--previous {
-    border-right-color: white !important;
-  }
-  .react-datepicker__triangle {
-    display: none !important;
+  .rdp-button[disabled] {
+    opacity: 0.3;
   }
   .booked-day {
-    background-color: #ef4444 !important;
-    color: white !important;
+    background-color: #fee2e2 !important;
+    color: #ef4444 !important;
     border-radius: 10px !important;
+    opacity: 1 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1px !important;
   }
-  .booked-day:hover {
-    background-color: #dc2626 !important;
+  .booked-day-label {
+    font-size: 6px;
+    font-weight: 800;
+    color: #ef4444;
+    line-height: 1;
+    display: block;
+    letter-spacing: 0;
+  }
+  .rdp-head_cell {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
   }
 `;
 
@@ -159,6 +154,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     const filteredTimeSlots = useMemo(() => {
         const today = getTodayDate();
@@ -587,34 +583,81 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                             <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2 relative">
                                                 <style>{calendarStyles}</style>
                                                 <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.date}</label>
-                                                <DatePicker
-                                                    selected={startDate ? new Date(startDate) : null}
-                                                    onChange={(date: Date | null) => {
-                                                        if ((product as any)?.id === 94 && date && isBookedDate(date)) {
-                                                            toast(t.bookedDates, {
-                                                                style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
-                                                            });
-                                                            return;
-                                                        }
-                                                        if (date) {
-                                                            const y = date.getFullYear();
-                                                            const m = pad2(date.getMonth() + 1);
-                                                            const d = pad2(date.getDate());
-                                                            setStartDate(`${y}-${m}-${d}`);
-                                                        } else {
-                                                            setStartDate("");
-                                                        }
-                                                    }}
-                                                    dayClassName={(date) => ((product as any)?.id === 94 && isBookedDate(date)) ? "booked-day" : undefined}
-                                                    minDate={((product as any)?.id === 94) ? new Date(new Date().setDate(new Date().getDate() + 1)) : new Date()}
-                                                    dateFormat="yyyy-MM-dd"
-                                                    placeholderText={t.chooseDate || "Select Date"}
-                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                                    calendarClassName="premium-calendar"
-                                                    wrapperClassName="premium-datepicker"
-                                                    locale={isAr ? "ar" : undefined}
-                                                    onFocus={(e) => e.target.blur()}
-                                                />
+                                                <button
+                                                    onClick={() => setIsCalendarOpen((v) => !v)}
+                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold text-start"
+                                                >
+                                                    <span className={startDate ? "text-app-text" : "text-app-textSec/60"}>
+                                                        {startDate || (t.chooseDate || "Select Date")}
+                                                    </span>
+                                                </button>
+
+                                                <AnimatePresence>
+                                                    {isCalendarOpen && (
+                                                        <>
+                                                            <div className="fixed inset-0 z-[1900]" onClick={() => setIsCalendarOpen(false)} />
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                                                                transition={{ duration: 0.18 }}
+                                                                className="premium-calendar-container"
+                                                                style={{
+                                                                    position: "fixed",
+                                                                    bottom: 220,
+                                                                    right: "0%",
+                                                                    transform: "translateX(-50%)",
+                                                                    zIndex: 2100,
+                                                                }}
+                                                            >
+                                                                <DayPicker
+                                                                    mode="single"
+                                                                    selected={startDate ? new Date(startDate) : undefined}
+                                                                    onSelect={(date) => {
+                                                                        if (!date) return;
+                                                                        if ((product as any)?.id === 94 && isBookedDate(date)) {
+                                                                            toast(t.bookedDates, {
+                                                                                style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
+                                                                            });
+                                                                            return;
+                                                                        }
+                                                                        const y = date.getFullYear();
+                                                                        const m = pad2(date.getMonth() + 1);
+                                                                        const d = pad2(date.getDate());
+                                                                        setStartDate(`${y}-${m}-${d}`);
+                                                                        setIsCalendarOpen(false);
+                                                                    }}
+                                                                    disabled={[
+                                                                        { before: (product as any)?.id === 94 ? addDays(new Date(), 1) : new Date() },
+                                                                        isBookedDate
+                                                                    ]}
+                                                                    modifiers={{ booked: isBookedDate }}
+                                                                    modifiersClassNames={{ booked: "booked-day" }}
+                                                                    locale={isAr ? arLocale : undefined}
+                                                                    dir={isAr ? "rtl" : "ltr"}
+                                                                    components={{
+                                                                        DayButton: ({ day, modifiers, children, ...props }: any) => {
+                                                                            const booked = isBookedDate(day.date);
+                                                                            return (
+                                                                                <button
+                                                                                    {...props}
+                                                                                    className={`${props.className ?? ""}${booked ? " booked-day" : ""}`}
+                                                                                >
+                                                                                    {children}
+                                                                                    {booked && (
+                                                                                        <span className="booked-day-label">
+                                                                                            {isAr ? "محجوز" : "booked"}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </button>
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </motion.div>
+                                                        </>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
                                             <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
                                                 <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.time}</label>

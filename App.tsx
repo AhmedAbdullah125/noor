@@ -19,7 +19,7 @@ import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, } from "./components/services/http";
-import { clearAuth } from "./components/auth/authStorage";
+import { clearAuth, getAccessToken, isLoggedIn } from "./components/auth/authStorage";
 import HairProfilePage from './components/HairProfilePage';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
@@ -53,15 +53,21 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [orders, setOrders] = useState<Order[]>([]);
   const [favourites, setFavourites] = useState<number[]>([]);
+
+  // Derive auth status from the REAL token in storage — this is the source of truth.
+  // Falls back to the legacy auth-mode flag for guest sessions.
   const [authStatus, setAuthStatus] = useState<AuthStatus>(() => {
-    const isLoggedIn = localStorage.getItem(STORAGE_KEY_IS_LOGGED_IN);
+    if (isLoggedIn()) return 'authenticated';
     const authMode = localStorage.getItem(STORAGE_KEY_AUTH_MODE);
-    if (isLoggedIn === 'true') return 'authenticated';
     if (authMode === 'guest') return 'guest';
     return 'anonymous';
   });
 
+  // Prevent ProtectedRoute from redirecting before we've confirmed auth on first render.
+  const [authChecked, setAuthChecked] = useState(false);
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStatus }> = ({ children, authStatus }) => {
+  if (!authChecked) return null; // Wait silently while confirming auth
   if (authStatus === 'anonymous') {
     return <Navigate to="/login" replace />;
   }
@@ -84,7 +90,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStat
     };
   }, [navigate]);
 
-  // Load initial data
+  // Load initial data and confirm auth from real token
   useEffect(() => {
     cacheService.warmup();
 
@@ -100,15 +106,20 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStat
       setFavourites(JSON.parse(savedFavs));
     }
 
-    // Check auth
-    const isLoggedIn = localStorage.getItem(STORAGE_KEY_IS_LOGGED_IN);
-    const authMode = localStorage.getItem(STORAGE_KEY_AUTH_MODE);
-
-    if (isLoggedIn === 'true') {
+    // Re-confirm auth using the actual token (source of truth)
+    if (isLoggedIn()) {
       setAuthStatus('authenticated');
-    } else if (authMode === 'guest') {
-      setAuthStatus('guest');
+    } else {
+      const authMode = localStorage.getItem(STORAGE_KEY_AUTH_MODE);
+      if (authMode === 'guest') {
+        setAuthStatus('guest');
+      } else {
+        setAuthStatus('anonymous');
+      }
     }
+
+    // Auth is now confirmed — allow ProtectedRoute to make decisions
+    setAuthChecked(true);
   }, []);
 
   // Update Active Tab based on route
