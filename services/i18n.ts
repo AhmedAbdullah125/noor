@@ -440,6 +440,7 @@ export const translations = {
     goToCart: 'Go to Cart',
     continueShopping: 'Continue Shopping',
     totalAmount: 'Total Amount',
+    bookedDates: 'booked dates',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -875,6 +876,7 @@ export const translations = {
     goToCart: 'الذهاب إلى السلة',
     continueShopping: 'متابعة التسوق',
     totalAmount: 'المبلغ الإجمالي',
+    bookedDates: 'موعد محجوز',
   }
 };
 

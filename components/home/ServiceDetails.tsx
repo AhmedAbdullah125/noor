@@ -52,6 +52,14 @@ function getTodayDate() {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+const isBookedDate = (date: Date) => {
+    if (!date) return false;
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const start = new Date(2026, 4, 5); // May 5
+    const end = new Date(2026, 4, 20);   // May 20
+    return d >= start && d <= end;
+};
+
 
 const timeSlots: string[] = [];
 
@@ -101,6 +109,14 @@ const calendarStyles = `
   }
   .react-datepicker__triangle {
     display: none !important;
+  }
+  .booked-day {
+    background-color: #ef4444 !important;
+    color: white !important;
+    border-radius: 10px !important;
+  }
+  .booked-day:hover {
+    background-color: #dc2626 !important;
   }
 `;
 
@@ -574,6 +590,12 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 <DatePicker
                                                     selected={startDate ? new Date(startDate) : null}
                                                     onChange={(date: Date | null) => {
+                                                        if ((product as any)?.id === 94 && date && isBookedDate(date)) {
+                                                            toast(t.bookedDates, {
+                                                                style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
+                                                            });
+                                                            return;
+                                                        }
                                                         if (date) {
                                                             const y = date.getFullYear();
                                                             const m = pad2(date.getMonth() + 1);
@@ -583,6 +605,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                             setStartDate("");
                                                         }
                                                     }}
+                                                    dayClassName={(date) => ((product as any)?.id === 94 && isBookedDate(date)) ? "booked-day" : undefined}
                                                     minDate={((product as any)?.id === 94) ? new Date(new Date().setDate(new Date().getDate() + 1)) : new Date()}
                                                     dateFormat="yyyy-MM-dd"
                                                     placeholderText={t.chooseDate || "Select Date"}
