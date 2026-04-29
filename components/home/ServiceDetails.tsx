@@ -143,6 +143,26 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
+
+    const filteredTimeSlots = useMemo(() => {
+        const today = getTodayDate();
+        if (startDate !== today) return timeSlots;
+
+        const now = new Date();
+        const curH = now.getHours();
+        const curM = now.getMinutes();
+
+        return timeSlots.filter(slot => {
+            const [h, m] = slot.split(":").map(Number);
+            return h > curH || (h === curH && m >= curM);
+        });
+    }, [startDate]);
+
+    useEffect(() => {
+        if (startTime && !filteredTimeSlots.includes(startTime)) {
+            setStartTime("");
+        }
+    }, [filteredTimeSlots, startTime]);
     const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
     const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
@@ -582,7 +602,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                     onChange={(e) => setStartTime(e.target.value)}
                                                 >
                                                     <option value="">{t.chooseTime}</option>
-                                                    {timeSlots.map((time) => {
+                                                    {filteredTimeSlots.map((time) => {
                                                         const [hStr, mStr] = time.split(":");
                                                         const h = parseInt(hStr, 10);
                                                         const period = h < 12 ? "ص" : "م";
