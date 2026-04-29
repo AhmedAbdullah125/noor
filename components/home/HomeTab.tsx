@@ -148,11 +148,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                             className="flex items-center justify-center gap-2 px-2 cursor-pointer w-full"
                             onClick={() => navigate("/")}
                         >
-                            <AppImage
-                                src="/fav.png"
-                                alt="Maison de Noor logo"
-                                className="h-7 w-7 object-contain"
-                            />
+
                             <span className="text-lg font-semibold text-app-text font-active truncate">
                                 {t.appName}
                             </span>
