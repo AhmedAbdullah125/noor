@@ -432,6 +432,14 @@ export const translations = {
     addToCart: 'Add to Cart',
     addingToCart: 'Adding...',
     addToCartSuccess: 'Added to cart successfully',
+    detailsAndAppointment: 'Details & Appointment',
+    couponAndCheckout: 'Coupon & Checkout',
+    proceedToCheckout: 'Proceed to Checkout',
+    addedToCart: 'Added to Cart!',
+    addedToCartDesc: 'Continue browsing or head to your cart',
+    goToCart: 'Go to Cart',
+    continueShopping: 'Continue Shopping',
+    totalAmount: 'Total Amount',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -859,6 +867,14 @@ export const translations = {
     addToCart: 'أضف إلى السلة',
     addingToCart: 'جاري الإضافة...',
     addToCartSuccess: 'تمت الإضافة إلى السلة بنجاح',
+    detailsAndAppointment: 'التفاصيل والموعد',
+    couponAndCheckout: 'كود الخصم والدفع',
+    proceedToCheckout: 'المتابعة للدفع',
+    addedToCart: 'تمت الإضافة إلى السلة!',
+    addedToCartDesc: 'يمكنك متابعة التسوق أو الانتقال إلى السلة',
+    goToCart: 'الذهاب إلى السلة',
+    continueShopping: 'متابعة التسوق',
+    totalAmount: 'المبلغ الإجمالي',
   }
 };
 

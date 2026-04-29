@@ -1,7 +1,8 @@
 import type { Brand, Product, ServiceAddonGroup, ServiceSubscription, } from "@/types";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
 // غيّرها حسب مشروعك (مثلاً: https://maison-de-noor.com/storage/)
-const STORAGE_BASE = "https://maison-de-noor.com/storage/";
+const STORAGE_BASE = API_BASE_URL.replace(/\/api$/, "/storage/");
 
 function resolveAsset(path?: string, highQuality: boolean = true) {
     if (!path) return "";

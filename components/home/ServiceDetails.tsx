@@ -163,7 +163,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             setStartTime("");
         }
     }, [filteredTimeSlots, startTime]);
-    const [showPolicyConfirm, setShowPolicyConfirm] = useState(false);
     const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
     const { data: profile } = useGetProfile(lang);
@@ -188,7 +187,6 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         setPaymentType("wallet");
         setStartDate("");
         setStartTime("");
-        setShowPolicyConfirm(false);
         setCouponCode("");
         setIsCheckingCoupon(false);
         setCouponStatus(null);
@@ -373,6 +371,19 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         }
     };
 
+    const validateAndGetDateTime = () => {
+        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+        if (!startDate) {
+            toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            return null;
+        }
+        if (!time || time.length < 5) {
+            toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
+            return null;
+        }
+        return { startDate, time };
+    };
+
     const doCreateRequest = async () => {
         if (creating) return;
         if (!bookingModal) return;
@@ -383,15 +394,9 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
             return;
         }
 
-        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
-        if (!startDate) {
-            toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-            return;
-        }
-        if (!time || time.length < 5) {
-            toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-            return;
-        }
+        const dateTime = validateAndGetDateTime();
+        if (!dateTime) return;
+        const { startDate, time } = dateTime;
 
         setCreating(true);
 
@@ -425,15 +430,9 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         if (!bookingModal) return;
         if (!validateRequiredGroups()) return;
 
-        const time = startTime.length === 5 ? `${startTime}:00` : startTime;
-        if (!startDate) {
-            toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-            return;
-        }
-        if (!time || time.length < 5) {
-            toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
-            return;
-        }
+        const dateTime = validateAndGetDateTime();
+        if (!dateTime) return;
+        const { startDate, time } = dateTime;
 
         addToCart({
             service_id: Number(product.id),
@@ -518,9 +517,9 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                         </button>
                                     )}
                                     <h3 className="text-base font-bold text-app-text">
-                                        {bookingStep === 1 && (isAr ? "التفاصيل والموعد" : "Details & Appointment")}
-                                        {bookingStep === 2 && (isAr ? "كود الخصم والدفع" : "Coupon & Checkout")}
-                                        {bookingStep === 3 && (isAr ? "طريقة الدفع" : "Payment Method")}
+                                        {bookingStep === 1 && t.detailsAndAppointment}
+                                        {bookingStep === 2 && t.couponAndCheckout}
+                                        {bookingStep === 3 && t.paymentMethod}
                                     </h3>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -617,14 +616,11 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
 
                                         <button
                                             onClick={() => {
-                                                const time = startTime.length === 5 ? `${startTime}:00` : startTime;
-                                                if (!startDate) { toast(t.pleaseSelectDate, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } }); return; }
-                                                if (!time || time.length < 5) { toast(t.pleaseSelectTime, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } }); return; }
-                                                setBookingStep(2);
+                                                if (validateAndGetDateTime()) setBookingStep(2);
                                             }}
                                             className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform mt-1"
                                         >
-                                            {isAr ? "التالي" : "Next"} →
+                                            {t.next} →
                                         </button>
                                     </>
                                 )}
@@ -682,7 +678,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                             className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                                         >
                                             <CreditCard size={18} />
-                                            {isAr ? "المتابعة للدفع" : "Proceed to Checkout"}
+                                            {t.proceedToCheckout}
                                         </button>
 
                                         <button
@@ -711,10 +707,10 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                             <ShoppingCart size={32} className="text-green-500" />
                                         </div>
                                         <h3 className="text-base font-bold text-app-text mb-1">
-                                            {isAr ? "تمت الإضافة إلى السلة!" : "Added to Cart!"}
+                                            {t.addedToCart}
                                         </h3>
                                         <p className="text-sm text-app-textSec mb-6">
-                                            {isAr ? "يمكنك متابعة التسوق أو الانتقال إلى السلة" : "Continue browsing or head to your cart"}
+                                            {t.addedToCartDesc}
                                         </p>
                                         <div className="w-full space-y-3">
                                             <button
@@ -722,7 +718,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                                             >
                                                 <ShoppingCart size={18} />
-                                                {isAr ? "الذهاب إلى السلة" : "Go to Cart"}
+                                                {t.goToCart}
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -732,7 +728,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                 className="w-full bg-white border-2 border-app-gold text-app-gold font-semibold py-4 rounded-2xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                                             >
                                                 <ShoppingBag size={18} />
-                                                {isAr ? "متابعة التسوق" : "Continue Shopping"}
+                                                {t.continueShopping}
                                             </button>
                                         </div>
                                     </motion.div>
@@ -743,7 +739,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                     <>
                                         {/* Total reminder */}
                                         <div className="flex justify-between items-center bg-app-bg/60 px-4 py-3 rounded-xl border border-app-card/30">
-                                            <span className="text-sm text-app-textSec">{isAr ? "المبلغ الإجمالي" : "Total Amount"}</span>
+                                            <span className="text-sm text-app-textSec">{t.totalAmount}</span>
                                             <span className="text-lg font-bold text-app-gold">
                                                 {(discountedTotal ?? bookingModal.finalTotal).toFixed(3)} {t.currency}
                                             </span>

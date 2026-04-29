@@ -34,25 +34,9 @@ interface SalonDB {
   logs: ActivityLog[];
   notifications_outbox: NotificationOutbox[];
   user_notifications: UserNotification[];
-  managers: Manager[];
 }
 
-const FULL_PERMISSIONS: ManagerPermissions = {
-  dashboard: true,
-  categories: true,
-  services: true,
-  serviceAddons: true,
-  users: true,
-  upcomingBookings: true,
-  completedBookings: true,
-  subscriptions: true,
-  staffHR: true,
-  accounting: true,
-  reports: true,
-  notifications: true,
-  activityLog: true,
-  managers: true
-};
+
 
 class DBService {
   private data: SalonDB;
@@ -60,7 +44,7 @@ class DBService {
   constructor() {
     this.data = this.initialize();
     this.migrateLegacyData();
-    this.seedManagersIfEmpty();
+
     this.seedLogsIfEmpty();
     this.seedHistoricalBookingsIfEmpty();
     this.seedAddonsFromDemoProducts(); // Key migration for unification
@@ -82,8 +66,7 @@ class DBService {
         accounting: parsed.accounting || [],
         logs: parsed.logs || [],
         notifications_outbox: parsed.notifications_outbox || [],
-        user_notifications: parsed.user_notifications || [],
-        managers: parsed.managers || []
+        user_notifications: parsed.user_notifications || []
       };
     }
 
@@ -106,8 +89,7 @@ class DBService {
       accounting: [],
       logs: [],
       notifications_outbox: [],
-      user_notifications: [],
-      managers: []
+      user_notifications: []
     };
   }
 
@@ -179,45 +161,6 @@ class DBService {
     }
   }
 
-  private seedManagersIfEmpty() {
-    if (this.data.managers && this.data.managers.length > 0) return;
-    
-    this.data.managers = [
-      {
-        id: 'm1',
-        fullName: 'Super Admin',
-        username: 'admin',
-        email: 'admin@salon.com',
-        password: '000000',
-        role: 'super_admin',
-        permissions: { ...FULL_PERMISSIONS },
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLoginAt: null
-      },
-      {
-        id: 'm2',
-        fullName: 'Noor Manager',
-        username: 'noor',
-        email: 'noor@salon.com',
-        password: '000000',
-        role: 'admin',
-        permissions: {
-          ...FULL_PERMISSIONS,
-          accounting: false,
-          staffHR: false,
-          reports: false,
-          managers: false
-        },
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLoginAt: null
-      }
-    ];
-    this.save();
-  }
 
   private seedHistoricalBookingsIfEmpty() {
     if (this.data.appointments.length > 5) return; // Only seed if empty/minimal
@@ -380,58 +323,6 @@ class DBService {
     }
   }
 
-  sendNotificationToAll(messageText: string, linkUrl: string = '', sentByAdminId: string, sentByAdminName: string): NotificationOutbox {
-    const users = this.data.users;
-    const outboxId = `out_${Date.now()}`;
-    const results: NotificationResult[] = [];
-    let successCount = 0;
-    let failCount = 0;
-
-    users.forEach(u => {
-      try {
-        const userNotif: UserNotification = {
-          id: `un_${Date.now()}_${u.id}`,
-          userId: u.id,
-          createdAt: new Date().toISOString(),
-          messageText,
-          linkUrl,
-          isRead: false
-        };
-        this.data.user_notifications.push(userNotif);
-        results.push({ userId: u.id, userName: u.name, status: 'success' });
-        successCount++;
-      } catch (err) {
-        results.push({ userId: u.id, userName: u.name, status: 'failed', errorReason: 'Internal Error' });
-        failCount++;
-      }
-    });
-
-    const outboxEntry: NotificationOutbox = {
-      id: outboxId,
-      createdAt: new Date().toISOString(),
-      sentByAdminId,
-      sentByAdminName,
-      messageText,
-      linkUrl,
-      target: 'all_users',
-      totalUsers: users.length,
-      successCount,
-      failCount,
-      results
-    };
-
-    this.data.notifications_outbox.unshift(outboxEntry);
-    this.save();
-
-    this.addLog(sentByAdminName, 'admin', 'broadcast', 'Notification', outboxId, 'Broadcast Sent', `Sent message to ${users.length} users`);
-
-    return outboxEntry;
-  }
-
-  deleteNotificationFromOutbox(id: string) {
-    this.data.notifications_outbox = this.data.notifications_outbox.filter(n => n.id !== id);
-    this.save();
-  }
   
   updateEntity<T extends keyof SalonDB>(collection: T, id: string | number, newData: any) {
     const items = this.data[collection] as any[];

@@ -149,7 +149,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                             onClick={() => navigate("/")}
                         >
                             <AppImage
-                                src="https://raiyansoft.com/wp-content/uploads/2025/12/fav.png"
+                                src="/fav.png"
                                 alt="Maison de Noor logo"
                                 className="h-7 w-7 object-contain"
                             />

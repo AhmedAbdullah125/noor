@@ -170,8 +170,7 @@ const AppContent: React.FC = () => {
     navigate("/login");
   };
 
-  const showTabBar = !location.pathname.startsWith('/admin') &&
-    !location.pathname.startsWith('/booking') &&
+  const showTabBar = !location.pathname.startsWith('/booking') &&
     !location.pathname.startsWith('/login') &&
     !location.pathname.startsWith('/signup') &&
     !location.pathname.startsWith('/verify') &&
@@ -180,11 +179,11 @@ const AppContent: React.FC = () => {
     !location.pathname.startsWith('/product/') &&
     !location.pathname.startsWith('/technician/online');
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
+
 
   return (
-    <div className={isAdminRoute ? "w-full min-h-screen" : "h-[100vh] flex flex-col bg-app-bg w-full max-w-[430px] mx-auto relative shadow-2xl overflow-hidden"}>
-      <div className={isAdminRoute ? "w-full h-full" : "flex-1 overflow-hidden relative"}>
+    <div className="h-[100vh] flex flex-col bg-app-bg w-full max-w-[430px] mx-auto relative shadow-2xl overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
         <Routes>
           <Route path="/" element={
             <HomeTab
@@ -257,9 +256,6 @@ const AppContent: React.FC = () => {
           <Route path="/verify" element={<OTPPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* Admin Routes */}
-          {/* <Route path="/admin/*" element={<AdminDashboard />} /> */}
-          {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
 
           {/* Placeholder for technician online */}
           <Route path="/technician/online" element={<PlaceholderTab title="Technician Online" />} />
