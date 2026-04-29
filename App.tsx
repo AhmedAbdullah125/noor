@@ -53,7 +53,20 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [orders, setOrders] = useState<Order[]>([]);
   const [favourites, setFavourites] = useState<number[]>([]);
-  const [authStatus, setAuthStatus] = useState<AuthStatus>('anonymous');
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(() => {
+    const isLoggedIn = localStorage.getItem(STORAGE_KEY_IS_LOGGED_IN);
+    const authMode = localStorage.getItem(STORAGE_KEY_AUTH_MODE);
+    if (isLoggedIn === 'true') return 'authenticated';
+    if (authMode === 'guest') return 'guest';
+    return 'anonymous';
+  });
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStatus }> = ({ children, authStatus }) => {
+  if (authStatus === 'anonymous') {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
   // Wire global 401 / session-expired logout
   useEffect(() => {
@@ -186,69 +199,117 @@ const AppContent: React.FC = () => {
       <div className="flex-1 overflow-hidden relative">
         <Routes>
           <Route path="/" element={
-            <HomeTab
-              onBook={handleBook}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <HomeTab
+                onBook={handleBook}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+              />
+            </ProtectedRoute>
           } />
 
           <Route path="/product/:productId" element={
-            <HomeTab
-              onBook={handleBook}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <HomeTab
+                onBook={handleBook}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+              />
+            </ProtectedRoute>
           } />
 
           <Route path="/category/:categoryName" element={
-            <HomeTab
-              onBook={handleBook}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <HomeTab
+                onBook={handleBook}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+              />
+            </ProtectedRoute>
           } />
 
           <Route path="/brand/:brandId" element={
-            <BrandPage
-              onBook={handleBook}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <BrandPage
+                onBook={handleBook}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+              />
+            </ProtectedRoute>
           } />
 
           <Route path="/all-products" element={
-            <AllProductsPage
-              onBook={handleBook}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <AllProductsPage
+                onBook={handleBook}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+              />
+            </ProtectedRoute>
           } />
 
-          <Route path="/subscriptions" element={<SubscriptionsTab />} />
-          <Route path="/notifications" element={<NotificationsTab />} />
-          <Route path="/appointments" element={<AppointmentsTab />} />
-          <Route path="/cart" element={<CartPage />} />
+          <Route path="/subscriptions" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <SubscriptionsTab />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <NotificationsTab />
+            </ProtectedRoute>
+          } />
+          <Route path="/appointments" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <AppointmentsTab />
+            </ProtectedRoute>
+          } />
+          <Route path="/cart" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <CartPage />
+            </ProtectedRoute>
+          } />
 
           <Route path="/account/*" element={
-            <AccountTab
-              orders={orders}
-              onNavigateToHome={() => handleTabChange('home')}
-              favourites={favourites}
-              onToggleFavourite={toggleFavourite}
-              onBook={handleBook}
-              onLogout={handleLogout}
-              isGuest={authStatus === 'guest'}
-            />
+            <ProtectedRoute authStatus={authStatus}>
+              <AccountTab
+                orders={orders}
+                onNavigateToHome={() => handleTabChange('home')}
+                favourites={favourites}
+                onToggleFavourite={toggleFavourite}
+                onBook={handleBook}
+                onLogout={handleLogout}
+                isGuest={authStatus === 'guest'}
+              />
+            </ProtectedRoute>
           } />
 
-          <Route path="/booking" element={<BookingPage onAddOrder={handleAddOrder} />} />
+          <Route path="/booking" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <BookingPage onAddOrder={handleAddOrder} />
+            </ProtectedRoute>
+          } />
 
-          <Route path="/subscription-details/:subscriptionId" element={<SubscriptionDetailsPage />} />
-          <Route path="/edit-appointment/:subscriptionId" element={<EditAppointmentPage />} />
-          <Route path="/book-next-session/:subscriptionId" element={<BookNextSessionPage />} />
+          <Route path="/subscription-details/:subscriptionId" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <SubscriptionDetailsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/edit-appointment/:subscriptionId" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <EditAppointmentPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/book-next-session/:subscriptionId" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <BookNextSessionPage />
+            </ProtectedRoute>
+          } />
 
-          <Route path="/hair-profile" element={<HairProfilePage />} />
+          <Route path="/hair-profile" element={
+            <ProtectedRoute authStatus={authStatus}>
+              <HairProfilePage />
+            </ProtectedRoute>
+          } />
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
