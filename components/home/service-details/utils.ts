@@ -20,7 +20,7 @@ export function getTodayDate() {
 export const isBookedDate = (date: Date) => {
   if (!date) return false;
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const start = new Date(2026, 4, 5); // May 5
+  const start = new Date(2026, 4, 3); // May 3
   const end = new Date(2026, 4, 20);   // May 20
   return d >= start && d <= end;
 };
