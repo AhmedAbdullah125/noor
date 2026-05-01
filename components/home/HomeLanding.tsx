@@ -36,8 +36,6 @@ export default function HomeLanding({
 }: Props) {
     const navigate = useNavigate();
     const t = translations[lang as Locale] || translations['ar'];
-    console.log(categories);
-
     // Banner slider
     const [currentBanner, setCurrentBanner] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
