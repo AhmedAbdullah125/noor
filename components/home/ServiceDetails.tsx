@@ -496,7 +496,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                     <>
                         {/* Backdrop */}
                         <motion.div
-                            className="fixed inset-0 bg-black/40 z-[140]"
+                            className="fixed inset-0 bg-black/40 z-[140] overflow-hidden"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}

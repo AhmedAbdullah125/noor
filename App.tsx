@@ -19,7 +19,8 @@ import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, } from "./components/services/http";
-import { clearAuth, getAccessToken, isLoggedIn } from "./components/auth/authStorage";
+import { clearAuth, isLoggedIn } from "./components/auth/authStorage";
+
 import HairProfilePage from './components/HairProfilePage';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
@@ -66,13 +67,13 @@ const AppContent: React.FC = () => {
   // Prevent ProtectedRoute from redirecting before we've confirmed auth on first render.
   const [authChecked, setAuthChecked] = useState(false);
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStatus }> = ({ children, authStatus }) => {
-  if (!authChecked) return null; // Wait silently while confirming auth
-  if (authStatus === 'anonymous') {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
-};
+  const ProtectedRoute: React.FC<{ children: React.ReactNode; authStatus: AuthStatus }> = ({ children, authStatus }) => {
+    if (!authChecked) return null; // Wait silently while confirming auth
+    if (authStatus === 'anonymous') {
+      return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
+  };
 
   // Wire global 401 / session-expired logout
   useEffect(() => {
