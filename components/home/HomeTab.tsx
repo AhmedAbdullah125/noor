@@ -36,6 +36,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
     const [lang, setCurrentLang] = useState<Locale>(getLang());
     const t = translations[lang];
@@ -167,7 +168,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                 />
             </motion.div>
 
-            <main className="flex-1 overflow-y-auto w-full pb-28 pt-24">
+            <main className={`flex-1 ${isBookingModalOpen ? "overflow-hidden" : "overflow-y-auto"} w-full pb-28 pt-24`}>
                 <AnimatePresence mode="wait">
                     <motion.div key={viewKey} {...fadeSlideUp} className="h-full">
                         {selectedProduct ? (
@@ -180,6 +181,7 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                                 onCreated={(data) => {
                                     navigate("/account", { state: { createdRequest: true, request: data } });
                                 }}
+                                onModalToggle={setIsBookingModalOpen}
                             />
                         ) : !activeCategory ? (
                             <HomeLanding

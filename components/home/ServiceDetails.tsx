@@ -23,6 +23,7 @@ type Props = {
     product: Product;
     onBack: () => void;
     onCreated?: (data: any) => void;
+    onModalToggle?: (isOpen: boolean) => void;
 };
 
 function parsePrice(val: any): number {
@@ -122,7 +123,7 @@ for (let h = 10; h <= 20; h++) {
     timeSlots.push(`${String(h).padStart(2, "0")}:30`);
 }
 
-export default function ServiceDetails({ product, onBack, onCreated }: Props) {
+export default function ServiceDetails({ product, onBack, onCreated, onModalToggle }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
     const lang = getLang();
     const t = translations[lang];
@@ -192,6 +193,11 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
         if (paymentType !== 'wallet' || !bookingModal) return false;
         return walletBalance < bookingModal.finalTotal;
     }, [paymentType, bookingModal, walletBalance]);
+
+    useEffect(() => {
+        onModalToggle?.(!!bookingModal);
+        return () => onModalToggle?.(false);
+    }, [bookingModal, onModalToggle]);
 
     useEffect(() => {
         setSelectedAddonIds(new Set());
@@ -496,7 +502,7 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                     <>
                         {/* Backdrop */}
                         <motion.div
-                            className="fixed inset-0 bg-black/40 z-[140] overflow-hidden"
+                            className="fixed inset-0 bg-black/40 z-[140]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -629,15 +635,16 @@ export default function ServiceDetails({ product, onBack, onCreated }: Props) {
                                                                     }}
                                                                     disabled={[
                                                                         { before: (product as any)?.id === 94 ? addDays(new Date(), 1) : new Date() },
-                                                                        isBookedDate
+                                                                        (date) => (product as any)?.id === 94 ? isBookedDate(date) : false
                                                                     ]}
-                                                                    modifiers={{ booked: isBookedDate }}
+                                                                    modifiers={{ booked: (date) => (product as any)?.id === 94 ? isBookedDate(date) : false }}
                                                                     modifiersClassNames={{ booked: "booked-day" }}
                                                                     locale={isAr ? arLocale : undefined}
                                                                     dir={isAr ? "rtl" : "ltr"}
                                                                     components={{
                                                                         DayButton: ({ day, modifiers, children, ...props }: any) => {
-                                                                            const booked = isBookedDate(day.date);
+                                                                            const isProduct94 = (product as any)?.id === 94;
+                                                                            const booked = isProduct94 && isBookedDate(day.date);
                                                                             return (
                                                                                 <button
                                                                                     {...props}

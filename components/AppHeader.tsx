@@ -20,7 +20,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 }) => {
   return (
     <header
-      className={`absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 pt-6 pb-4 shadow-sm border-b border-app-card/30 transition-all ${bgClassName} ${className}`}
+      className={`fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 pt-6 pb-4 shadow-sm border-b border-app-card/30 transition-all ${bgClassName} ${className}`}
       dir="rtl"
     >
 
