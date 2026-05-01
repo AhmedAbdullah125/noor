@@ -28,9 +28,7 @@ async function compressImage(file: File): Promise<File> {
     };
 
     try {
-        console.log(`Compressing image: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
         const compressedFile = await imageCompression(file, options);
-        console.log(`Compressed to: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
         return compressedFile;
     } catch (error) {
         console.error("Error compressing image:", error);

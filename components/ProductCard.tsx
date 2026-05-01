@@ -31,7 +31,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const wasSwipe = useRef(false);
-  console.log(product);
 
   // ✅ local favourite state (overrides parent)
   const [localFav, setLocalFav] = useState<boolean>(isFavourite);

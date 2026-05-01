@@ -1,23 +1,21 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
-import parse from "html-react-parser";
-import { motion, AnimatePresence } from "framer-motion";
-import ImageCarousel from "../ImageCarousel";
-import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription, } from "../../types";
+import { useNavigate } from "react-router-dom";
+import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription } from "../../types";
 import { createRequest } from "../services/createRequest";
 import { useAddToCart } from "../services/useAddToCart";
-import { useNavigate } from "react-router-dom";
 import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
-import { useGetPaymentMethods, PaymentMethod } from "../services/useGetPaymentMethods";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import { addDays } from "date-fns";
-import { ar as arLocale } from "date-fns/locale";
+import { useGetPaymentMethods } from "../services/useGetPaymentMethods";
 
+// Sub-components
+import { ServiceHeader } from "./service-details/ServiceHeader";
+import { AddonGroups } from "./service-details/AddonGroups";
+import { SubscriptionPackages } from "./service-details/SubscriptionPackages";
+import { BookingBottomSheet } from "./service-details/BookingBottomSheet";
+import { parsePrice, getTodayDate, timeSlots } from "./service-details/utils";
 
 type Props = {
     product: Product;
@@ -25,103 +23,6 @@ type Props = {
     onCreated?: (data: any) => void;
     onModalToggle?: (isOpen: boolean) => void;
 };
-
-function parsePrice(val: any): number {
-    if (val == null) return 0;
-    if (typeof val === "number") return val;
-    const s = String(val);
-    const n = parseFloat(s.replace(/[^\d.]/g, ""));
-    return Number.isFinite(n) ? n : 0;
-}
-
-function pad2(n: number) {
-    return String(n).padStart(2, "0");
-}
-
-function getTodayDate() {
-    const d = new Date();
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
-const isBookedDate = (date: Date) => {
-    if (!date) return false;
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const start = new Date(2026, 4, 5); // May 5
-    const end = new Date(2026, 4, 20);   // May 20
-    return d >= start && d <= end;
-};
-
-
-const timeSlots: string[] = [];
-
-// Custom Styles for Premium DatePicker
-const calendarStyles = `
-  .rdp {
-    --rdp-cell-size: 38px;
-    --rdp-accent-color: #483383;
-    --rdp-background-color: rgba(72, 51, 131, 0.1);
-    --rdp-accent-color-foreground: white;
-    margin: 0;
-  }
-  .premium-calendar-container {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(72, 51, 131, 0.12);
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    font-family: "Readex Pro", sans-serif;
-    padding: 12px;
-    width: calc(100vw - 40px);
-    max-width: 340px;
-  }
-  .rdp-day_selected {
-    background-color: var(--rdp-accent-color) !important;
-    border-radius: 12px !important;
-    color: white !important;
-  }
-  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-    background-color: var(--rdp-background-color) !important;
-    border-radius: 12px !important;
-  }
-  .rdp-caption_label {
-    font-weight: 700;
-    color: #483383;
-    text-transform: capitalize;
-  }
-  .rdp-button[disabled] {
-    opacity: 0.3;
-  }
-  .booked-day {
-    background-color: #fee2e2 !important;
-    color: #ef4444 !important;
-    border-radius: 10px !important;
-    opacity: 1 !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 1px !important;
-  }
-  .booked-day-label {
-    font-size: 6px;
-    font-weight: 800;
-    color: #ef4444;
-    line-height: 1;
-    display: block;
-    letter-spacing: 0;
-  }
-  .rdp-head_cell {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-`;
-
-
-// 10 AM to 8:30 PM
-for (let h = 10; h <= 20; h++) {
-    timeSlots.push(`${String(h).padStart(2, "0")}:00`);
-    timeSlots.push(`${String(h).padStart(2, "0")}:30`);
-}
 
 export default function ServiceDetails({ product, onBack, onCreated, onModalToggle }: Props) {
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
@@ -140,6 +41,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             setBookingStep(3);
         },
     });
+
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const descriptionCharLimit = 150;
 
@@ -152,10 +54,10 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     } | null>(null);
 
     const [paymentType, setPaymentType] = useState<string>("wallet");
-
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
     const filteredTimeSlots = useMemo(() => {
         const today = getTodayDate();
@@ -176,7 +78,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             setStartTime("");
         }
     }, [filteredTimeSlots, startTime]);
-    const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
     const { data: profile } = useGetProfile(lang);
     const [couponCode, setCouponCode] = useState("");
@@ -184,10 +85,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const [couponStatus, setCouponStatus] = useState<{ valid: boolean; message: string; discount_type?: string; discount_value?: number } | null>(null);
     const [isCouponApplied, setIsCouponApplied] = useState(false);
 
-    // Parse wallet balance safely
-    const walletBalance = useMemo(() => {
-        return parsePrice(profile?.wallet ?? 0);
-    }, [profile?.wallet]);
+    const walletBalance = useMemo(() => parsePrice(profile?.wallet ?? 0), [profile?.wallet]);
 
     const isWalletInsufficient = useMemo(() => {
         if (paymentType !== 'wallet' || !bookingModal) return false;
@@ -221,7 +119,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
 
     const addonsTotal = useMemo(() => {
         let sum = 0;
-
         const legacyAddons: ServiceAddon[] = (product as any)?.addons ?? [];
         legacyAddons.forEach((a) => {
             if (selectedAddonIds.has(a.id)) sum += parsePrice((a as any).price_kwd ?? 0);
@@ -232,26 +129,20 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
                 if (selectedAddonIds.has(opt.id)) sum += parsePrice(opt.price_kwd ?? opt.price ?? 0);
             });
         });
-
         return sum;
     }, [product, resolvedAddonGroups, selectedAddonIds]);
 
     const total = useMemo(() => basePrice + addonsTotal, [basePrice, addonsTotal]);
 
-    const priceData = useMemo(
-        () => ({
-            base: basePrice,
-            addons: addonsTotal,
-            total,
-            display: `${total.toFixed(3)} ${t.currency}`,
-            duration: (product as any)?.duration || "0",
-        }),
-        [basePrice, addonsTotal, total, product, t.currency]
-    );
+    const priceData = useMemo(() => ({
+        base: basePrice,
+        addons: addonsTotal,
+        total,
+        display: `${total.toFixed(3)} ${t.currency}`,
+        duration: (product as any)?.duration || "0",
+    }), [basePrice, addonsTotal, total, t.currency]);
 
     const { data: paymentMethods = [] } = useGetPaymentMethods(total);
-
-    console.log(paymentMethods);
 
     const getImages = () => {
         const imgs = (product as any)?.images ?? [];
@@ -263,7 +154,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const handleGroupOptionSelect = (groupId: string, optionId: string, type: "single" | "multi") => {
         setSelectedAddonIds((prev) => {
             const next = new Set(prev);
-
             if (type === "single") {
                 const group = resolvedAddonGroups.find((g) => g.id === groupId);
                 group?.options?.forEach((opt) => next.delete(opt.id));
@@ -272,7 +162,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
                 if (next.has(optionId)) next.delete(optionId);
                 else next.add(optionId);
             }
-
             return next;
         });
     };
@@ -295,14 +184,10 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
 
     const buildRequestOptions = () => {
         const out: { option_id: number; option_value_id: number }[] = [];
-
         resolvedAddonGroups.forEach((group: any) => {
             const selected = (group.options ?? []).filter((opt: any) => selectedAddonIds.has(opt.id));
             selected.forEach((opt: any) => {
-                out.push({
-                    option_id: Number(group.id),
-                    option_value_id: Number(opt.id),
-                });
+                out.push({ option_id: Number(group.id), option_value_id: Number(opt.id) });
             });
         });
 
@@ -314,7 +199,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
                 if (optionId) out.push({ option_id: optionId, option_value_id: valueId });
             }
         });
-
         return out;
     };
 
@@ -361,10 +245,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             formData.append("code", couponCode);
             formData.append("service_id", String(product.id));
 
-            const res = await fetch(`${API_BASE_URL}/coupons/check`, {
-                method: "POST",
-                body: formData,
-            });
+            const res = await fetch(`${API_BASE_URL}/coupons/check`, { method: "POST", body: formData });
             const data = await res.json();
 
             if (data.status && data.data?.valid) {
@@ -403,10 +284,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     };
 
     const doCreateRequest = async () => {
-        if (creating) return;
-        if (!bookingModal) return;
-        if (!validateRequiredGroups()) return;
-
+        if (creating || !bookingModal || !validateRequiredGroups()) return;
         if (paymentType === 'wallet' && isWalletInsufficient) {
             toast.error(t.insufficientBalance, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
             return;
@@ -417,7 +295,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         const { startDate, time } = dateTime;
 
         setCreating(true);
-
         const payload = {
             service_id: Number(product.id),
             subscription_id: bookingModal.subscriptionId,
@@ -432,22 +309,18 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         setCreating(false);
 
         if (!res.ok) return;
-
         if (res.data?.payment_url) {
             toast(t.redirectingPayment, { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
             window.location.href = res.data.payment_url;
             return;
         }
-
         toast(t.requestSuccess, { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
         setBookingModal(null);
         onCreated?.(res.data);
     };
 
     const handleAddToCart = () => {
-        if (!bookingModal) return;
-        if (!validateRequiredGroups()) return;
-
+        if (!bookingModal || !validateRequiredGroups()) return;
         const dateTime = validateAndGetDateTime();
         if (!dateTime) return;
         const { startDate, time } = dateTime;
@@ -493,594 +366,77 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             finalTotal: priceData.total,
         });
     };
-    console.log(product);
 
     return (
-        <div className="pt-2" dir={lang == "ar" ? "rtl" : "ltr"}>
-            <AnimatePresence>
-                {bookingModal && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            className="fixed inset-0 bg-black/40 z-[140]"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setBookingModal(null)}
-                        />
+        <div className="pt-2" dir={isAr ? "rtl" : "ltr"}>
+            <BookingBottomSheet
+                bookingModal={bookingModal}
+                setBookingModal={setBookingModal}
+                bookingStep={bookingStep}
+                setBookingStep={setBookingStep}
+                product={product}
+                t={t}
+                isAr={isAr}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                startTime={startTime}
+                setStartTime={setStartTime}
+                isCalendarOpen={isCalendarOpen}
+                setIsCalendarOpen={setIsCalendarOpen}
+                filteredTimeSlots={filteredTimeSlots}
+                validateAndGetDateTime={validateAndGetDateTime}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                handleCheckCoupon={handleCheckCoupon}
+                isCheckingCoupon={isCheckingCoupon}
+                couponStatus={couponStatus}
+                setCouponStatus={setCouponStatus}
+                setIsCouponApplied={setIsCouponApplied}
+                isCouponApplied={isCouponApplied}
+                discountedTotal={discountedTotal}
+                handleAddToCart={handleAddToCart}
+                addingToCart={addingToCart}
+                cartAdded={cartAdded}
+                navigate={navigate}
+                paymentMethods={paymentMethods}
+                paymentType={paymentType}
+                setPaymentType={setPaymentType}
+                walletBalance={walletBalance}
+                isWalletInsufficient={isWalletInsufficient}
+                doCreateRequest={doCreateRequest}
+                creating={creating}
+            />
 
-                        {/* Bottom Sheet */}
-                        <motion.div
-                            className="fixed max-w-[420px] bottom-0 left-1/2 w-full bg-white rounded-t-3xl z-[1500] flex flex-col max-h-[85vh]"
-                            initial={{ y: "100%", x: "-50%" }}
-                            animate={{ y: 0, x: "-50%" }}
-                            exit={{ y: "100%", x: "-50%" }}
-                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Sheet Handle */}
-                            <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
-                                <div className="w-10 h-1 bg-app-card/50 rounded-full" />
-                            </div>
+            <ServiceHeader
+                product={product}
+                images={getImages()}
+                descriptionCharLimit={descriptionCharLimit}
+                isDescriptionExpanded={isDescriptionExpanded}
+                setIsDescriptionExpanded={setIsDescriptionExpanded}
+                priceData={priceData}
+                t={t}
+                hasAddons={resolvedAddonGroups.length > 0}
+            />
 
-                            {/* Step header */}
-                            <div className="flex-shrink-0 flex items-center justify-between px-5 pb-3">
-                                <div className="flex items-center gap-2">
-                                    {bookingStep > 1 && (
-                                        <button
-                                            onClick={() => setBookingStep((s) => (s - 1) as 1 | 2 | 3)}
-                                            className="p-1.5 rounded-full hover:bg-app-bg transition-colors"
-                                        >
-                                            {isAr ? <ChevronRight size={20} className="text-app-textSec" /> : <ChevronLeft size={20} className="text-app-textSec" />}
-                                        </button>
-                                    )}
-                                    <h3 className="text-base font-bold text-app-text">
-                                        {bookingStep === 1 && t.detailsAndAppointment}
-                                        {bookingStep === 2 && t.couponAndCheckout}
-                                        {bookingStep === 3 && t.paymentMethod}
-                                    </h3>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {/* Step dots */}
-                                    <div className="flex gap-1.5">
-                                        {[1, 2, 3].map((s) => (
-                                            <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${bookingStep === s ? "w-5 bg-app-gold" : "w-1.5 bg-app-card/40"}`} />
-                                        ))}
-                                    </div>
-                                    <button onClick={() => setBookingModal(null)} className="p-1.5 rounded-full hover:bg-app-bg transition-colors">
-                                        <X size={18} className="text-app-textSec" />
-                                    </button>
-                                </div>
-                            </div>
+            <AddonGroups
+                resolvedAddonGroups={resolvedAddonGroups}
+                selectedAddonIds={selectedAddonIds}
+                handleGroupOptionSelect={handleGroupOptionSelect}
+                t={t}
+                isAr={isAr}
+                canSubscribe={canSubscribe}
+            />
 
-                            {/* Scrollable content */}
-                            <div className="flex-1 overflow-visible px-5 pb-6 space-y-3">
-
-                                {/* ── STEP 1: Service, Date, Time ─────────────────── */}
-                                {bookingStep === 1 && (
-                                    <>
-                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec">{t.service}</span>
-                                            <span className="text-sm font-semibold text-app-text">{product.name}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec">{t.package}</span>
-                                            <span className="text-sm font-semibold text-app-text">{bookingModal.title}</span>
-                                        </div>
-                                        {bookingModal.subscriptionId != null && (
-                                            <>
-                                                <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                                    <span className="text-xs text-app-textSec">{t.sessionsCount}</span>
-                                                    <span className="text-sm font-semibold text-app-text">{bookingModal.sessionsCount}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                                    <span className="text-xs text-app-textSec">{t.validity}</span>
-                                                    <span className="text-sm font-semibold text-app-text">{bookingModal.validityDays || 30} {t.day}</span>
-                                                </div>
-                                            </>
-                                        )}
-                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec">{t.total}</span>
-                                            <span className="text-sm font-bold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
-                                        </div>
-
-                                        {/* Date + Time */}
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2 relative">
-                                                <style>{calendarStyles}</style>
-                                                <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.date}</label>
-                                                <button
-                                                    onClick={() => setIsCalendarOpen((v) => !v)}
-                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold text-start"
-                                                >
-                                                    <span className={startDate ? "text-app-text" : "text-app-textSec/60"}>
-                                                        {startDate || (t.chooseDate || "Select Date")}
-                                                    </span>
-                                                </button>
-
-                                                <AnimatePresence>
-                                                    {isCalendarOpen && (
-                                                        <>
-                                                            <div className="fixed inset-0 z-[1900]" onClick={() => setIsCalendarOpen(false)} />
-                                                            <motion.div
-                                                                initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                                exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                                                                transition={{ duration: 0.18 }}
-                                                                className="premium-calendar-container"
-                                                                style={{
-                                                                    position: "fixed",
-                                                                    bottom: 220,
-                                                                    right: "0%",
-                                                                    transform: "translateX(-50%)",
-                                                                    zIndex: 2100,
-                                                                }}
-                                                            >
-                                                                <DayPicker
-                                                                    mode="single"
-                                                                    selected={startDate ? new Date(startDate) : undefined}
-                                                                    onSelect={(date) => {
-                                                                        if (!date) return;
-                                                                        if ((product as any)?.id === 94 && isBookedDate(date)) {
-                                                                            toast(t.bookedDates, {
-                                                                                style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
-                                                                            });
-                                                                            return;
-                                                                        }
-                                                                        const y = date.getFullYear();
-                                                                        const m = pad2(date.getMonth() + 1);
-                                                                        const d = pad2(date.getDate());
-                                                                        setStartDate(`${y}-${m}-${d}`);
-                                                                        setIsCalendarOpen(false);
-                                                                    }}
-                                                                    disabled={[
-                                                                        { before: (product as any)?.id === 94 ? addDays(new Date(), 1) : new Date() },
-                                                                        (date) => (product as any)?.id === 94 ? isBookedDate(date) : false
-                                                                    ]}
-                                                                    modifiers={{ booked: (date) => (product as any)?.id === 94 ? isBookedDate(date) : false }}
-                                                                    modifiersClassNames={{ booked: "booked-day" }}
-                                                                    locale={isAr ? arLocale : undefined}
-                                                                    dir={isAr ? "rtl" : "ltr"}
-                                                                    components={{
-                                                                        DayButton: ({ day, modifiers, children, ...props }: any) => {
-                                                                            const isProduct94 = (product as any)?.id === 94;
-                                                                            const booked = isProduct94 && isBookedDate(day.date);
-                                                                            return (
-                                                                                <button
-                                                                                    {...props}
-                                                                                    className={`${props.className ?? ""}${booked ? " booked-day" : ""}`}
-                                                                                >
-                                                                                    {children}
-                                                                                    {booked && (
-                                                                                        <span className="booked-day-label">
-                                                                                            {isAr ? "محجوز" : "booked"}
-                                                                                        </span>
-                                                                                    )}
-                                                                                </button>
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                />
-                                                            </motion.div>
-                                                        </>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
-                                            <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-2">
-                                                <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.time}</label>
-                                                <select
-                                                    className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
-                                                    value={startTime.slice(0, 5)}
-                                                    onChange={(e) => setStartTime(e.target.value)}
-                                                >
-                                                    <option value="">{t.chooseTime}</option>
-                                                    {filteredTimeSlots.map((time) => {
-                                                        const [hStr, mStr] = time.split(":");
-                                                        const h = parseInt(hStr, 10);
-                                                        const period = h < 12 ? "ص" : "م";
-                                                        const displayH = h % 12 || 12;
-                                                        return (
-                                                            <option key={time} value={time}>{displayH}:{mStr} {period}</option>
-                                                        );
-                                                    })}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={() => {
-                                                if (validateAndGetDateTime()) setBookingStep(2);
-                                            }}
-                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform mt-1"
-                                        >
-                                            {t.next} →
-                                        </button>
-                                    </>
-                                )}
-
-                                {/* ── STEP 2: Coupon + Add to Cart vs Checkout ─────── */}
-                                {bookingStep === 2 && (
-                                    <>
-                                        {/* Coupon */}
-                                        <div className="bg-app-bg/60 rounded-xl border border-app-card/30 p-3">
-                                            <label className="block text-[11px] font-semibold text-app-text mb-2">{t.couponCode}</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    className="flex-1 bg-white rounded-xl px-3 py-2 text-sm outline-none border border-app-card/30 focus:border-app-gold"
-                                                    placeholder={t.couponCode}
-                                                    value={couponCode}
-                                                    onChange={(e) => { setCouponCode(e.target.value); setCouponStatus(null); setIsCouponApplied(false); }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={handleCheckCoupon}
-                                                    disabled={isCheckingCoupon || !couponCode.trim()}
-                                                    className="bg-app-gold text-white text-xs font-bold px-4 rounded-xl disabled:opacity-50 whitespace-nowrap"
-                                                >
-                                                    {isCheckingCoupon ? t.checkingCoupon : t.apply}
-                                                </button>
-                                            </div>
-                                            {couponStatus && (
-                                                <p className={`text-[10px] mt-1.5 font-medium ${couponStatus.valid ? "text-green-600" : "text-red-500"}`}>
-                                                    {couponStatus.message}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Total with discount */}
-                                        <div className="flex justify-between items-center bg-app-bg/60 p-3 rounded-xl border border-app-card/30">
-                                            <span className="text-xs text-app-textSec">{t.total}</span>
-                                            <div className="flex flex-col items-end">
-                                                {discountedTotal !== null ? (
-                                                    <>
-                                                        <span className="text-[10px] text-app-textSec line-through opacity-60">
-                                                            {bookingModal.finalTotal.toFixed(3)} {t.currency}
-                                                        </span>
-                                                        <span className="text-sm font-bold text-app-gold">{discountedTotal.toFixed(3)} {t.currency}</span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-sm font-bold text-app-gold">{bookingModal.finalTotal.toFixed(3)} {t.currency}</span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <button
-                                            onClick={() => setBookingStep(3)}
-                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-                                        >
-                                            <CreditCard size={18} />
-                                            {t.proceedToCheckout}
-                                        </button>
-
-                                        <button
-                                            onClick={handleAddToCart}
-                                            disabled={addingToCart}
-                                            className="w-full bg-white border-2 border-app-gold text-app-gold font-semibold py-4 rounded-2xl active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
-                                        >
-                                            {addingToCart
-                                                ? <Loader2 size={18} className="animate-spin" />
-                                                : <ShoppingBag size={18} />
-                                            }
-                                            {addingToCart ? t.addingToCart : t.addToCart}
-                                        </button>
-                                    </>
-                                )}
-
-                                {/* ── STEP 3a: Added to Cart — continue or go to cart ─ */}
-                                {bookingStep === 3 && cartAdded && (
-                                    <motion.div
-                                        className="flex flex-col items-center text-center py-4"
-                                        initial={{ opacity: 0, scale: 0.88 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }}
-                                    >
-                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                            <ShoppingCart size={32} className="text-green-500" />
-                                        </div>
-                                        <h3 className="text-base font-bold text-app-text mb-1">
-                                            {t.addedToCart}
-                                        </h3>
-                                        <p className="text-sm text-app-textSec mb-6">
-                                            {t.addedToCartDesc}
-                                        </p>
-                                        <div className="w-full space-y-3">
-                                            <button
-                                                onClick={() => navigate("/cart")}
-                                                className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-                                            >
-                                                <ShoppingCart size={18} />
-                                                {t.goToCart}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setBookingModal(null)
-                                                    navigate("/")
-                                                }}
-                                                className="w-full bg-white border-2 border-app-gold text-app-gold font-semibold py-4 rounded-2xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-                                            >
-                                                <ShoppingBag size={18} />
-                                                {t.continueShopping}
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {/* ── STEP 3b: Payment Method + Confirm ─────────────── */}
-                                {bookingStep === 3 && !cartAdded && (
-                                    <>
-                                        {/* Total reminder */}
-                                        <div className="flex justify-between items-center bg-app-bg/60 px-4 py-3 rounded-xl border border-app-card/30">
-                                            <span className="text-sm text-app-textSec">{t.totalAmount}</span>
-                                            <span className="text-lg font-bold text-app-gold">
-                                                {(discountedTotal ?? bookingModal.finalTotal).toFixed(3)} {t.currency}
-                                            </span>
-                                        </div>
-
-                                        {/* Wallet warning */}
-                                        {isWalletInsufficient && (
-                                            <p className="text-[11px] text-red-500 font-medium px-1">
-                                                {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
-                                            </p>
-                                        )}
-
-                                        {/* Payment methods */}
-                                        <div className="space-y-2">
-                                            {paymentMethods.map((p) => {
-                                                const isActive = paymentType === p.code;
-                                                const isApple = p.code === "apple_pay";
-                                                return (
-                                                    <button
-                                                        key={p.code}
-                                                        type="button"
-                                                        onClick={() => setPaymentType(p.code)}
-                                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isActive
-                                                            ? isApple ? "bg-black text-white border-black" : "border-app-gold bg-app-gold/5"
-                                                            : "border-app-card/30 bg-white"
-                                                            }`}
-                                                    >
-                                                        {p.code === "wallet"
-                                                            ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
-                                                            : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
-                                                        }
-                                                        <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>
-                                                            {isAr ? p.name_ar : p.name_en}
-                                                        </span>
-                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? "border-app-gold bg-app-gold" : "border-app-card/50"}`}>
-                                                            {isActive && <div className="w-2 h-2 bg-white rounded-full" />}
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Confirm */}
-                                        <button
-                                            onClick={doCreateRequest}
-                                            disabled={creating || isWalletInsufficient}
-                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
-                                        >
-                                            {creating
-                                                ? <Loader2 size={18} className="animate-spin" />
-                                                : <Check size={18} />
-                                            }
-                                            {creating ? t.bookingInProgress : t.agreeAndConfirm}
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-
-
-            {/* Image */}
-            <motion.div
-                className="px-6 mb-6"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
-            >
-                <div className="w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-md bg-white border border-app-card/30">
-                    <ImageCarousel images={getImages()} alt={product.name} className="w-full h-full" />
-                </div>
-            </motion.div>
-
-            {/* Product info */}
-            <motion.div
-                className="px-8 mb-4"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.38, delay: 0.1, ease: [0.4, 0, 0.2, 1] as const }}
-            >
-                <h2 className="text-xl font-semibold text-app-text font-active leading-tight mb-2">{product.name}</h2>
-                <div>
-                    <div className="text-sm text-app-text/70">
-                        {product?.description && product.description.length > descriptionCharLimit ? (
-                            <>
-                                {isDescriptionExpanded
-                                    ? parse(product.description)
-                                    : parse(`${product.description.slice(0, descriptionCharLimit)}...`)
-                                }
-                            </>
-                        ) : (
-                            product?.description ? parse(product.description) : null
-                        )}
-                    </div>
-                    {product?.description && product.description.length > descriptionCharLimit && (
-                        <button
-                            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                            className="text-xs font-semibold text-app-gold hover:text-app-goldDark transition-colors mt-1 active:scale-95"
-                        >
-                            {isDescriptionExpanded ? t.showLess : t.showMore}
-                        </button>
-                    )}
-                </div>
-                <div className="mt-2 mb-1 flex flex-wrap gap-2">
-                    {resolvedAddonGroups.length > 0 && (
-                        <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg">
-                            {t.optionalAddons}
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-1 mt-2">
-                    {
-                        product.price && parsePrice(product.price) > 0 ? (
-                            <div className="flex items-center gap-3">
-                                <span className="text-xl font-semibold text-app-gold">{priceData.display}</span>
-                                {(product as any).oldPrice && (
-                                    <span className="text-sm text-app-textSec line-through opacity-60">{(product as any).oldPrice}</span>
-                                )}
-                            </div>
-                        ) : null
-                    }
-
-                    {priceData.addons > 0 && (
-                        <div className="text-[10px] text-app-textSec font-normal space-y-0.5">
-                            <div className="flex items-center gap-1">
-                                <span>{t.basePrice}:</span>
-                                <span>{priceData.base.toFixed(3)} {t.currency}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-app-gold">
-                                <span>{t.addons}:</span>
-                                <span>+{priceData.addons.toFixed(3)} {t.currency}</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </motion.div>
-
-            {resolvedAddonGroups.length > 0 && (
-                <div className="px-6 mb-6 space-y-6">
-                    {resolvedAddonGroups.map((group) => (
-                        <div key={group.id}>
-                            <div className="mb-3 flex items-center gap-2">
-                                <h3 className="text-sm font-semibold text-app-text">{isAr ? group.title_ar : group.title_en || group.title_ar}</h3>
-                                {(group as any).required && (
-                                    <span className="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded-md font-semibold">{t.required}</span>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                {(group.options ?? []).map((option: any) => {
-                                    const isSelected = selectedAddonIds.has(option.id);
-                                    const isRadio = (group as any).type === "single";
-
-                                    return (
-                                        <div
-                                            key={option.id}
-                                            onClick={() => handleGroupOptionSelect(String(group.id), option.id, (group as any).type)}
-                                            className={`flex relative items-center justify-between p-3.5 pb-8 rounded-2xl border cursor-pointer transition-all active:scale-[0.99] ${isSelected ? "bg-app-gold/5 border-app-gold shadow-sm" : "bg-white border-app-card/30 hover:border-app-card"
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                {isRadio ? (
-                                                    <div
-                                                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "border-app-gold" : "border-app-textSec/30"
-                                                            }`}
-                                                    >
-                                                        {isSelected && <div className="w-2.5 h-2.5 bg-app-gold rounded-full" />}
-                                                    </div>
-                                                ) : (
-                                                    <div
-                                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-app-gold border-app-gold" : "border-app-textSec/30"
-                                                            }`}
-                                                    >
-                                                        {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
-                                                    </div>
-                                                )}
-
-                                                <div>
-                                                    <p className={`text-sm font-semibold ${isSelected ? "text-app-gold" : "text-app-text"}`}>{isAr ? option.title_ar : option.title_en || option.title_ar}</p>
-                                                    {(isAr ? option.desc_ar : option.desc_en) && <p className="text-[10px] text-app-textSec">{isAr ? option.desc_ar : option.desc_en}</p>}
-                                                </div>
-                                            </div>
-
-                                            <span className="text-[10px] absolute bottom-1 end-1 font-bold text-white bg-app-gold px-2.5 py-1 rounded-lg">
-                                                +{parsePrice(option.price_kwd ?? option.price ?? 0).toFixed(3)} {t.currency}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {!canSubscribe && (
-                <div className="px-8 mb-4">
-                    <div className="bg-red-50 border border-red-100 text-red-600 rounded-2xl p-3 text-[12px] font-semibold">
-                        {t.selectRequired}
-                    </div>
-                </div>
-            )}
-
-            {(priceData.base > 0 || resolvedAddonGroups.length > 0 || ((product as any)?.addons?.length ?? 0) > 0) && (
-                <div className="px-8 mb-10 space-y-3 pb-28">
-                    {product.subscriptions && product.subscriptions.length > 0 ? (
-                        <div className="space-y-4">
-                            {product.subscriptions.map((sub: any) => {
-                                const sessionsCount = sub.sessionsCount ?? sub.session_count ?? 1;
-                                const fixedPrice = parsePrice(sub.fixedPrice ?? sub.fixed_price ?? 0);
-                                const pricePercent = parsePrice(sub.pricePercent ?? sub.price_percentage ?? 100);
-                                const originalTotal = priceData.total * sessionsCount;
-                                const computedFinal = originalTotal * (pricePercent / 100);
-                                const finalTotal = fixedPrice > 0 ? fixedPrice : computedFinal;
-
-                                return (
-                                    <div key={sub.id} className="w-full">
-                                        {sub.titleText || sub.title || sub.name ? (
-                                            <p className="text-xs font-semibold text-app-text mb-1.5 px-1">{sub.titleText || sub.title || sub.name}</p>
-                                        ) : null}
-
-                                        <button onClick={() => handleSubscriptionClick(sub)} disabled={creating || !canSubscribe}
-                                            className="w-full bg-app-gold text-white font-semibold py-3 px-4 rounded-2xl shadow-lg shadow-app-gold/20 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                                        >
-                                            <div className="flex flex-col items-start gap-1">
-                                                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-normal">{sessionsCount} {sessionsCount === 1 ? t.session : t.sessions}</div>
-                                                <div className="flex items-center gap-2">
-                                                    <ShoppingBag size={18} />
-                                                    {sessionsCount === 1 && (
-                                                        <span className="text-sm">{t.bookSession}</span>
-                                                    )}
-                                                    {sessionsCount > 1 && (
-                                                        <div className="flex flex-col gap-1">
-                                                            {/* <span className="text-sm">{isAr ? ` ${sessionsCount} جلسات` : `${t.book} ${sessionsCount} ${t.sessions}`}</span> */}
-                                                            <span className="text-sm">{isAr ? "احجزي الان " : "Book Now"}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-sm font-semibold">{finalTotal.toFixed(3)} {t.currency}</span>
-                                            </div>
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleSingleSessionClick}
-                            disabled={creating || !canSubscribe}
-                            className="w-full bg-app-gold text-white font-semibold py-4 px-6 rounded-2xl shadow-lg shadow-app-gold/30 active:bg-app-goldDark active:scale-[0.98] transition-all flex items-center justify-between disabled:opacity-60"
-                        >
-                            <div className="flex items-center gap-2">
-                                <ShoppingBag size={20} />
-                                <span>{creating ? t.bookingInProgress : t.bookNow}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-semibold">{priceData.total.toFixed(3)} {t.currency}</span>
-                            </div>
-                        </button>
-                    )}
-                </div>
-            )}
+            <SubscriptionPackages
+                product={product}
+                priceData={priceData}
+                canSubscribe={canSubscribe}
+                creating={creating}
+                handleSubscriptionClick={handleSubscriptionClick}
+                handleSingleSessionClick={handleSingleSessionClick}
+                t={t}
+                isAr={isAr}
+            />
         </div>
     );
 }
