@@ -31,7 +31,12 @@ function resolveAsset(path?: string, highQuality: boolean = true) {
 export function mapLookupsToUI(items: any) {
     const categories: Brand[] = (items?.categories ?? [])
         .filter((c: any) => c?.is_active)
-        .sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0))
+        .sort((a: any, b: any) => {
+            const posA = Number(a.position ?? 0);
+            const posB = Number(b.position ?? 0);
+            if (posA !== posB) return posA - posB;
+            return Number(a.id ?? 0) - Number(b.id ?? 0);
+        })
         .map((c: any) => ({
             id: c.id,
             name: c.name,
@@ -40,7 +45,12 @@ export function mapLookupsToUI(items: any) {
 
     const banners = (items?.banners ?? [])
         .filter((b: any) => b?.is_active)
-        .sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0))
+        .sort((a: any, b: any) => {
+            const posA = Number(a.position ?? 0);
+            const posB = Number(b.position ?? 0);
+            if (posA !== posB) return posA - posB;
+            return Number(a.id ?? 0) - Number(b.id ?? 0);
+        })
         .map((b: any) => ({
             id: b.id,
             image: resolveAsset(b.image),

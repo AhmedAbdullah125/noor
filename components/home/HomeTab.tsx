@@ -80,6 +80,8 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     };
 
     const { categories, banners, products, isLoading, socialLinks } = useHomeData(lang, 1);
+    console.log(categories);
+
     const { data: cart } = useGetCart();
     const cartCount = cart?.items?.length ?? 0;
 
