@@ -41,7 +41,7 @@ export function useGetProfile(lang: string) {
     queryKey: ["profile", lang],
     queryFn: () => fetchProfile(lang),
     enabled: isLoggedIn(),
-    staleTime: 1000 * 60,
+    staleTime: 0,
     gcTime: 1000 * 60 * 5,
     retry: (count, err: any) => {
       if (err?.isUnauthorized) return false;

@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription } from "../../types";
 import { createRequest } from "../services/createRequest";
 import { useAddToCart } from "../services/useAddToCart";
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export default function ServiceDetails({ product, onBack, onCreated, onModalToggle }: Props) {
+    const queryClient = useQueryClient();
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
     const lang = getLang();
     const t = translations[lang];
@@ -309,6 +311,11 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         setCreating(false);
 
         if (!res.ok) return;
+
+        if (paymentType === 'wallet') {
+            queryClient.invalidateQueries({ queryKey: ["profile"] });
+        }
+
         if (res.data?.payment_url) {
             toast(t.redirectingPayment, { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
             window.location.href = res.data.payment_url;
