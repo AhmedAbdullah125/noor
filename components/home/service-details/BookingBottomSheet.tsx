@@ -195,13 +195,13 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                             exit={{ opacity: 0, y: 8, scale: 0.97 }}
                                                             transition={{ duration: 0.18 }}
                                                             className="premium-calendar-container"
-                                                                style={{
-                                                                    position: "fixed",
-                                                                    bottom: 220,
-                                                                    left: "50%",
-                                                                    transform: "translateX(-50%)",
-                                                                    zIndex: 2100,
-                                                                }}
+                                                            style={{
+                                                                position: "fixed",
+                                                                bottom: 220,
+                                                                right: "0%",
+                                                                transform: "translateX(-50%)",
+                                                                zIndex: 2100,
+                                                            }}
                                                         >
                                                             <DayPicker
                                                                 mode="single"
