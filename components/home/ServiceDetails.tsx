@@ -26,6 +26,8 @@ type Props = {
 };
 
 export default function ServiceDetails({ product, onBack, onCreated, onModalToggle }: Props) {
+    console.log(product);
+
     const queryClient = useQueryClient();
     const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
     const lang = getLang();

@@ -7,6 +7,7 @@ import { addDays } from "date-fns";
 import { ar as arLocale } from "date-fns/locale";
 import { Product, PaymentMethod } from "../../../types";
 import { isBookedDate, calendarStyles, pad2, timeSlots } from "./utils";
+import { toast } from "sonner";
 
 type Props = {
     bookingModal: any;

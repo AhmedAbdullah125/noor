@@ -20,11 +20,19 @@ export const AddonGroups: React.FC<Props> = ({
     isAr,
     canSubscribe
 }) => {
+    const sortedGroups = React.useMemo(() => {
+        return [...resolvedAddonGroups].sort((a, b) => {
+            if (String(a.id) === "61") return -1;
+            if (String(b.id) === "61") return 1;
+            return 0;
+        });
+    }, [resolvedAddonGroups]);
+
     if (resolvedAddonGroups.length === 0) return null;
 
     return (
         <div className="px-6 mb-6 space-y-6">
-            {resolvedAddonGroups.map((group) => (
+            {sortedGroups.map((group) => (
                 <div key={group.id}>
                     <div className="mb-3 flex items-center gap-2">
                         <h3 className="text-sm font-semibold text-app-text">{isAr ? group.title_ar : group.title_en || group.title_ar}</h3>
@@ -32,7 +40,6 @@ export const AddonGroups: React.FC<Props> = ({
                             <span className="text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded-md font-semibold">{t.required}</span>
                         )}
                     </div>
-
                     <div className="space-y-2">
                         {(group.options ?? []).map((option: any) => {
                             const isSelected = selectedAddonIds.has(option.id);
