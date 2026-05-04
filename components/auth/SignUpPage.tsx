@@ -192,7 +192,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
             <input
               type="password"
               name="confirmPassword"
-              placeholder={t.confirmPassword}
+              placeholder={t.confirmPasswordRegister}
               className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
               value={formData.confirmPassword}
               onChange={handleChange}
