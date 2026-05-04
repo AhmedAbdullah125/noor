@@ -10,6 +10,7 @@ import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods } from "../services/useGetPaymentMethods";
+import Cookies from "js-cookie";
 
 // Sub-components
 import { ServiceHeader } from "./service-details/ServiceHeader";
@@ -31,6 +32,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const lang = getLang();
     const t = translations[lang];
     const isAr = lang === 'ar';
+    const token = Cookies.get("token");
 
     const navigate = useNavigate();
     const [creating, setCreating] = useState(false);
@@ -247,7 +249,13 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             formData.append("code", couponCode);
             formData.append("service_id", String(product.id));
 
-            const res = await fetch(`${API_BASE_URL}/coupons/check`, { method: "POST", body: formData });
+            const res = await fetch(`${API_BASE_URL}/coupons/check`, {
+                method: "POST", body: formData, headers: {
+                    "lang": lang,
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                }
+
+            });
             const data = await res.json();
 
             if (data.status && data.data?.valid) {

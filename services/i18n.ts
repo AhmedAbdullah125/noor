@@ -386,6 +386,8 @@ export const translations = {
     noImages: 'No images yet',
     noImagesDesc: 'Upload your first images to get started',
     deleteImage: 'Delete Image',
+    deleteImageSuccess: 'Image deleted successfully',
+    confirmDeleteImage: 'Are you sure you want to delete this image?',
     imagePreview: 'Image Preview',
     // Hair Profile Page
     hairCareProfile: 'Hair & Scalp Profile',
@@ -822,6 +824,8 @@ export const translations = {
     noImages: 'لا توجد صور بعد',
     noImagesDesc: 'ارفعي صورك الأولى للبدء',
     deleteImage: 'حذف الصورة',
+    deleteImageSuccess: 'تم حذف الصورة بنجاح',
+    confirmDeleteImage: 'هل أنتِ متأكدة من حذف هذه الصورة؟',
     imagePreview: 'معاينة الصورة',
     // Hair Profile Page
     hairCareProfile: 'ملف العناية بالفروة و الشعر',
