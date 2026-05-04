@@ -63,7 +63,7 @@ async function uploadUserImages(
     });
 
     const token = Cookies.get("token");
-    const res = await axios.post(`${API_BASE_URL}/user-images`, formData, {
+    const res = await axios.post(`${API_BASE_URL}/v1/user-images`, formData, {
         headers: {
             lang,
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

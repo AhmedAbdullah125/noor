@@ -57,7 +57,7 @@ async function fetchUserImages(
     }
 
     const token = Cookies.get("token");
-    const res = await axios.get(`${API_BASE_URL}/user-images`, {
+    const res = await axios.get(`${API_BASE_URL}/v1/user-images`, {
         params: { user_id: userId, page },
         headers: {
             lang,
