@@ -876,7 +876,7 @@ export const translations = {
     addToCartSuccess: 'تمت الإضافة إلى السلة بنجاح',
     detailsAndAppointment: 'التفاصيل والموعد',
     couponAndCheckout: 'كود الخصم والدفع',
-    proceedToCheckout: 'المتابعة للدفع',
+    proceedToCheckout: ' متابعة الدفع',
     addedToCart: 'تمت الإضافة إلى السلة!',
     addedToCartDesc: 'يمكنك متابعة التسوق أو الانتقال إلى السلة',
     goToCart: 'الذهاب إلى السلة',

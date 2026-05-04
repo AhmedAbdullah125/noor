@@ -285,7 +285,7 @@ export default function CartPage() {
                         className="w-full py-4 bg-app-gold text-white rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform"
                     >
                         <ShoppingCart size={20} />
-                        {lang === "ar" ? "المتابعة للدفع" : "Proceed to Checkout"}
+                        {lang === "ar" ? " متابعة الدفع " : "Proceed to Checkout"}
                     </button>
                 </div>
             )}

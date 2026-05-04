@@ -281,7 +281,7 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                         }}
                                         className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform mt-1"
                                     >
-                                        {t.next} →
+                                        {t.next} {isAr ? '←' : '→'}
                                     </button>
                                 </>
                             )}
