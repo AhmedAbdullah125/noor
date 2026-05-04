@@ -668,7 +668,7 @@ export const translations = {
     loadingServices: 'جاري تحميل الخدمات...',
     noServicesAvailable: 'لا توجد خدمات متوفرة حالياً لهذا القسم.',
     previous: 'السابق',
-    next: 'التالي',
+    next: 'متابعة',
     page: 'صفحة',
     of: 'من',
     // TabBar
