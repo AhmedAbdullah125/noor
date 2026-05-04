@@ -29,6 +29,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
+  // Kuwait (+965) max 8 digits, all others max 11
+  const phoneMaxLength = countryCode === "+965" ? 8 : 11;
+
   // ✅ Auto refresh if refresh_token exists
   useEffect(() => {
     let mounted = true;
@@ -83,6 +86,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
     // Convert Arabic numerals to English for phone field
     if (e.target.name === 'phone') {
       value = convertArabicToEnglishNumbers(value);
+      // Enforce max length based on country code
+      if (value.length > phoneMaxLength) value = value.slice(0, phoneMaxLength);
     }
 
     setFormData((p) => ({ ...p, [e.target.name]: value }));
@@ -148,6 +153,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, lang: propLang })
                 type="tel"
                 name="phone"
                 placeholder={t.phone}
+                maxLength={phoneMaxLength}
                 className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
                 value={formData.phone}
                 onChange={handleChange}

@@ -29,6 +29,9 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Kuwait (+965) max 8 digits, all others max 11
+  const phoneMaxLength = countryCode === "+965" ? 8 : 11;
+
   // Convert Arabic-Indic numerals (٠-٩) to English numerals (0-9)
   const convertArabicToEnglishNumbers = (str: string): string => {
     const arabicToEnglish: { [key: string]: string } = {
@@ -52,6 +55,8 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
     // Convert Arabic numerals to English for phone fields
     if (e.target.name === 'phone' || e.target.name === 'phoneConfirm') {
       value = convertArabicToEnglishNumbers(value);
+      // Enforce max length based on country code
+      if (value.length > phoneMaxLength) value = value.slice(0, phoneMaxLength);
     }
 
     setFormData((p) => ({ ...p, [e.target.name]: value }));
@@ -63,8 +68,12 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       setError(t.fillAllFields);
       return;
     }
-    if (!/^\d{8,13}$/.test(formData.phone)) {
-      setError(lang === 'ar' ? 'رقم الهاتف يجب أن يكون بين 8 و 13 رقم' : 'Phone must be between 8 and 13 digits');
+    if (formData.phone.length < 8 || formData.phone.length > phoneMaxLength || !/^\d+$/.test(formData.phone)) {
+      setError(
+        lang === 'ar'
+          ? `رقم الهاتف يجب أن يكون ${phoneMaxLength === 8 ? '8' : 'بين 8 و 11'} رقم`
+          : `Phone must be ${phoneMaxLength === 8 ? 'exactly 8' : 'between 8 and 11'} digits`
+      );
       return;
     }
 
@@ -146,6 +155,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
                 type="tel"
                 name="phone"
                 placeholder={t.phone}
+                maxLength={phoneMaxLength}
                 className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
                 value={formData.phone}
                 onChange={handleChange}
@@ -167,6 +177,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
                 type="tel"
                 name="phoneConfirm"
                 placeholder={lang === 'ar' ? 'تأكيد رقم الهاتف' : 'Confirm Phone'}
+                maxLength={phoneMaxLength}
                 className="w-full p-4 pr-12 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-start text-app-text placeholder:text-app-textSec/50"
                 value={formData.phoneConfirm}
                 onChange={handleChange}
