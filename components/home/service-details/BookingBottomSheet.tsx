@@ -5,7 +5,8 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { addDays } from "date-fns";
 import { ar as arLocale } from "date-fns/locale";
-import { Product, PaymentMethod } from "../../../types";
+import { Product } from "../../../types";
+import { PaymentMethod } from "../../services/useGetPaymentMethods";
 import { isBookedDate, calendarStyles, pad2, timeSlots } from "./utils";
 import { toast } from "sonner";
 
@@ -116,7 +117,7 @@ export const BookingBottomSheet: React.FC<Props> = ({
                             <div className="flex items-center gap-2">
                                 {bookingStep > 1 && (
                                     <button
-                                        onClick={() => setBookingStep((s) => (s - 1) as 1 | 2 | 3)}
+                                        onClick={() => setBookingStep((bookingStep - 1) as 1 | 2 | 3)}
                                         className="p-1.5 rounded-full hover:bg-app-bg transition-colors"
                                     >
                                         {isAr ? <ChevronRight size={20} className="text-app-textSec" /> : <ChevronLeft size={20} className="text-app-textSec" />}
@@ -178,7 +179,7 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                             <style>{calendarStyles}</style>
                                             <label className="block text-[11px] font-semibold text-app-text mb-1.5">{t.date}</label>
                                             <button
-                                                onClick={() => setIsCalendarOpen((v) => !v)}
+                                                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                                                 className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold text-start"
                                             >
                                                 <span className={startDate ? "text-app-text" : "text-app-textSec/60"}>
