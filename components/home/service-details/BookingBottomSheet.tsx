@@ -263,7 +263,7 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                 className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
                                                 value={startTime.slice(0, 5)}
                                                 onChange={(e) => setStartTime(e.target.value)}
-                                                disabled={isLoadingTimeSlots || !startDate}
+                                                disabled={isLoadingTimeSlots || !startDate || filteredTimeSlots.length === 0}
                                             >
                                                 <option value="">{isLoadingTimeSlots ? "..." : t.chooseTime}</option>
                                                 {filteredTimeSlots.map((time) => {

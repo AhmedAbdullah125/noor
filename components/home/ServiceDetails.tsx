@@ -86,7 +86,6 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         refetchOnMount: true,
         refetchOnWindowFocus: true
     });
-    console.log(dynamicTimeSlots);
 
     const filteredTimeSlots = useMemo(() => {
         if (dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
@@ -116,6 +115,16 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             return h > curH || (h === curH && m >= curM);
         });
     }, [startDate, dynamicTimeSlots]);
+
+    useEffect(() => {
+        if (startDate && !isLoadingTimeSlots && dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
+            if (filteredTimeSlots.length === 0) {
+                toast((t as any).noAvailableTimes, {
+                    style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
+                });
+            }
+        }
+    }, [dynamicTimeSlots, isLoadingTimeSlots, filteredTimeSlots.length, startDate, t]);
 
     useEffect(() => {
         if (startTime && !filteredTimeSlots.includes(startTime)) {
