@@ -295,7 +295,11 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
 
     const doCreateRequest = async () => {
         if (creating || !bookingModal || !validateRequiredGroups()) return;
-        if (paymentType === 'wallet' && isWalletInsufficient) {
+
+        const effectiveTotal = discountedTotal ?? bookingModal.finalTotal;
+        const isFree = effectiveTotal === 0;
+
+        if (!isFree && paymentType === 'wallet' && isWalletInsufficient) {
             toast.error(t.insufficientBalance, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
             return;
         }
@@ -311,7 +315,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             options: buildRequestOptions(),
             start_date: startDate,
             start_time: time,
-            payment_type: paymentType,
+            payment_type: isFree ? "knet" : paymentType,
             coupon_code: isCouponApplied ? couponCode : undefined,
         };
 
