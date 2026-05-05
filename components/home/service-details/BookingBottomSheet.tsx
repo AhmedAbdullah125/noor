@@ -46,6 +46,7 @@ type Props = {
     isWalletInsufficient: boolean;
     doCreateRequest: () => void;
     creating: boolean;
+    isLoadingTimeSlots?: boolean;
 };
 
 export const BookingBottomSheet: React.FC<Props> = ({
@@ -83,7 +84,8 @@ export const BookingBottomSheet: React.FC<Props> = ({
     walletBalance,
     isWalletInsufficient,
     doCreateRequest,
-    creating
+    creating,
+    isLoadingTimeSlots
 }) => {
     return (
         <AnimatePresence>
@@ -261,8 +263,9 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                 className="w-full bg-white rounded-xl p-1.5 text-sm outline-none border border-app-card/30 focus:border-app-gold appearance-none"
                                                 value={startTime.slice(0, 5)}
                                                 onChange={(e) => setStartTime(e.target.value)}
+                                                disabled={isLoadingTimeSlots || !startDate}
                                             >
-                                                <option value="">{t.chooseTime}</option>
+                                                <option value="">{isLoadingTimeSlots ? "..." : t.chooseTime}</option>
                                                 {filteredTimeSlots.map((time) => {
                                                     const [hStr, mStr] = time.split(":");
                                                     const h = parseInt(hStr, 10);
@@ -404,67 +407,67 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                 const effectiveTotal = discountedTotal ?? bookingModal.finalTotal;
                                 const isFree = effectiveTotal === 0;
                                 return (
-                                <>
-                                    {/* Total reminder */}
-                                    <div className="flex justify-between items-center bg-app-bg/60 px-4 py-3 rounded-xl border border-app-card/30">
-                                        <span className="text-sm text-app-textSec">{t.totalAmount}</span>
-                                        <span className="text-lg font-bold text-app-gold">
-                                            {effectiveTotal.toFixed(3)} {t.currency}
-                                        </span>
-                                    </div>
-
-                                    {/* Wallet warning — hidden when free */}
-                                    {!isFree && isWalletInsufficient && (
-                                        <p className="text-[11px] text-red-500 font-medium px-1">
-                                            {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
-                                        </p>
-                                    )}
-
-                                    {/* Payment methods — hidden when total is 0 */}
-                                    {!isFree && (
-                                        <div className="space-y-2">
-                                            {paymentMethods.map((p) => {
-                                                const isActive = paymentType === p.code;
-                                                const isApple = p.code === "apple_pay";
-                                                return (
-                                                    <button
-                                                        key={p.code}
-                                                        type="button"
-                                                        onClick={() => setPaymentType(p.code)}
-                                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isActive
-                                                            ? isApple ? "bg-black text-white border-black" : "border-app-gold bg-app-gold/5"
-                                                            : "border-app-card/30 bg-white"
-                                                            }`}
-                                                    >
-                                                        {p.code === "wallet"
-                                                            ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
-                                                            : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
-                                                        }
-                                                        <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>
-                                                            {isAr ? p.name_ar : p.name_en}
-                                                        </span>
-                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? "border-app-gold bg-app-gold" : "border-app-card/50"}`}>
-                                                            {isActive && <div className="w-2 h-2 bg-white rounded-full" />}
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
+                                    <>
+                                        {/* Total reminder */}
+                                        <div className="flex justify-between items-center bg-app-bg/60 px-4 py-3 rounded-xl border border-app-card/30">
+                                            <span className="text-sm text-app-textSec">{t.totalAmount}</span>
+                                            <span className="text-lg font-bold text-app-gold">
+                                                {effectiveTotal.toFixed(3)} {t.currency}
+                                            </span>
                                         </div>
-                                    )}
 
-                                    {/* Confirm */}
-                                    <button
-                                        onClick={doCreateRequest}
-                                        disabled={creating || (!isFree && isWalletInsufficient)}
-                                        className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
-                                    >
-                                        {creating
-                                            ? <Loader2 size={18} className="animate-spin" />
-                                            : <Check size={18} />
-                                        }
-                                        {creating ? t.bookingInProgress : isFree ? t.confirmBooking : t.agreeAndConfirm}
-                                    </button>
-                                </>
+                                        {/* Wallet warning — hidden when free */}
+                                        {!isFree && isWalletInsufficient && (
+                                            <p className="text-[11px] text-red-500 font-medium px-1">
+                                                {t.insufficientBalance} ({walletBalance.toFixed(3)} {t.currency})
+                                            </p>
+                                        )}
+
+                                        {/* Payment methods — hidden when total is 0 */}
+                                        {!isFree && (
+                                            <div className="space-y-2">
+                                                {paymentMethods.map((p) => {
+                                                    const isActive = paymentType === p.code;
+                                                    const isApple = p.code === "apple_pay";
+                                                    return (
+                                                        <button
+                                                            key={p.code}
+                                                            type="button"
+                                                            onClick={() => setPaymentType(p.code)}
+                                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isActive
+                                                                ? isApple ? "bg-black text-white border-black" : "border-app-gold bg-app-gold/5"
+                                                                : "border-app-card/30 bg-white"
+                                                                }`}
+                                                        >
+                                                            {p.code === "wallet"
+                                                                ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
+                                                                : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
+                                                            }
+                                                            <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>
+                                                                {isAr ? p.name_ar : p.name_en}
+                                                            </span>
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? "border-app-gold bg-app-gold" : "border-app-card/50"}`}>
+                                                                {isActive && <div className="w-2 h-2 bg-white rounded-full" />}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Confirm */}
+                                        <button
+                                            onClick={doCreateRequest}
+                                            disabled={creating || (!isFree && isWalletInsufficient)}
+                                            className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-[0.98] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                                        >
+                                            {creating
+                                                ? <Loader2 size={18} className="animate-spin" />
+                                                : <Check size={18} />
+                                            }
+                                            {creating ? t.bookingInProgress : isFree ? t.confirmBooking : t.agreeAndConfirm}
+                                        </button>
+                                    </>
                                 );
                             })()}
                         </div>

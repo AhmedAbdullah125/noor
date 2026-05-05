@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Product, ServiceAddon, ServiceAddonGroup, ServiceSubscription } from "../../types";
 import { createRequest } from "../services/createRequest";
 import { useAddToCart } from "../services/useAddToCart";
@@ -63,7 +63,47 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
 
+    const { data: dynamicTimeSlots, isLoading: isLoadingTimeSlots } = useQuery({
+        queryKey: ["working-days", startDate, product.id],
+        queryFn: async () => {
+            if (!startDate) return null;
+            const res = await fetch(`${API_BASE_URL}/v1/business-working-days/for-date?date=${startDate}&service_id=${product.id}`, {
+                headers: {
+                    lang,
+                    "Accept": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                }
+            });
+            const data = await res.json();
+            if (data.status && data.data) {
+                return data.data;
+            }
+            return null;
+        },
+        enabled: !!startDate,
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true
+    });
+    console.log(dynamicTimeSlots);
+
     const filteredTimeSlots = useMemo(() => {
+        if (dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
+            const times = dynamicTimeSlots.available_times.map((t: string) => t.slice(0, 5));
+            const today = getTodayDate();
+            if (startDate !== today) return times;
+
+            const now = new Date();
+            const curH = now.getHours();
+            const curM = now.getMinutes();
+
+            return times.filter((time: string) => {
+                const [h, m] = time.split(":").map(Number);
+                return h > curH || (h === curH && m >= curM);
+            });
+        }
+
         const today = getTodayDate();
         if (startDate !== today) return timeSlots;
 
@@ -75,7 +115,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             const [h, m] = slot.split(":").map(Number);
             return h > curH || (h === curH && m >= curM);
         });
-    }, [startDate]);
+    }, [startDate, dynamicTimeSlots]);
 
     useEffect(() => {
         if (startTime && !filteredTimeSlots.includes(startTime)) {
@@ -424,6 +464,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
                 isWalletInsufficient={isWalletInsufficient}
                 doCreateRequest={doCreateRequest}
                 creating={creating}
+                isLoadingTimeSlots={isLoadingTimeSlots}
             />
 
             <ServiceHeader
