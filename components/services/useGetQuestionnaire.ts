@@ -96,6 +96,7 @@ export function useGetQuestionnaire(lang: string = "ar", enabled: boolean = true
             const qid = items?.questionnaire_id;
             if (typeof qid === "number") saveQuestionnaireId(qid);
         } catch (e: any) {
+            if (e?.isUnauthorized) return;
             const msg = e?.response?.data?.message || e?.message || "get questionnaire error";
             toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
             setIsError(true);

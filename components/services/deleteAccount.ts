@@ -25,6 +25,7 @@ export async function deleteAccountRequest(lang: string = "ar") {
 
         return { ok: true as const };
     } catch (e: any) {
+        if (e?.isUnauthorized) return { ok: false as const, error: "" };
         const msg = e?.response?.data?.message || e?.message || "Delete account error";
         toast(msg, {
             style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },

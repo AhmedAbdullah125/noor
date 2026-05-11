@@ -18,8 +18,9 @@ import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
 import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
-import { authEvents, } from "./components/services/http";
+import { authEvents, resetAuthState } from "./components/services/http";
 import { clearAuth, isLoggedIn } from "./components/auth/authStorage";
+import { toast } from "sonner";
 
 import HairProfilePage from './components/HairProfilePage';
 import PlaceholderTab from './components/PlaceholderTab';
@@ -77,7 +78,7 @@ const AppContent: React.FC = () => {
 
   // Wire global 401 / session-expired logout
   useEffect(() => {
-    authEvents.onLogout = (_reason?: string) => {
+    authEvents.onLogout = (_reason?: string, message?: string) => {
       clearAuth();
       localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
       localStorage.removeItem(STORAGE_KEY_AUTH_MODE);
@@ -85,6 +86,12 @@ const AppContent: React.FC = () => {
       localStorage.removeItem("mezo_auth_user_phone");
       setAuthStatus("anonymous");
       navigate("/login");
+      if (message) {
+        toast(message, {
+          id: "session-expired",
+          style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
+        });
+      }
     };
     return () => {
       authEvents.onLogout = () => { };
@@ -177,6 +184,7 @@ const AppContent: React.FC = () => {
   };
 
   const handleLoginSuccess = () => {
+    resetAuthState();
     const mode = localStorage.getItem(STORAGE_KEY_AUTH_MODE);
     if (mode === 'guest') {
       setAuthStatus('guest');

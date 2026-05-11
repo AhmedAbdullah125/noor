@@ -64,6 +64,7 @@ export function useGetQuestions(lang: string = "ar", enabled: boolean = true) {
 
             setQuestions(cleaned);
         } catch (e: any) {
+            if (e?.isUnauthorized) return;
             const msg = e?.response?.data?.message || e?.message || "get questions error";
             toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
             setIsError(true);

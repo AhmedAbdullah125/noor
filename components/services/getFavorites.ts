@@ -41,6 +41,7 @@ export async function getFavoritesRequest(lang: string = "ar") {
         const services = res?.data?.items?.services ?? [];
         return { ok: true as const, services };
     } catch (e: any) {
+        if (e?.isUnauthorized) return { ok: false as const, error: "" };
         const msg = e?.response?.data?.message || e?.message || "get favorites error";
         toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
         return { ok: false as const, error: msg };

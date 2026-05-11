@@ -37,6 +37,7 @@ export async function getBookings(lang: string = "ar") {
 
         return { ok: true as const, data: res.data.items ?? [] };
     } catch (e: any) {
+        if (e?.isUnauthorized) return { ok: false as const, error: "" };
         const msg = e?.response?.data?.message || e?.message || "get bookings error";
         toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
         return { ok: false as const, error: msg };

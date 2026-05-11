@@ -69,6 +69,7 @@ export function useAddToCart({
         },
 
         onError: (e: any) => {
+            if (e?.isUnauthorized) return;
             const msg = e?.response?.data?.message || e?.message || errorMessage;
             toast(msg, {
                 style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },

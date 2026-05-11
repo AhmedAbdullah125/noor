@@ -880,7 +880,7 @@ export const translations = {
     detailsAndAppointment: 'التفاصيل والموعد',
     couponAndCheckout: 'كود الخصم والدفع',
     proceedToCheckout: ' متابعة الدفع',
-    proceed: 'المتابعة',
+    proceed: 'متابعة',
     addedToCart: 'تمت الإضافة إلى السلة!',
     addedToCartDesc: 'يمكنك متابعة التسوق أو الانتقال إلى السلة',
     goToCart: 'الذهاب إلى السلة',

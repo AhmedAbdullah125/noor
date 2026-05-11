@@ -52,6 +52,7 @@ export async function getReviewsRequest(lang: string = "ar", page: number = 1) {
             pagination: res?.data?.items?.pagination,
         };
     } catch (e: any) {
+        if (e?.isUnauthorized) return { ok: false as const, error: "" };
         const msg = e?.response?.data?.message || e?.message || "get reviews error";
         toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
         return { ok: false as const, error: msg };

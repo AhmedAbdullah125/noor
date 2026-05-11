@@ -17,6 +17,7 @@ export async function toggleFavoriteRequest(serviceId: number, lang: string = "a
         // response: { status:true, ... }
         return { ok: true as const };
     } catch (e: any) {
+        if (e?.isUnauthorized) return { ok: false as const, error: "" };
         const msg = e?.response?.data?.message || e?.message || "toggle favorite error";
         toast(msg, { style: { background: "#dc3545", color: "#fff", borderRadius: "10px" } });
         return { ok: false as const, error: msg };

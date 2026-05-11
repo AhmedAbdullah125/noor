@@ -7,17 +7,27 @@ import { getAccessToken, getRefreshToken, clearAuth } from "../auth/authStorage"
 export class UnauthorizedError extends Error {
     isUnauthorized = true;
     reason?: string;
-    constructor(reason?: string) {
+    apiMessage?: string;
+    constructor(reason?: string, apiMessage?: string) {
         super("unauthorized");
         this.name = "UnauthorizedError";
         this.reason = reason;
+        this.apiMessage = apiMessage;
     }
 }
 
-export const authEvents = { onLogout: (reason?: string) => { } };
+export const authEvents = { onLogout: (reason?: string, message?: string) => { } };
 
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
+let isLoggingOut = false;
+
+/** Call this after a successful login to reset the logout-guard flag. */
+export function resetAuthState() {
+    isLoggingOut = false;
+    isRefreshing = false;
+    refreshPromise = null;
+}
 
 function isSessionExpiredResponse(data: any) {
     return data?.status === false && data?.statusCode === 401;
@@ -40,22 +50,28 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     return config;
 });
 
-async function handleUnauthorized(originalConfig: any) {
+async function handleUnauthorized(originalConfig: any, apiMessage?: string) {
     // لا تعمل refresh على auth endpoints
-    if (isAuthEndpoint(originalConfig?.url)) throw new UnauthorizedError("auth_endpoint");
+    if (isAuthEndpoint(originalConfig?.url)) throw new UnauthorizedError("auth_endpoint", apiMessage);
 
     if (originalConfig?._retry) {
-        clearAuth();
-        authEvents.onLogout?.("session_expired");
-        throw new UnauthorizedError("already_retried");
+        if (!isLoggingOut) {
+            isLoggingOut = true;
+            clearAuth();
+            authEvents.onLogout?.("session_expired", apiMessage);
+        }
+        throw new UnauthorizedError("already_retried", apiMessage);
     }
     originalConfig._retry = true;
 
     const hasRefresh = !!getRefreshToken?.();
     if (!hasRefresh) {
-        clearAuth();
-        authEvents.onLogout?.("no_refresh_token");
-        throw new UnauthorizedError("no_refresh_token");
+        if (!isLoggingOut) {
+            isLoggingOut = true;
+            clearAuth();
+            authEvents.onLogout?.("no_refresh_token", apiMessage);
+        }
+        throw new UnauthorizedError("no_refresh_token", apiMessage);
     }
 
     if (!isRefreshing) {
@@ -69,9 +85,12 @@ async function handleUnauthorized(originalConfig: any) {
 
     const ok = await refreshPromise!;
     if (!ok) {
-        clearAuth();
-        authEvents.onLogout?.("refresh_failed");
-        throw new UnauthorizedError("refresh_failed");
+        if (!isLoggingOut) {
+            isLoggingOut = true;
+            clearAuth();
+            authEvents.onLogout?.("refresh_failed", apiMessage);
+        }
+        throw new UnauthorizedError("refresh_failed", apiMessage);
     }
 
     const newToken = getAccessToken?.();
@@ -85,7 +104,8 @@ http.interceptors.response.use(
         if (isAuthEndpoint(response.config?.url)) return response;
 
         if (isSessionExpiredResponse(response.data)) {
-            return handleUnauthorized(response.config);
+            const apiMessage: string | undefined = response.data?.message;
+            return handleUnauthorized(response.config, apiMessage);
         }
 
         return response;
@@ -96,10 +116,11 @@ http.interceptors.response.use(
 
         const status = error.response?.status;
         const data: any = error.response?.data;
+        const apiMessage: string | undefined = data?.message;
 
         if (status === 401 || isSessionExpiredResponse(data)) {
             try {
-                return await handleUnauthorized(originalConfig);
+                return await handleUnauthorized(originalConfig, apiMessage);
             } catch (e) {
                 return Promise.reject(e);
             }

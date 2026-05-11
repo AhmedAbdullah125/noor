@@ -43,6 +43,7 @@ export function useDeleteUserImage(userId: number | undefined, lang: string = "a
         },
 
         onError: (e: any) => {
+            if (e?.isUnauthorized) return;
             const msg = e?.response?.data?.message || e?.message || t.deleteImage;
             toast(msg, {
                 style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
