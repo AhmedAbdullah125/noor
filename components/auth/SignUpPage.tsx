@@ -228,9 +228,12 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
 
         <button
           onClick={() => navigate("/login")}
-          className="w-full text-app-textSec text-sm font-normal underline decoration-app-textSec/30 underline-offset-4 active:opacity-70 mb-4"
+          className="w-full flex items-center justify-center gap-1 text-sm font-medium active:opacity-70 mb-4"
         >
-          {t.haveAccount}
+          <span className="text-app-textSec">{t.haveAccountPrefix}</span>
+          <span className="text-[#E57373] underline decoration-[#E57373]/30 underline-offset-4">
+            {t.haveAccountAction}
+          </span>
         </button>
 
         <button

@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import AppHeader from "../AppHeader";
 import { getBookings, type BookingItem } from "../services/getBookings";
 import { translations, getLang } from "@/services/i18n";
+
+// ─── module-level cache (survives unmount) ────────────────────────────────────
+const CACHE_TTL_MS = 60_000; // 1 minute
+let _cachedItems: BookingItem[] | null = null;
+let _cacheTimestamp = 0;
+let _savedScrollTop = 0;
+// ─────────────────────────────────────────────────────────────────────────────
 
 type UiBooking = {
     id: string;
@@ -49,10 +56,11 @@ export default function HistoryScreen({
     onNavigateToHome: () => void;
     onOpenOrder: (id: string) => void;
 }) {
-    const [isLoading, setIsLoading] = useState(true);
-    const [items, setItems] = useState<BookingItem[]>([]);
+    const [isLoading, setIsLoading] = useState(() => _cachedItems === null);
+    const [items, setItems] = useState<BookingItem[]>(() => _cachedItems ?? []);
     const lang = getLang();
     const t = translations[lang] || translations['ar'];
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     function formatMoney(val: string) {
         const n = Number(String(val).replace(/[^\d.]/g, ""));
@@ -60,22 +68,50 @@ export default function HistoryScreen({
         return `${n.toFixed(3)} ${t.currency}`;
     }
 
+    // ── Fetch (or serve from cache) ───────────────────────────────────────────
     useEffect(() => {
+        const now = Date.now();
+        const cacheValid = _cachedItems !== null && (now - _cacheTimestamp) < CACHE_TTL_MS;
+
+        if (cacheValid) {
+            setItems(_cachedItems!);
+            setIsLoading(false);
+            return;
+        }
+
         let mounted = true;
+        setIsLoading(true);
 
         (async () => {
-            setIsLoading(true);
             const res = await getBookings(lang);
             if (!mounted) return;
 
-            if (res.ok) setItems(res.data);
+            if (res.ok) {
+                _cachedItems = res.data;
+                _cacheTimestamp = Date.now();
+                setItems(res.data);
+            }
             setIsLoading(false);
         })();
 
-        return () => {
-            mounted = false;
-        };
+        return () => { mounted = false; };
     }, []);
+
+    // ── Restore scroll position after mount / data ready ─────────────────────
+    useEffect(() => {
+        if (isLoading) return;
+        const el = scrollRef.current;
+        if (el && _savedScrollTop > 0) {
+            el.scrollTop = _savedScrollTop;
+        }
+    }, [isLoading]);
+
+    // ── Save scroll position on scroll ────────────────────────────────────────
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            _savedScrollTop = scrollRef.current.scrollTop;
+        }
+    };
 
     const bookings: UiBooking[] = useMemo(() => {
         const sorted = [...items].sort((a, b) => {
@@ -97,7 +133,11 @@ export default function HistoryScreen({
         <div className="animate-fadeIn flex flex-col h-full bg-app-bg" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <AppHeader title={t.bookingHistoryTitle} onBack={onBack} />
 
-            <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-28 pt-24">
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto no-scrollbar px-6 pb-28 pt-24"
+            >
                 {isLoading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map((i) => (
@@ -135,7 +175,7 @@ export default function HistoryScreen({
                                     <div key={order.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-app-card/30">
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="text-sm font-semibold text-app-text">{t.bookingId}: {order.request_number}</span>
-                                            <span className={`text-[10px] font-semibold px-3 py-1 rounded-full ${pill}`}>
+                                            <span className={`text-[10px] font-semibold px-3 py-1 rounded-full whitespace-nowrap ${pill}`}>
                                                 {label}
                                             </span>
                                         </div>
@@ -172,3 +212,4 @@ export default function HistoryScreen({
         </div>
     );
 }
+
