@@ -87,34 +87,48 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         refetchOnWindowFocus: true
     });
 
+    const CAPPED_8PM_CATEGORY_IDS = [1, 54, 5, 53];
+    const isCappedAt8pm = CAPPED_8PM_CATEGORY_IDS.includes(Number(product?.category?.id));
+
     const filteredTimeSlots = useMemo(() => {
+        const cap8pm = (slots: string[]) => {
+            if (!isCappedAt8pm) return slots;
+            // Keep slots where hour <= 20; if hour === 20 only allow minute === 0 (20:00 exactly)
+            return slots.filter((slot: string) => {
+                const [h, m] = slot.split(":").map(Number);
+                return h < 20 || (h === 20 && m === 0);
+            });
+        };
+
         if (dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
             const times = dynamicTimeSlots.available_times.map((t: string) => t.slice(0, 5));
             const today = getTodayDate();
-            if (startDate !== today) return times;
+            if (startDate !== today) return cap8pm(times);
 
             const now = new Date();
             const curH = now.getHours();
             const curM = now.getMinutes();
 
-            return times.filter((time: string) => {
+            const filtered = times.filter((time: string) => {
                 const [h, m] = time.split(":").map(Number);
                 return h > curH || (h === curH && m >= curM);
             });
+            return cap8pm(filtered);
         }
 
         const today = getTodayDate();
-        if (startDate !== today) return timeSlots;
+        if (startDate !== today) return cap8pm(timeSlots);
 
         const now = new Date();
         const curH = now.getHours();
         const curM = now.getMinutes();
 
-        return timeSlots.filter(slot => {
+        const filtered = timeSlots.filter(slot => {
             const [h, m] = slot.split(":").map(Number);
             return h > curH || (h === curH && m >= curM);
         });
-    }, [startDate, dynamicTimeSlots]);
+        return cap8pm(filtered);
+    }, [startDate, dynamicTimeSlots, isCappedAt8pm]);
 
     useEffect(() => {
         if (startDate && !isLoadingTimeSlots && dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {

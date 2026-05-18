@@ -116,6 +116,7 @@ export function mapServicesToProducts(services: any[]): Product[] {
                 images: [resolveAsset(s.main_image)],
                 price: `${price.toFixed(3)} د.ك`,
                 oldPrice: s.has_discount ? `${Number(s.price ?? 0).toFixed(3)} د.ك` : undefined,
+                category: s.category,
 
                 // ✅ أهم حاجة: نخليها compatible مع UI بتاعك
                 addonGroups: mapOptionsToAddonGroups(s.options ?? []),

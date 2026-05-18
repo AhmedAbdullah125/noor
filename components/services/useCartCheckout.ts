@@ -9,6 +9,7 @@ export interface CartCheckoutPayload {
 
 export interface CartCheckoutItems {
     payment_url?: string;
+    redirect_url?: string;
     payment_status?: string;
     checkout_id?: number;
     request_ids?: number[];
@@ -19,7 +20,10 @@ export interface CartCheckoutResult {
     status: boolean;
     statusCode?: number;
     message?: string;
+    data?: CartCheckoutItems;
     items?: CartCheckoutItems;
+    redirect_url?: string;
+    payment_url?: string;
 }
 
 async function cartCheckoutRequest(payload: CartCheckoutPayload): Promise<CartCheckoutResult> {

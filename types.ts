@@ -76,6 +76,13 @@ export interface Product {
   packageOptions?: ServicePackageOption[];
   subscriptions?: ServiceSubscription[];
   isHomeService?: boolean;
+  category?: {
+    id: number;
+    name: string;
+    image: string;
+    is_active: number;
+    position: number;
+  };
 }
 
 export interface Brand {

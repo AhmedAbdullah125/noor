@@ -87,7 +87,10 @@ export const BookingBottomSheet: React.FC<Props> = ({
     creating,
     isLoadingTimeSlots
 }) => {
+
+
     return (
+
         <AnimatePresence>
             {bookingModal && (
                 <>
