@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { http } from "./http";
 import { isLoggedIn } from "../auth/authStorage";
 import { API_BASE_URL } from "@/lib/apiConfig";
+import { getLang } from "../../services/i18n";
 
 export type CartOption = {
     id: number;
@@ -28,6 +29,7 @@ export type CartItem = {
     options_price: number;
     total_price: number;
     options: CartOption[];
+    service_name: string;
 };
 
 export type Cart = {
@@ -40,15 +42,15 @@ export type Cart = {
     items: CartItem[];
 };
 
-async function fetchCart(): Promise<Cart> {
-    const res = await http.get(`${API_BASE_URL}/cart`);
+async function fetchCart(lang: string): Promise<Cart> {
+    const res = await http.get(`${API_BASE_URL}/cart`, { headers: { lang } });
     return res.data?.data as Cart;
 }
 
-export function useGetCart() {
+export function useGetCart(lang: string = getLang()) {
     return useQuery<Cart>({
-        queryKey: ["cart"],
-        queryFn: fetchCart,
+        queryKey: ["cart", lang],
+        queryFn: () => fetchCart(lang),
         enabled: isLoggedIn(),
         staleTime: 1000 * 30,
         gcTime: 1000 * 60 * 2,

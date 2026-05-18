@@ -31,6 +31,7 @@ export default function CartPage() {
     const dir = lang === "ar" ? "rtl" : "ltr";
 
     const { data: cart, isLoading, isError, refetch } = useGetCart();
+    console.log(cart)
     const queryClient = useQueryClient();
 
     const [removingId, setRemovingId] = useState<number | null>(null);
@@ -197,7 +198,7 @@ export default function CartPage() {
                                             <ShoppingBag size={16} className="text-app-gold" />
                                         </div>
                                         <span className="text-xs font-semibold text-app-textSec">
-                                            {lang === "ar" ? `خدمة #${item.service_id}` : `Service #${item.service_id}`}
+                                            {item.service_name}
                                         </span>
                                     </div>
                                     <button
