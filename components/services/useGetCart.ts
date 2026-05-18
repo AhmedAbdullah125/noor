@@ -15,6 +15,9 @@ export type CartOption = {
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
+    title: string;
+    option_title: string;
+    option_value_title: string;
 };
 
 export type CartItem = {

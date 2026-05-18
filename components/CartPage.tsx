@@ -232,7 +232,7 @@ export default function CartPage() {
                                     <div className="mb-3 space-y-1">
                                         {item.options.map(opt => (
                                             <div key={opt.id} className="flex justify-between text-[11px] text-app-textSec bg-app-bg/60 rounded-lg px-2 py-1">
-                                                <span>{lang === "ar" ? "إضافة" : "Add-on"} #{opt.option_id}</span>
+                                                <span>{`${opt.option_title} : ${opt.title}`}</span>
                                                 <span className="text-app-gold font-semibold">+{parseFloat(opt.price).toFixed(3)} {lang === "ar" ? "د.ك" : "KWD"}</span>
                                             </div>
                                         ))}
