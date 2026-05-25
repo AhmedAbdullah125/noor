@@ -90,6 +90,9 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const CAPPED_8PM_CATEGORY_IDS = [1, 54, 5, 53];
     const isCappedAt8pm = CAPPED_8PM_CATEGORY_IDS.includes(Number(product?.category?.id));
 
+    const START_AT_1230_CATEGORY_IDS = [62];
+    const isStartAt1230 = START_AT_1230_CATEGORY_IDS.includes(Number(product?.category?.id));
+
     const filteredTimeSlots = useMemo(() => {
         const cap8pm = (slots: string[]) => {
             if (!isCappedAt8pm) return slots;
@@ -100,10 +103,19 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             });
         };
 
+        const capStart1230 = (slots: string[]) => {
+            if (!isStartAt1230) return slots;
+            // Drop any slot before 12:30
+            return slots.filter((slot: string) => {
+                const [h, m] = slot.split(":").map(Number);
+                return h > 12 || (h === 12 && m >= 30);
+            });
+        };
+
         if (dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
             const times = dynamicTimeSlots.available_times.map((t: string) => t.slice(0, 5));
             const today = getTodayDate();
-            if (startDate !== today) return cap8pm(times);
+            if (startDate !== today) return capStart1230(cap8pm(times));
 
             const now = new Date();
             const curH = now.getHours();
@@ -113,11 +125,11 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
                 const [h, m] = time.split(":").map(Number);
                 return h > curH || (h === curH && m >= curM);
             });
-            return cap8pm(filtered);
+            return capStart1230(cap8pm(filtered));
         }
 
         const today = getTodayDate();
-        if (startDate !== today) return cap8pm(timeSlots);
+        if (startDate !== today) return capStart1230(cap8pm(timeSlots));
 
         const now = new Date();
         const curH = now.getHours();
@@ -127,8 +139,8 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             const [h, m] = slot.split(":").map(Number);
             return h > curH || (h === curH && m >= curM);
         });
-        return cap8pm(filtered);
-    }, [startDate, dynamicTimeSlots, isCappedAt8pm]);
+        return capStart1230(cap8pm(filtered));
+    }, [startDate, dynamicTimeSlots, isCappedAt8pm, isStartAt1230]);
 
     useEffect(() => {
         if (startDate && !isLoadingTimeSlots && dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {

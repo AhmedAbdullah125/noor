@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { addDays } from "date-fns";
+
 import { ar as arLocale } from "date-fns/locale";
 import { Product } from "../../../types";
 import { PaymentMethod } from "../../services/useGetPaymentMethods";
-import { isBookedDate, calendarStyles, pad2, timeSlots } from "./utils";
-import { toast } from "sonner";
+import { calendarStyles, pad2, timeSlots } from "./utils";
 
 type Props = {
     bookingModal: any;
@@ -215,45 +214,15 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                                 selected={startDate ? new Date(startDate) : undefined}
                                                                 onSelect={(date) => {
                                                                     if (!date) return;
-                                                                    if ((product as any)?.id === 94 && isBookedDate(date)) {
-                                                                        toast(t.bookedDates, {
-                                                                            style: { background: "#dc3545", color: "#fff", borderRadius: "10px" }
-                                                                        });
-                                                                        return;
-                                                                    }
                                                                     const y = date.getFullYear();
                                                                     const m = pad2(date.getMonth() + 1);
                                                                     const d = pad2(date.getDate());
                                                                     setStartDate(`${y}-${m}-${d}`);
                                                                     setIsCalendarOpen(false);
                                                                 }}
-                                                                disabled={[
-                                                                    { before: (product as any)?.id === 94 ? addDays(new Date(), 1) : new Date() },
-                                                                    (date) => (product as any)?.id === 94 ? isBookedDate(date) : false
-                                                                ]}
-                                                                modifiers={{ booked: (date) => (product as any)?.id === 94 ? isBookedDate(date) : false }}
-                                                                modifiersClassNames={{ booked: "booked-day" }}
+                                                                disabled={[{ before: new Date() }]}
                                                                 locale={isAr ? arLocale : undefined}
                                                                 dir={isAr ? "rtl" : "ltr"}
-                                                                components={{
-                                                                    DayButton: ({ day, modifiers, children, ...props }: any) => {
-                                                                        const isProduct94 = (product as any)?.id === 94;
-                                                                        const booked = isProduct94 && isBookedDate(day.date);
-                                                                        return (
-                                                                            <button
-                                                                                {...props}
-                                                                                className={`${props.className ?? ""}${booked ? " booked-day" : ""}`}
-                                                                            >
-                                                                                {children}
-                                                                                {booked && (
-                                                                                    <span className="booked-day-label">
-                                                                                        {isAr ? "محجوز" : "booked"}
-                                                                                    </span>
-                                                                                )}
-                                                                            </button>
-                                                                        );
-                                                                    }
-                                                                }}
                                                             />
                                                         </motion.div>
                                                     </>
