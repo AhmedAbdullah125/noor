@@ -105,10 +105,10 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
 
         const capStart1230 = (slots: string[]) => {
             if (!isStartAt1230) return slots;
-            // Drop any slot before 12:30
+            // Drop any slot before 13:00 (1:00 PM)
             return slots.filter((slot: string) => {
-                const [h, m] = slot.split(":").map(Number);
-                return h > 12 || (h === 12 && m >= 30);
+                const [h] = slot.split(":").map(Number);
+                return h >= 13;
             });
         };
 
