@@ -9,7 +9,6 @@ import SubscriptionsTab from './components/SubscriptionsTab';
 import HomeTab from './components/home/HomeTab';
 import AllProductsPage from './components/AllProductsPage';
 import BrandPage from './components/BrandPage';
-import BookingPage from './components/CartFlow';
 import SubscriptionDetailsPage from './components/SubscriptionDetailsPage';
 import EditAppointmentPage from './components/EditAppointmentPage';
 import BookNextSessionPage from './components/BookNextSessionPage';
@@ -162,8 +161,9 @@ const AppContent: React.FC = () => {
       navigate('/login');
       return;
     }
-    const bookingItem: BookingItem = { product, quantity, selectedAddons, packageOption, customFinalPrice };
-    navigate('/booking', { state: bookingItem });
+    // The previous /booking route generated a fake local order and payment.
+    // All bookings now begin from the server-backed service-detail/cart flow.
+    navigate(`/product/${product.id}`);
   };
 
   const handleAddOrder = (newOrder: Order) => {
@@ -303,11 +303,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } />
 
-          <Route path="/booking" element={
-            <ProtectedRoute authStatus={authStatus}>
-              <BookingPage onAddOrder={handleAddOrder} />
-            </ProtectedRoute>
-          } />
+          <Route path="/booking" element={<Navigate to="/cart" replace />} />
 
           <Route path="/subscription-details/:subscriptionId" element={
             <ProtectedRoute authStatus={authStatus}>

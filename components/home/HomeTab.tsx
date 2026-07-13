@@ -15,6 +15,10 @@ import HomeLanding from "./HomeLanding";
 import CategoryServicesGrid from "./CategoryServicesGrid";
 import ServiceDetails from "./ServiceDetails";
 import { useGetCart } from "../services/useGetCart";
+import { useGetService } from "../services/useGetService";
+import { mapServicesToProducts } from "./serviceMappers";
+import { http } from "../services/http";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
 type Props = {
     onBook: (product: Product, quantity: number, selectedAddons?: ServiceAddon[], packageOption?: ServicePackageOption, customFinalPrice?: number) => void;
@@ -41,14 +45,24 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const [lang, setCurrentLang] = useState<Locale>(getLang());
     const t = translations[lang];
 
-    // Handle payment callback
+    // Browser return URLs are never payment authority. Resolve the stored
+    // checkout reference against the authenticated backend instead.
     useEffect(() => {
-        const orderId = searchParams.get('orderId');
-        const status = searchParams.get('status');
-        const paymentStatus = searchParams.get('paymentStatus');
+        if (searchParams.get('payment_returned') !== '1') return;
 
-        if (orderId && status) {
-            if (status === 'success' || paymentStatus === 'paid') {
+        const reference = sessionStorage.getItem('payment_checkout_reference');
+        const resolveReturn = async () => {
+            if (!reference) {
+                toast(lang === 'ar' ? 'تم استلام نتيجة الدفع. تحقق من حجوزاتك.' : 'Payment result received. Check your bookings.');
+                setSearchParams({});
+                return;
+            }
+
+            try {
+                const response = await http.get(`${API_BASE_URL}/checkouts/${reference}`);
+                const checkout = response.data?.data ?? response.data?.items;
+                if (checkout?.status === 'paid') {
+                    sessionStorage.removeItem('payment_checkout_reference');
                 toast.success(
                     lang === 'ar' ? 'تمت عملية الدفع بنجاح!' : 'Payment completed successfully!',
                     {
@@ -56,7 +70,9 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                         duration: 4000
                     }
                 );
-            } else if (status === 'failed' || paymentStatus === 'unpaid') {
+                    setTimeout(() => navigate('/appointments', { replace: true }), 1500);
+                } else if (checkout?.status === 'failed') {
+                    sessionStorage.removeItem('payment_checkout_reference');
                 toast.error(
                     lang === 'ar' ? 'فشلت عملية الدفع. يرجى المحاولة مرة أخرى.' : 'Payment failed. Please try again.',
                     {
@@ -64,12 +80,17 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
                         duration: 5000
                     }
                 );
+                } else {
+                    toast(lang === 'ar' ? 'الدفع ما زال قيد المعالجة. سيتم تحديث الحجز عند تأكيده.' : 'Payment is still pending. Your booking will update after confirmation.');
+                }
+            } catch {
+                toast.error(lang === 'ar' ? 'تعذر التحقق من حالة الدفع. تحقق من حجوزاتك لاحقاً.' : 'Unable to verify payment status. Check your bookings later.');
+            } finally {
+                setSearchParams({});
             }
-            setSearchParams({});
-            setTimeout(() => {
-                navigate('/appointments', { replace: true });
-            }, 1500);
-        }
+        };
+
+        void resolveReturn();
     }, [searchParams, setSearchParams, navigate, lang]);
 
     const toggleLang = () => {
@@ -82,11 +103,13 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
     const { categories, banners, products, isLoading, socialLinks } = useHomeData(lang, 1);
     const { data: cart } = useGetCart();
     const cartCount = cart?.items?.length ?? 0;
+    const serviceDetailQuery = useGetService(lang, productId);
 
     const selectedProduct = useMemo(() => {
         if (!productId) return null;
-        return products.find((p) => p.id === Number(productId)) ?? null;
-    }, [productId, products]);
+        if (!serviceDetailQuery.data) return null;
+        return mapServicesToProducts([serviceDetailQuery.data])[0] ?? null;
+    }, [productId, serviceDetailQuery.data]);
 
     const activeCategory = categoryName || null;
 
@@ -171,7 +194,11 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
             <main className={`flex-1 ${isBookingModalOpen ? "overflow-hidden" : "overflow-y-auto"} w-full pb-28 pt-24`}>
                 <AnimatePresence mode="wait">
                     <motion.div key={viewKey} {...fadeSlideUp} className="h-full">
-                        {selectedProduct ? (
+                        {productId && serviceDetailQuery.isLoading ? (
+                            <div className="px-6 py-12 text-sm text-app-textSec">{t.loadingData}</div>
+                        ) : productId && serviceDetailQuery.isError ? (
+                            <div className="px-6 py-12 text-sm text-red-500">{t.errorLoading}</div>
+                        ) : selectedProduct ? (
                             <ServiceDetails
                                 product={selectedProduct}
                                 onBack={() => {

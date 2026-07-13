@@ -1,16 +1,40 @@
 // src/components/services/useGetServices.ts
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { http } from "./http";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
-const fetchServices = async (lang: string, page: number, search?: string) => {
-  const formData = new FormData();
-  formData.append("page_size", "100");
-  formData.append("page_number", String(page));
+export type ServicesResponse = {
+  items?: { services?: unknown[] };
+  meta?: { pagination?: { page: number; per_page: number; total: number; last_page: number; has_more: boolean } };
+};
 
-  if (search) formData.append("search", search);
+const fetchServices = async (lang: string, page: number, search?: string): Promise<ServicesResponse> => {
+  const res = await http.get(`${API_BASE_URL}/v2/services`, {
+    params: { page, per_page: 100, ...(search ? { q: search } : {}) },
+    headers: { lang, "x-skip-auth": "1" },
+  });
 
-  const res = await http.post("/services/index", formData, { headers: { lang } });
-  return res.data;
+  if (!Array.isArray(res.data?.data)) {
+    throw new Error(res.data?.error?.message || "Unable to load services");
+  }
+
+  // Transitional UI adapter: retain the shape expected by current components
+  // while the API itself uses the smaller v2 resource contract.
+  return {
+    items: {
+      services: res.data.data.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        main_image: service.image?.url ?? "",
+        category: service.category?.name ?? "",
+        is_active: true,
+        current_price: service.price?.amount ?? "0",
+        price: service.price?.original_amount ?? service.price?.amount ?? "0",
+        has_discount: Boolean(service.price?.original_amount),
+      })),
+    },
+    meta: res.data.meta,
+  };
 };
 
 export const useGetServices = (lang: string, page: number, search?: string) =>
@@ -19,5 +43,5 @@ export const useGetServices = (lang: string, page: number, search?: string) =>
     queryFn: () => fetchServices(lang, page, search),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
