@@ -44,31 +44,19 @@ export async function registerRequest(
       return { ok: false as const, error: message || "Register failed" };
     }
 
-    const tokenData = response?.data?.items?.token;
-    const userData = response?.data?.items?.user;
+    // Registration now returns a verification challenge, NOT tokens: the account
+    // is created unverified and the user must confirm the OTP before logging in.
+    const items = response?.data?.items ?? {};
 
-    if (!tokenData?.access_token || !tokenData?.refresh_token) {
-      toast("Invalid token response", {
-        style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
-      });
-      return { ok: false as const, error: "Invalid token response" };
-    }
-
-    // Registration successful
-    toast(message || "تم التسجيل بنجاح", {
+    toast(message || "تم إرسال رمز التحقق", {
       style: { background: "#1B8354", color: "#fff", borderRadius: "10px" },
-      description: userData?.name ? `مرحباً ${userData.name}` : undefined,
     });
 
     return {
       ok: true as const,
-      token: {
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        token_type: tokenData.token_type,
-        expires_in: tokenData.expires_in,
-      },
-      user: userData
+      requiresVerification: true as const,
+      phone: items.phone as string | undefined,
+      country_code: items.country_code as string | undefined,
     };
   } catch (error: any) {
     setLoading(false);

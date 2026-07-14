@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { User, Phone, Lock } from "lucide-react";
 import { registerRequest } from "../services/register";
 import { translations, Locale, getLang } from "../../services/i18n";
-import { setAuth } from "../auth/authStorage";
 import CountryCodeSelect from "./CountryCodeSelect";
 
 
@@ -108,15 +107,24 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    // Store authentication token and user data
-    setAuth(res.token, res.user);
-
-    // User is now logged in, navigate to home
-    onLoginSuccess?.();
-    navigate("/", { replace: true });
+    // Registration returns a verification challenge (no tokens). Go to the OTP
+    // step; tokens are issued only after the code is confirmed there.
+    navigate("/verify", {
+      replace: true,
+      state: {
+        name: formData.name,
+        phone: formData.phone,
+        password: formData.password,
+        country_code: countryCode,
+      },
+    });
   };
 
   const handleGuestLogin = () => {
+    // Activate guest mode BEFORE navigating, otherwise App treats the missing
+    // flag as an authenticated session and logs the guest out on the first
+    // authenticated API call.
+    localStorage.setItem("mezo_auth_mode", "guest");
     onLoginSuccess?.();
     navigate("/", { replace: true });
   };
