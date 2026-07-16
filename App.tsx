@@ -19,6 +19,7 @@ import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, resetAuthState } from "./components/services/http";
 import { clearAuth, isLoggedIn } from "./components/auth/authStorage";
+import { logoutRequest } from "./components/services/logout";
 import { toast } from "sonner";
 
 import HairProfilePage from './components/HairProfilePage';
@@ -193,7 +194,9 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Revoke the token server-side first (best-effort), then clear local state.
+    await logoutRequest();
     clearAuth();
     localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
     localStorage.removeItem(STORAGE_KEY_AUTH_MODE);

@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 import imageCompression from "browser-image-compression";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { translations, getLang } from "@/services/i18n";
@@ -62,7 +62,7 @@ async function uploadUserImages(
         formData.append(`images[${index}]`, image);
     });
 
-    const token = Cookies.get("token");
+    const token = getAccessToken();
     const res = await axios.post(`${API_BASE_URL}/v1/user-images`, formData, {
         headers: {
             lang,

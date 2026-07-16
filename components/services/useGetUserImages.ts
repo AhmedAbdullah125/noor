@@ -3,7 +3,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { isLoggedIn } from "../auth/authStorage";
 
@@ -56,7 +56,7 @@ async function fetchUserImages(
         throw new Error("Not authenticated");
     }
 
-    const token = Cookies.get("token");
+    const token = getAccessToken();
     const res = await axios.get(`${API_BASE_URL}/v1/user-images`, {
         params: { user_id: userId, page },
         headers: {

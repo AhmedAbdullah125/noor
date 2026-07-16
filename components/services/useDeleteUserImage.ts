@@ -3,12 +3,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { translations } from "@/services/i18n";
 
 async function deleteUserImage(imageId: number, lang: string): Promise<any> {
-    const token = Cookies.get("token");
+    const token = getAccessToken();
     const res = await axios.delete(`${API_BASE_URL}/v1/user-images/${imageId}`, {
         headers: {
             lang,

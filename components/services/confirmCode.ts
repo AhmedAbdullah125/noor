@@ -6,6 +6,7 @@ type ConfirmCodePayload = {
     phone: string;
     verification_code: string;
     password: string;
+    country_code?: string;
 };
 
 export async function confirmCodeRequest(
@@ -18,6 +19,9 @@ export async function confirmCodeRequest(
     const formData = new FormData();
     formData.append("phone", data.phone);
     formData.append("verification_code", data.verification_code);
+    // Include the country code so verification matches the exact account created
+    // at registration (the same national number can exist under different codes).
+    if (data.country_code) formData.append("country_code", data.country_code);
     formData.append("grant_type", "password");
     formData.append("client_id", "a0ebbcdd-f4d7-4b9b-9ac0-752d55d6d2be");
     formData.append("client_secret", "ZsifN3q9uKXTLPDIIUnMVFQVAFP7umZ7pGCc8VUF");

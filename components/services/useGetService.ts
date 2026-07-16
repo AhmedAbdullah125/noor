@@ -1,7 +1,7 @@
 // src/components/services/useGetService.ts
 'use client';
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 import { API_BASE_URL } from "../../lib/apiConfig";
 import { useQuery } from "@tanstack/react-query";
 
@@ -45,7 +45,7 @@ const toLegacyService = (service: any) => ({
 });
 
 const fetchService = async (lang: string, id: number | string) => {
-  const token = Cookies.get("token");
+  const token = getAccessToken();
   const headers: Record<string, string> = { lang };
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await axios.get(`${API_BASE_URL}/v2/services/${id}`, { headers });

@@ -10,7 +10,7 @@ import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods } from "../services/useGetPaymentMethods";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 
 // Sub-components
 import { ServiceHeader } from "./service-details/ServiceHeader";
@@ -32,7 +32,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     const lang = getLang();
     const t = translations[lang];
     const isAr = lang === 'ar';
-    const token = Cookies.get("token");
+    const token = getAccessToken();
 
     const navigate = useNavigate();
     const [creating, setCreating] = useState(false);

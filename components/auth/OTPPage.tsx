@@ -3,7 +3,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { confirmCodeRequest } from "../services/confirmCode";
+import { resendCodeRequest } from "../services/resendCode";
 import { translations, Locale, getLang } from "../../services/i18n";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 interface OTPPageProps {
   onLoginSuccess: () => void;
@@ -19,17 +22,35 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang: propLang }) => 
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendIn, setResendIn] = useState(RESEND_COOLDOWN_SECONDS);
+  const [resending, setResending] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const state = (location.state || {}) as { name?: string; phone?: string; password?: string };
+  const state = (location.state || {}) as { name?: string; phone?: string; password?: string; country_code?: string };
   const name = state.name || "";
   const phone = state.phone || "";
   const password = state.password || "";
+  const countryCode = state.country_code || "";
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
+
+  // Cooldown countdown for the resend button.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [resendIn]);
+
+  const handleResend = async () => {
+    if (resendIn > 0 || resending) return;
+    setResending(true);
+    await resendCodeRequest({ phone, country_code: countryCode }, lang);
+    setResending(false);
+    setResendIn(RESEND_COOLDOWN_SECONDS);
+  };
 
   useEffect(() => {
     if (!phone || !password) {
@@ -61,7 +82,7 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang: propLang }) => 
 
     // Call confirm-code API
     const res = await confirmCodeRequest(
-      { phone, verification_code: code, password },
+      { phone, verification_code: code, password, country_code: countryCode },
       setLoading,
       lang
     );
@@ -126,6 +147,20 @@ const OTPPage: React.FC<OTPPageProps> = ({ onLoginSuccess, lang: propLang }) => 
         >
           {loading ? t.verifying : t.verify}
         </button>
+
+        <div className="text-center mt-6">
+          <button
+            onClick={handleResend}
+            disabled={resendIn > 0 || resending}
+            className="text-sm font-semibold text-app-gold disabled:text-app-textSec disabled:cursor-not-allowed"
+          >
+            {resendIn > 0
+              ? (lang === "ar" ? `إعادة إرسال الرمز خلال ${resendIn}ث` : `Resend code in ${resendIn}s`)
+              : resending
+                ? (lang === "ar" ? "جارٍ الإرسال…" : "Sending…")
+                : (lang === "ar" ? "إعادة إرسال الرمز" : "Resend code")}
+          </button>
+        </div>
       </div>
     </div>
   );

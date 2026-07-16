@@ -36,8 +36,8 @@ export function setAuth(token: TokenPair, user?: User) {
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         if (user.id !== undefined) localStorage.setItem(USER_ID_KEY, String(user.id));
     }
-
-    document.cookie = `token=${encodeURIComponent(token.access_token)}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+    // The access token is intentionally NOT mirrored into a JS-readable cookie.
+    // All callers read it from storage via getAccessToken().
 }
 
 export function clearAuth() {
