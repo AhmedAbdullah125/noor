@@ -51,8 +51,6 @@ async function uploadUserImages(
     lang: string
 ): Promise<any> {
     const formData = new FormData();
-    formData.append("user_id", payload.userId.toString());
-
     // Compress images before uploading
     const compressedImages = await Promise.all(
         payload.images.map((image) => compressImage(image))

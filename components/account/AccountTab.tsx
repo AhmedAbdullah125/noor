@@ -32,7 +32,7 @@ interface AccountTabProps {
     favourites: number[];
     onToggleFavourite: (productId: number) => void;
     onBook: (product: Product, quantity: number, selectedAddons?: ServiceAddon[]) => void;
-    onLogout: () => void;
+    onLogout: () => Promise<void> | void;
     isGuest?: boolean;
     lang?: string;
 }
@@ -82,13 +82,12 @@ const AccountTab: React.FC<AccountTabProps> = ({
         setIsHairProfileComplete(!!p);
     }, []);
 
-    const handleAuthButton = () => {
+    const handleAuthButton = async () => {
         if (isGuest || !isLoggedIn()) {
             navigate("/login");
             return;
         }
-        clearAuth();
-        onLogout?.();
+        await onLogout?.();
         navigate("/login", { replace: true });
     };
 
@@ -102,8 +101,7 @@ const AccountTab: React.FC<AccountTabProps> = ({
 
         if (res.ok) {
             setShowDeleteModal(false);
-            clearAuth();
-            onLogout?.();
+            await onLogout?.();
             navigate("/login", { replace: true });
         }
     };

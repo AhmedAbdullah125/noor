@@ -3,7 +3,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { http, UnauthorizedError, authEvents } from "./http";
+import { http, UnauthorizedError, authEvents, registerProfileRedirectReset } from "./http";
 import { isLoggedIn, clearAuth } from "../auth/authStorage";
 
 type Profile = {
@@ -21,6 +21,7 @@ type Profile = {
 };
 
 let redirecting = false;
+registerProfileRedirectReset(() => { redirecting = false; });
 
 async function fetchProfile(lang: string): Promise<Profile> {
   if (!isLoggedIn()) {

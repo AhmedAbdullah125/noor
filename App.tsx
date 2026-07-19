@@ -23,6 +23,7 @@ import { logoutRequest } from "./components/services/logout";
 import { toast } from "sonner";
 
 import HairProfilePage from './components/HairProfilePage';
+import { clearHistoryCache } from './components/account/HistoryScreen';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
 import { cacheService } from './services/cacheService';
@@ -197,6 +198,7 @@ const AppContent: React.FC = () => {
   const handleLogout = async () => {
     // Revoke the token server-side first (best-effort), then clear local state.
     await logoutRequest();
+    clearHistoryCache();
     clearAuth();
     localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
     localStorage.removeItem(STORAGE_KEY_AUTH_MODE);

@@ -13,6 +13,12 @@ let _cacheTimestamp = 0;
 let _savedScrollTop = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 
+export function clearHistoryCache() {
+    _cachedItems = null;
+    _cacheTimestamp = 0;
+    _savedScrollTop = 0;
+}
+
 type UiBooking = {
     id: string;
     status: string;
@@ -212,4 +218,3 @@ export default function HistoryScreen({
         </div>
     );
 }
-

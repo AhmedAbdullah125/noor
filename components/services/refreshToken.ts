@@ -9,8 +9,8 @@ export async function refreshToken(lang: string) {
     const formData = new FormData();
     formData.append("grant_type", "refresh_token");
     formData.append("refresh_token", refresh_token);
-    formData.append("client_id", "a0ebbcdd-f4d7-4b9b-9ac0-752d55d6d2be");
-    formData.append("client_secret", "ZsifN3q9uKXTLPDIIUnMVFQVAFP7umZ7pGCc8VUF");
+    formData.append("client_id", import.meta.env.VITE_CLIENT_OAUTH_CLIENT_ID ?? "");
+    formData.append("client_secret", import.meta.env.VITE_CLIENT_OAUTH_CLIENT_SECRET ?? "");
 
     try {
         const res = await http.post("/refresh-token", formData, {

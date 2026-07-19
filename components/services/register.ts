@@ -25,8 +25,8 @@ export async function registerRequest(
   formData.append("phone_confirm", data.phone_confirm);
   formData.append("password", data.password);
   formData.append("grant_type", "password");
-  formData.append("client_id", "a0ebbcdd-f4d7-4b9b-9ac0-752d55d6d2be");
-  formData.append("client_secret", "ZsifN3q9uKXTLPDIIUnMVFQVAFP7umZ7pGCc8VUF");
+  formData.append("client_id", import.meta.env.VITE_CLIENT_OAUTH_CLIENT_ID ?? "");
+  formData.append("client_secret", import.meta.env.VITE_CLIENT_OAUTH_CLIENT_SECRET ?? "");
   formData.append("country_code", data.country_code);
 
   try {

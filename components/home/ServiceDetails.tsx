@@ -78,7 +78,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             if (data.status && data.data) {
                 return data.data;
             }
-            return null;
+            throw new Error(data?.message || "Unable to load available booking times");
         },
         enabled: !!startDate,
         staleTime: 0,
@@ -394,7 +394,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             coupon_code: isCouponApplied ? couponCode : undefined,
         };
 
-        const res = await createRequest(payload, "ar", "json");
+        const res = await createRequest(payload, lang, "json");
         setCreating(false);
 
         if (!res.ok) return;
