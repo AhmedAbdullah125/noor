@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { User, Phone, Lock } from "lucide-react";
 import { registerRequest } from "../services/register";
 import { translations, Locale, getLang } from "../../services/i18n";
+import { setAuth } from "../auth/authStorage";
 import CountryCodeSelect from "./CountryCodeSelect";
 
 
@@ -107,17 +108,12 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    // Registration returns a verification challenge (no tokens). Go to the OTP
-    // step; tokens are issued only after the code is confirmed there.
-    navigate("/verify", {
-      replace: true,
-      state: {
-        name: formData.name,
-        phone: formData.phone,
-        password: formData.password,
-        country_code: countryCode,
-      },
-    });
+    // Store authentication token and user data
+    setAuth(res.token, res.user);
+
+    // User is now logged in, navigate to home
+    onLoginSuccess?.();
+    navigate("/", { replace: true });
   };
 
   const handleGuestLogin = () => {
