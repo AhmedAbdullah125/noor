@@ -2,6 +2,10 @@
   RewriteEngine On
   RewriteBase /
 
+  # Always serve the mobile app over HTTPS.
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://mobile.noor.raiyan.cc%{REQUEST_URI} [R=301,L]
+
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
