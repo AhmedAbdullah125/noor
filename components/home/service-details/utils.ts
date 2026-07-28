@@ -25,12 +25,6 @@ export const isBookedDate = (date: Date) => {
   return d >= start && d <= end;
 };
 
-export const timeSlots: string[] = [];
-for (let h = 10; h <= 20; h++) {
-  timeSlots.push(`${String(h).padStart(2, "0")}:00`);
-  timeSlots.push(`${String(h).padStart(2, "0")}:30`);
-}
-
 export const calendarStyles = `
   .rdp {
     --rdp-cell-size: 40px;

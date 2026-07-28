@@ -7,7 +7,7 @@ import "react-day-picker/dist/style.css";
 import { ar as arLocale } from "date-fns/locale";
 import { Product } from "../../../types";
 import { PaymentMethod } from "../../services/useGetPaymentMethods";
-import { calendarStyles, pad2, timeSlots } from "./utils";
+import { calendarStyles, pad2 } from "./utils";
 
 type Props = {
     bookingModal: any;

@@ -17,7 +17,7 @@ import { ServiceHeader } from "./service-details/ServiceHeader";
 import { AddonGroups } from "./service-details/AddonGroups";
 import { SubscriptionPackages } from "./service-details/SubscriptionPackages";
 import { BookingBottomSheet } from "./service-details/BookingBottomSheet";
-import { parsePrice, getTodayDate, timeSlots } from "./service-details/utils";
+import { parsePrice, getTodayDate } from "./service-details/utils";
 
 type Props = {
     product: Product;
@@ -112,31 +112,24 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             });
         };
 
-        if (dynamicTimeSlots && Array.isArray(dynamicTimeSlots.available_times)) {
-            const times = dynamicTimeSlots.available_times.map((t: string) => t.slice(0, 5));
-            const today = getTodayDate();
-            if (startDate !== today) return capStart1230(cap8pm(times));
-
-            const now = new Date();
-            const curH = now.getHours();
-            const curM = now.getMinutes();
-
-            const filtered = times.filter((time: string) => {
-                const [h, m] = time.split(":").map(Number);
-                return h > curH || (h === curH && m >= curM);
-            });
-            return capStart1230(cap8pm(filtered));
+        // Only times the server confirmed as bookable are ever offered.
+        // No static fallback: if availability hasn't loaded (or failed),
+        // the list stays empty rather than offering slots the create
+        // endpoint would reject.
+        if (!dynamicTimeSlots || !Array.isArray(dynamicTimeSlots.available_times)) {
+            return [];
         }
 
+        const times = dynamicTimeSlots.available_times.map((t: string) => t.slice(0, 5));
         const today = getTodayDate();
-        if (startDate !== today) return capStart1230(cap8pm(timeSlots));
+        if (startDate !== today) return capStart1230(cap8pm(times));
 
         const now = new Date();
         const curH = now.getHours();
         const curM = now.getMinutes();
 
-        const filtered = timeSlots.filter(slot => {
-            const [h, m] = slot.split(":").map(Number);
+        const filtered = times.filter((time: string) => {
+            const [h, m] = time.split(":").map(Number);
             return h > curH || (h === curH && m >= curM);
         });
         return capStart1230(cap8pm(filtered));
