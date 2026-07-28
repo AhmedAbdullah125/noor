@@ -15,7 +15,6 @@ import BookNextSessionPage from './components/BookNextSessionPage';
 import CartPage from './components/CartPage';
 import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
-import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, resetAuthState } from "./components/services/http";
 import { clearAuth, isLoggedIn } from "./components/auth/authStorage";
@@ -211,7 +210,6 @@ const AppContent: React.FC = () => {
   const showTabBar = !location.pathname.startsWith('/booking') &&
     !location.pathname.startsWith('/login') &&
     !location.pathname.startsWith('/signup') &&
-    !location.pathname.startsWith('/verify') &&
     !location.pathname.startsWith('/forgot-password') &&
     !location.pathname.startsWith('/cart') &&
     !location.pathname.startsWith('/product/') &&
@@ -335,7 +333,6 @@ const AppContent: React.FC = () => {
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/signup" element={<SignUpPage onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/verify" element={<OTPPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
 
