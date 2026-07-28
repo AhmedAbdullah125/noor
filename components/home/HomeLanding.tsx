@@ -260,7 +260,7 @@ export default function HomeLanding({
                 {bannersLoading ? (
                     <div className="w-full h-[162px] rounded-[2rem] bg-gray-200 animate-shimmer overflow-hidden shadow-md border border-app-card/20" />
                 ) : (
-                    <div className="relative w-full h-auto rounded-[2rem] overflow-hidden shadow-md bg-white border border-app-card/20"
+                    <div className="relative w-full h-[162px] rounded-[2rem] overflow-hidden shadow-md bg-white border border-app-card/20"
                         onTouchStart={onTouchStart}
                         onTouchMove={onTouchMove}
                         onTouchEnd={onTouchEnd}
@@ -276,9 +276,11 @@ export default function HomeLanding({
                                     onClick={() => onBannerClick?.(banner)}
                                     type="button"
                                 >
-                                    <img
+                                    <AppImage
                                         src={banner.image}
                                         alt={banner.title}
+                                        width={430}
+                                        height={162}
                                         className="w-full h-full object-cover object-center block"
                                         loading={index === 0 ? "eager" : "lazy"}
                                         fetchPriority={index === 0 ? "high" : "auto"}

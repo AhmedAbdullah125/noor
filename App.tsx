@@ -22,6 +22,7 @@ import { logoutRequest } from "./components/services/logout";
 import { toast } from "sonner";
 
 import HairProfilePage from './components/HairProfilePage';
+import { applyImageFallback } from './lib/appImage';
 import { clearHistoryCache } from './components/account/HistoryScreen';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
@@ -75,6 +76,19 @@ const AppContent: React.FC = () => {
     }
     return <>{children}</>;
   };
+
+  // Any image that fails to load anywhere in the app falls back to the logo
+  useEffect(() => {
+    const onImageError = (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLImageElement) {
+        applyImageFallback(target);
+      }
+    };
+    // Capture phase: <img> error events do not bubble.
+    window.addEventListener('error', onImageError, true);
+    return () => window.removeEventListener('error', onImageError, true);
+  }, []);
 
   // Wire global 401 / session-expired logout
   useEffect(() => {
