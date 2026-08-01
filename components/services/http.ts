@@ -27,6 +27,13 @@ export function resetAuthState() {
     isLoggingOut = false;
     isRefreshing = false;
     refreshPromise = null;
+    resetProfileRedirect();
+}
+
+let resetProfileRedirect = () => {};
+
+export function registerProfileRedirectReset(reset: () => void) {
+    resetProfileRedirect = reset;
 }
 
 function isSessionExpiredResponse(data: any) {

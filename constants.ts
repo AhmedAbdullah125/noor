@@ -11,7 +11,10 @@ export const APP_COLORS = {
 };
 
 export const LOCK_DURATION_MS = 60 * 60 * 1000; // 1 Hour
-export const FALLBACK_IMAGE_URL = "https://i2.pickpik.com/photos/674/385/236/school-hair-salon-hairdresser-preview.jpg";
+// App-wide default image: the bundled logo (public/logo.png). Every broken
+// or missing image falls back to this, via <AppImage> and the global
+// error handler in App.tsx.
+export const FALLBACK_IMAGE_URL = "/logo.png";
 export const STORAGE_KEY_SUBSCRIPTIONS = 'mezo_subscriptions_v1';
 export const STORAGE_KEY_APPOINTMENTS = 'salon_appointments_v1';
 

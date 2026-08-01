@@ -24,6 +24,13 @@ const AppImage: React.FC<AppImageProps> = ({ src, alt, onError, ...props }) => {
     }
   };
 
+  // The logo fallback is shown contained on white so it never crops or
+  // stretches, regardless of the object-fit class the caller passed.
+  const showingFallback = hasError || !currentSrc;
+  const fallbackStyle: React.CSSProperties = showingFallback
+    ? { objectFit: 'contain', backgroundColor: '#ffffff', padding: '12%' }
+    : {};
+
   return (
     <img
       src={currentSrc || FALLBACK_IMAGE_URL}
@@ -32,6 +39,7 @@ const AppImage: React.FC<AppImageProps> = ({ src, alt, onError, ...props }) => {
       loading="lazy"
       decoding="async"
       {...props}
+      style={{ ...props.style, ...fallbackStyle }}
     />
   );
 };

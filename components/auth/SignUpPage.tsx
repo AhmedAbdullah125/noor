@@ -117,6 +117,10 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLoginSuccess }) => {
   };
 
   const handleGuestLogin = () => {
+    // Activate guest mode BEFORE navigating, otherwise App treats the missing
+    // flag as an authenticated session and logs the guest out on the first
+    // authenticated API call.
+    localStorage.setItem("mezo_auth_mode", "guest");
     onLoginSuccess?.();
     navigate("/", { replace: true });
   };

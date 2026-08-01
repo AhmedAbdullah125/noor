@@ -271,7 +271,7 @@ const SubscriptionsTab: React.FC = () => {
                   <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-app-bg/60">
                     <div>
                       <span className="block text-[10px] font-semibold text-app-textSec mb-1">
-                        {service?.name ?? sub.serviceId ? service?.name : t.serviceLabel}
+                        {service?.name ?? t.serviceLabel}
                       </span>
                       <h3 className="text-base font-semibold text-app-text leading-tight">{sub.packageTitle}</h3>
                     </div>

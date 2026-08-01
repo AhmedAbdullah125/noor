@@ -3,6 +3,7 @@ import { http } from "./http";
 import { toast } from "sonner";
 
 type ForgotPasswordPayload = { phone: string; country_code: string };
+type ResetPasswordPayload = ForgotPasswordPayload & { code: string; password: string };
 
 export async function forgotPasswordRequest(
   data: ForgotPasswordPayload,
@@ -43,5 +44,28 @@ export async function forgotPasswordRequest(
       style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
     });
     return { ok: false, error: errorMessage };
+  }
+}
+
+export async function resetPasswordRequest(
+  data: ResetPasswordPayload,
+  setLoading: (value: boolean) => void,
+  lang: string,
+): Promise<{ ok: boolean; error?: string }> {
+  setLoading(true);
+  const formData = new FormData();
+  formData.append('phone', data.phone);
+  formData.append('country_code', data.country_code);
+  formData.append('code', data.code);
+  formData.append('password', data.password);
+  try {
+    const response = await http.post('/reset-password', formData, { headers: { lang, 'x-skip-auth': '1' } });
+    const message = response?.data?.message;
+    if (!response?.data?.status) return { ok: false, error: message || 'Unable to reset password' };
+    return { ok: true };
+  } catch (error: any) {
+    return { ok: false, error: error?.response?.data?.message || error?.message || 'Unable to reset password' };
+  } finally {
+    setLoading(false);
   }
 }

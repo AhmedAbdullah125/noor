@@ -1,11 +1,11 @@
 'use client';
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getAccessToken } from "../auth/authStorage";
 import { API_BASE_URL } from "../../lib/apiConfig";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchLookups = async (lang: string) => {
-    const token = Cookies.get("token");
+    const token = getAccessToken();
     const headers: Record<string, string> = { lang };
     if (token) headers.Authorization = `Bearer ${token}`;
 

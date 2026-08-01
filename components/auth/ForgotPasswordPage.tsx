@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Phone, ArrowLeft } from "lucide-react";
-import { forgotPasswordRequest } from "../services/forgotPassword";
+import { forgotPasswordRequest, resetPasswordRequest } from "../services/forgotPassword";
 import { translations, Locale, getLang } from "../../services/i18n";
 import CountryCodeSelect from "./CountryCodeSelect";
 
@@ -24,6 +24,9 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [complete, setComplete] = useState(false);
 
   const isRtl = lang === "ar";
 
@@ -72,6 +75,17 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
     setSuccess(true);
   };
 
+  const handleReset = async () => {
+    setError(null);
+    if (!/^\d{4}$/.test(resetCode) || newPassword.length < 8) {
+      setError(lang === "ar" ? "أدخلي رمزاً من 4 أرقام وكلمة مرور من 8 أحرف على الأقل" : "Enter the 4-digit code and a password of at least 8 characters.");
+      return;
+    }
+    const res = await resetPasswordRequest({ phone, country_code: countryCode, code: resetCode, password: newPassword }, setLoading, lang);
+    if (!res.ok) { setError(res.error || t.forgotPasswordError); return; }
+    setComplete(true);
+  };
+
   return (
     <div
       className="flex flex-col h-full bg-app-bg relative font-active overflow-hidden min-h-screen"
@@ -98,7 +112,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
           <p className="text-sm text-app-textSec">{t.forgotPasswordSubtitle}</p>
         </div>
 
-        {success ? (
+        {complete ? (
           /* Success state */
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -116,13 +130,21 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
                 />
               </svg>
             </div>
-            <p className="text-app-text font-medium">{t.forgotPasswordSuccess}</p>
+            <p className="text-app-text font-medium">{lang === "ar" ? "تم تغيير كلمة المرور بنجاح" : "Your password has been reset."}</p>
             <button
               onClick={() => navigate("/login")}
               className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl shadow-lg shadow-app-gold/30 active:scale-95 transition-transform mt-4"
             >
               {t.backToLogin}
             </button>
+          </div>
+        ) : success ? (
+          <div className="space-y-4">
+            <p className="text-center text-app-textSec">{lang === "ar" ? "أدخل الرمز المرسل إليك وكلمة المرور الجديدة." : "Enter the code we sent and your new password."}</p>
+            <input value={resetCode} onChange={(e) => setResetCode(convertArabicToEnglishNumbers(e.target.value).replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder={lang === "ar" ? "رمز التحقق" : "Verification code"} className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-app-text" />
+            <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" placeholder={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-app-text" />
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+            <button onClick={handleReset} disabled={loading} className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl disabled:opacity-60">{loading ? t.forgotPasswordSending : (lang === "ar" ? "تغيير كلمة المرور" : "Reset password")}</button>
           </div>
         ) : (
           <>

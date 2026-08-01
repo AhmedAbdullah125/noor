@@ -12,6 +12,7 @@ export interface CartCheckoutItems {
     redirect_url?: string;
     payment_status?: string;
     checkout_id?: number;
+    checkout_reference?: string;
     request_ids?: number[];
     final_price?: number;
 }
@@ -48,12 +49,6 @@ export function useCartCheckout(options?: {
                 // Invalidate cart so badge resets
                 queryClient.invalidateQueries({ queryKey: ["cart"] });
 
-                // Redirect to payment gateway if a URL is provided
-                const paymentUrl = data.items?.payment_url;
-                if (paymentUrl) {
-                    window.location.href = paymentUrl;
-                    return;
-                }
             }
             options?.onSuccess?.(data);
         },

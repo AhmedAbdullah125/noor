@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Product } from '../types';
-import { DEMO_PRODUCTS } from '../constants';
 import ProductCard from './ProductCard';
 import AppHeader from './AppHeader';
 import { getLang } from '../services/i18n';
+import { useGetServices } from './services/useGetServices';
+import { mapServicesToProducts } from './home/serviceMappers';
 
 interface AllProductsPageProps {
   onBook: (product: Product, quantity: number) => void;
@@ -20,6 +21,11 @@ const AllProductsPage: React.FC<AllProductsPageProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const lang = getLang();
+  const servicesQuery = useGetServices(lang, 1);
+  const products = useMemo(
+    () => mapServicesToProducts((servicesQuery.data?.items?.services ?? []) as any[]),
+    [servicesQuery.data],
+  );
 
   const handleProductClick = (product: Product) => {
     navigate(`/product/${product.id}`, { state: { from: location.pathname } });
@@ -39,8 +45,13 @@ const AllProductsPage: React.FC<AllProductsPageProps> = ({
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto w-full pb-28 px-6 pt-24">
+        {servicesQuery.isLoading ? (
+          <div className="grid grid-cols-2 gap-4">{Array.from({ length: 6 }, (_, i) => <div key={i} className="h-56 rounded-3xl bg-white animate-pulse" />)}</div>
+        ) : servicesQuery.isError ? (
+          <div className="text-center text-app-textSec py-12">{lang === 'ar' ? 'تعذر تحميل الخدمات' : 'Unable to load services'}</div>
+        ) : (
         <div className="grid grid-cols-2 gap-4">
-          {DEMO_PRODUCTS.map(product => (
+          {products.map(product => (
             <ProductCard
               key={product.id}
               product={product}
@@ -51,6 +62,7 @@ const AllProductsPage: React.FC<AllProductsPageProps> = ({
             />
           ))}
         </div>
+        )}
       </main>
     </div>
   );

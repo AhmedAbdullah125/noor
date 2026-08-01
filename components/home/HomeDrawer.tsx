@@ -24,7 +24,7 @@ export default function HomeDrawer({ open, onClose, onNavigate, socialLinks = []
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 flex items-center justify-between border-b border-app-card/30 bg-white z-10">
-                    <button onClick={onClose} className="p-2 hover:bg-app-bg rounded-full transition-colors text-app-text">
+                    <button aria-label="إغلاق القائمة" onClick={onClose} className="p-2 hover:bg-app-bg rounded-full transition-colors text-app-text">
                         <X size={24} />
                     </button>
                     {onToggleLang && (

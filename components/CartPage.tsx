@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ShoppingBag, Trash2, Calendar, Clock, Loader2,
@@ -31,13 +31,13 @@ export default function CartPage() {
     const dir = lang === "ar" ? "rtl" : "ltr";
 
     const { data: cart, isLoading, isError, refetch } = useGetCart();
-    console.log(cart)
     const queryClient = useQueryClient();
 
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
     const [checkoutDone, setCheckoutDone] = useState(false);
+    const [pendingCheckoutReference, setPendingCheckoutReference] = useState<string | null>(null);
 
     const total = cart?.total ?? 0;
 
@@ -45,9 +45,15 @@ export default function CartPage() {
 
     const { mutate: checkout, isPending: isCheckingOut } = useCartCheckout({
         onSuccess: (data) => {
-            const redirectUrl = data?.data?.redirect_url || data?.redirect_url || data?.payment_url;
+            const checkout = data?.items ?? data?.data;
+            const redirectUrl = checkout?.redirect_url || data?.redirect_url || checkout?.payment_url || data?.payment_url;
             if (redirectUrl) {
+                if (checkout?.checkout_reference) {
+                    sessionStorage.setItem("payment_checkout_reference", checkout.checkout_reference);
+                }
                 window.location.href = redirectUrl;
+            } else if (checkout?.checkout_reference && !["cash", "wallet"].includes(selectedPayment ?? "")) {
+                setPendingCheckoutReference(checkout.checkout_reference);
             } else {
                 setShowCheckout(false);
                 setCheckoutDone(true);
@@ -59,6 +65,40 @@ export default function CartPage() {
             });
         },
     });
+
+    useEffect(() => {
+        if (!pendingCheckoutReference) return;
+        let cancelled = false;
+
+        const waitForPaymentUrl = async () => {
+            for (let attempt = 0; attempt < 20 && !cancelled; attempt += 1) {
+                try {
+                    const response = await http.get(`${API_BASE_URL}/checkouts/${pendingCheckoutReference}`);
+                    const checkout = response.data?.data;
+                    if (checkout?.payment_url) {
+                        sessionStorage.setItem("payment_checkout_reference", pendingCheckoutReference);
+                        window.location.href = checkout.payment_url;
+                        return;
+                    }
+                    if (checkout?.status === "failed" || checkout?.provider_status === "payment_initiation_failed") {
+                        setPendingCheckoutReference(null);
+                        toast.error(lang === "ar" ? "تعذر بدء الدفع. حاول مرة أخرى." : "Unable to start payment. Please try again.");
+                        return;
+                    }
+                } catch {
+                    // Keep polling briefly: the job may still be starting.
+                }
+                await new Promise((resolve) => window.setTimeout(resolve, 1000));
+            }
+            if (!cancelled) {
+                setPendingCheckoutReference(null);
+                toast(lang === "ar" ? "الدفع قيد التحضير. تحقق من حجوزاتك بعد قليل." : "Payment is still being prepared. Check your bookings shortly.");
+            }
+        };
+
+        void waitForPaymentUrl();
+        return () => { cancelled = true; };
+    }, [pendingCheckoutReference, lang]);
 
     const handleRemove = async (itemId: number) => {
         setRemovingId(itemId);
@@ -82,6 +122,15 @@ export default function CartPage() {
         }
         checkout({ payment_type: selectedPayment });
     };
+
+    if (pendingCheckoutReference) {
+        return (
+            <div className="flex flex-col h-full bg-app-bg items-center justify-center p-8 font-active" dir={dir}>
+                <Loader2 className="animate-spin text-app-gold mb-4" size={34} />
+                <p className="text-center text-app-text">{lang === "ar" ? "جارٍ تجهيز رابط الدفع الآمن…" : "Preparing your secure payment link…"}</p>
+            </div>
+        );
+    }
 
     const formatTime = (time: string) => {
         const [hStr, mStr] = time.split(":");

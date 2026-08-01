@@ -9,20 +9,21 @@ import SubscriptionsTab from './components/SubscriptionsTab';
 import HomeTab from './components/home/HomeTab';
 import AllProductsPage from './components/AllProductsPage';
 import BrandPage from './components/BrandPage';
-import BookingPage from './components/CartFlow';
 import SubscriptionDetailsPage from './components/SubscriptionDetailsPage';
 import EditAppointmentPage from './components/EditAppointmentPage';
 import BookNextSessionPage from './components/BookNextSessionPage';
 import CartPage from './components/CartPage';
 import SignUpPage from './components/auth/SignUpPage';
 import LoginPage from './components/auth/LoginPage';
-import OTPPage from './components/auth/OTPPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import { authEvents, resetAuthState } from "./components/services/http";
 import { clearAuth, isLoggedIn } from "./components/auth/authStorage";
+import { logoutRequest } from "./components/services/logout";
 import { toast } from "sonner";
 
 import HairProfilePage from './components/HairProfilePage';
+import { applyImageFallback } from './lib/appImage';
+import { clearHistoryCache } from './components/account/HistoryScreen';
 import PlaceholderTab from './components/PlaceholderTab';
 import { TabId, Product, ServiceAddon, ServicePackageOption, BookingItem } from './types';
 import { cacheService } from './services/cacheService';
@@ -75,6 +76,19 @@ const AppContent: React.FC = () => {
     }
     return <>{children}</>;
   };
+
+  // Any image that fails to load anywhere in the app falls back to the logo
+  useEffect(() => {
+    const onImageError = (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLImageElement) {
+        applyImageFallback(target);
+      }
+    };
+    // Capture phase: <img> error events do not bubble.
+    window.addEventListener('error', onImageError, true);
+    return () => window.removeEventListener('error', onImageError, true);
+  }, []);
 
   // Wire global 401 / session-expired logout
   useEffect(() => {
@@ -162,8 +176,9 @@ const AppContent: React.FC = () => {
       navigate('/login');
       return;
     }
-    const bookingItem: BookingItem = { product, quantity, selectedAddons, packageOption, customFinalPrice };
-    navigate('/booking', { state: bookingItem });
+    // The previous /booking route generated a fake local order and payment.
+    // All bookings now begin from the server-backed service-detail/cart flow.
+    navigate(`/product/${product.id}`);
   };
 
   const handleAddOrder = (newOrder: Order) => {
@@ -193,7 +208,10 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Revoke the token server-side first (best-effort), then clear local state.
+    await logoutRequest();
+    clearHistoryCache();
     clearAuth();
     localStorage.removeItem(STORAGE_KEY_IS_LOGGED_IN);
     localStorage.removeItem(STORAGE_KEY_AUTH_MODE);
@@ -206,7 +224,6 @@ const AppContent: React.FC = () => {
   const showTabBar = !location.pathname.startsWith('/booking') &&
     !location.pathname.startsWith('/login') &&
     !location.pathname.startsWith('/signup') &&
-    !location.pathname.startsWith('/verify') &&
     !location.pathname.startsWith('/forgot-password') &&
     !location.pathname.startsWith('/cart') &&
     !location.pathname.startsWith('/product/') &&
@@ -303,11 +320,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } />
 
-          <Route path="/booking" element={
-            <ProtectedRoute authStatus={authStatus}>
-              <BookingPage onAddOrder={handleAddOrder} />
-            </ProtectedRoute>
-          } />
+          <Route path="/booking" element={<Navigate to="/cart" replace />} />
 
           <Route path="/subscription-details/:subscriptionId" element={
             <ProtectedRoute authStatus={authStatus}>
@@ -334,7 +347,6 @@ const AppContent: React.FC = () => {
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/signup" element={<SignUpPage onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/verify" element={<OTPPage onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
 

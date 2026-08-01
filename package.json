@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -30,12 +31,15 @@
     "react-day-picker": "^9.14.0",
     "react-dom": "18.3.1",
     "react-lazy-load-image-component": "^1.6.3",
-    "react-router-dom": "6.22.3",
+    "react-router-dom": "^6.30.4",
     "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.19",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

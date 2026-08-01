@@ -43,10 +43,11 @@ async function fetchPaymentMethods(amount: number, lang: string, walletLabel: st
 export function useGetPaymentMethods(amount: number) {
     const lang = getLang();
     const t = translations[lang];
+    const token = getAccessToken();
     const headers = {
         lang,
         "x-skip-auth": "1",
-        "Authorization": `Bearer ${getAccessToken()}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
     return useQuery<PaymentMethod[]>({
         queryKey: ["payment-methods", amount, lang],
