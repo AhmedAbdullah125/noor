@@ -19,10 +19,12 @@
     "axios": "^1.13.2",
     "browser-image-compression": "^2.0.2",
     "canvas-confetti": "1.9.2",
+    "clsx": "^2.1.1",
     "countries-list": "^3.3.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.5",
     "html-react-parser": "^5.2.17",
+    "input-otp": "^1.4.2",
     "js-cookie": "^3.0.5",
     "lucide-react": "0.344.0",
     "qrcode.react": "3.1.0",
@@ -32,7 +34,8 @@
     "react-dom": "18.3.1",
     "react-lazy-load-image-component": "^1.6.3",
     "react-router-dom": "^6.30.4",
-    "sonner": "^2.0.7"
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

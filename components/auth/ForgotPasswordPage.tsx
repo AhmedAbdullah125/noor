@@ -1,10 +1,11 @@
 // src/pages/ForgotPasswordPage.tsx
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Phone, ArrowLeft } from "lucide-react";
 import { forgotPasswordRequest, resetPasswordRequest } from "../services/forgotPassword";
 import { translations, Locale, getLang } from "../../services/i18n";
 import CountryCodeSelect from "./CountryCodeSelect";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 
 interface ForgotPasswordPageProps {
   lang?: Locale;
@@ -27,6 +28,8 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [complete, setComplete] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false);
 
   const isRtl = lang === "ar";
 
@@ -75,15 +78,34 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
     setSuccess(true);
   };
 
-  const handleReset = async () => {
+  const handleReset = async (code = resetCode, password = newPassword) => {
     setError(null);
-    if (!/^\d{4}$/.test(resetCode) || newPassword.length < 8) {
+    if (!/^\d{4}$/.test(code) || password.length < 8) {
       setError(lang === "ar" ? "أدخلي رمزاً من 4 أرقام وكلمة مرور من 8 أحرف على الأقل" : "Enter the 4-digit code and a password of at least 8 characters.");
       return;
     }
-    const res = await resetPasswordRequest({ phone, country_code: countryCode, code: resetCode, password: newPassword }, setLoading, lang);
-    if (!res.ok) { setError(res.error || t.forgotPasswordError); return; }
-    setComplete(true);
+    // The OTP fires this automatically on its last digit, so guard against a
+    // second in-flight submit if the button is tapped at the same moment.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    try {
+      const res = await resetPasswordRequest({ phone, country_code: countryCode, code, password }, setLoading, lang);
+      if (!res.ok) { setError(res.error || t.forgotPasswordError); return; }
+      setComplete(true);
+    } finally {
+      submittingRef.current = false;
+    }
+  };
+
+  const handleCodeChange = (value: string) => {
+    const code = convertArabicToEnglishNumbers(value).replace(/\D/g, "").slice(0, 4);
+    setResetCode(code);
+    setError(null);
+    if (code.length !== 4) return;
+    // Submit as soon as the code is complete; if the password is still missing
+    // there is nothing to send yet, so send the user there instead.
+    if (newPassword.length >= 8) handleReset(code, newPassword);
+    else passwordRef.current?.focus();
   };
 
   return (
@@ -140,11 +162,22 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
           </div>
         ) : success ? (
           <div className="space-y-4">
-            <p className="text-center text-app-textSec">{lang === "ar" ? "أدخل الرمز المرسل إليك وكلمة المرور الجديدة." : "Enter the code we sent and your new password."}</p>
-            <input value={resetCode} onChange={(e) => setResetCode(convertArabicToEnglishNumbers(e.target.value).replace(/\D/g, '').slice(0, 4))} inputMode="numeric" placeholder={lang === "ar" ? "رمز التحقق" : "Verification code"} className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-app-text" />
-            <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" placeholder={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-app-text" />
+            <p className="text-center text-app-textSec">{lang === "ar" ? "أدخل كلمة المرور الجديدة ثم الرمز المرسل إليك." : "Enter your new password, then the code we sent."}</p>
+            <div className="flex justify-center pt-2" dir="ltr">
+              <InputOTP maxLength={4} value={resetCode} onChange={handleCodeChange} disabled={loading}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <input ref={passwordRef} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" placeholder={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} className="w-full p-4 rounded-2xl border border-app-card/50 bg-white outline-none focus:border-app-gold text-app-text" />
+
+
             {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-            <button onClick={handleReset} disabled={loading} className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl disabled:opacity-60">{loading ? t.forgotPasswordSending : (lang === "ar" ? "تغيير كلمة المرور" : "Reset password")}</button>
+            <button onClick={() => handleReset()} disabled={loading} className="w-full bg-app-gold text-white font-semibold py-4 rounded-2xl disabled:opacity-60">{loading ? t.forgotPasswordSending : (lang === "ar" ? "تغيير كلمة المرور" : "Reset password")}</button>
           </div>
         ) : (
           <>
