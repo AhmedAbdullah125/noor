@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
     ShoppingBag, Trash2, Calendar, Clock, Loader2,
     Inbox, ShoppingCart, CreditCard, Wallet, CheckCircle, X, AlertCircle,
@@ -9,7 +9,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetCart } from "./services/useGetCart";
 import { useGetPaymentMethods } from "./services/useGetPaymentMethods";
-import { useCartCheckout } from "./services/useCartCheckout";
+import {
+    CompleteCartCheckoutItems,
+    isCompleteCartCheckoutItems,
+    useCartCheckout,
+} from "./services/useCartCheckout";
 import AppHeader from "./AppHeader";
 import AppImage from "./AppImage";
 import { getLang, translations } from "../services/i18n";
@@ -24,8 +28,44 @@ function PaymentIcon({ code, icon }: { code: string; icon: string }) {
     return <CreditCard size={20} className="text-app-gold" />;
 }
 
+function OrderSummary({
+    checkout,
+    orderNumberLabel,
+    totalLabel,
+    paymentMethodLabel,
+    currency,
+    paymentMethod,
+    className = "",
+}: {
+    checkout: CompleteCartCheckoutItems;
+    orderNumberLabel: string;
+    totalLabel: string;
+    paymentMethodLabel: string;
+    currency: string;
+    paymentMethod: string;
+    className?: string;
+}) {
+    return (
+        <div className={`w-full max-w-sm bg-white rounded-2xl border border-app-card/30 p-4 space-y-3 text-base ${className}`}>
+            <div className="flex justify-between gap-4">
+                <span className="text-app-textSec">{orderNumberLabel}</span>
+                <span className="font-semibold text-app-text text-end">{checkout.request_numbers.join(", ")}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+                <span className="text-app-textSec">{totalLabel}</span>
+                <span className="font-semibold text-app-text">{checkout.final_price.toFixed(3)} {currency}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+                <span className="text-app-textSec">{paymentMethodLabel}</span>
+                <span className="font-semibold text-app-text">{paymentMethod}</span>
+            </div>
+        </div>
+    );
+}
+
 export default function CartPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const lang = getLang();
     const t = translations[lang];
     const dir = lang === "ar" ? "rtl" : "ltr";
@@ -36,31 +76,70 @@ export default function CartPage() {
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
-    const [checkoutDone, setCheckoutDone] = useState(false);
+    const [checkoutResult, setCheckoutResult] = useState<CompleteCartCheckoutItems | null>(() => {
+        const navigationState = location.state as { checkoutResult?: unknown } | null;
+        return isCompleteCartCheckoutItems(navigationState?.checkoutResult)
+            ? navigationState.checkoutResult
+            : null;
+    });
     const [pendingCheckoutReference, setPendingCheckoutReference] = useState<string | null>(null);
 
     const total = cart?.total ?? 0;
 
     const { data: paymentMethods = [], isLoading: pmLoading } = useGetPaymentMethods(total);
 
+    const showTryAgainLater = () => {
+        toast.error(t.tryAgainLater, {
+            style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
+        });
+    };
+
+    const paymentMethodLabel = (paymentType: string) => {
+        const method = paymentMethods.find((item) => item.code === paymentType);
+        if (method) return lang === "ar" ? method.name_ar : method.name_en;
+
+        const fallbackLabels: Record<string, { ar: string; en: string }> = {
+            wallet: { ar: "المحفظة", en: "Wallet" },
+            cash: { ar: "نقداً", en: "Cash" },
+            knet: { ar: "كي نت", en: "KNET" },
+            apple_pay: { ar: "Apple Pay", en: "Apple Pay" },
+            "Visa/Master": { ar: "Visa / MasterCard", en: "Visa / MasterCard" },
+            taly: { ar: "Taly", en: "Taly" },
+            deema: { ar: "Deema", en: "Deema" },
+        };
+
+        return fallbackLabels[paymentType]?.[lang] ?? paymentType;
+    };
+
     const { mutate: checkout, isPending: isCheckingOut } = useCartCheckout({
         onSuccess: (data) => {
             const checkout = data?.items ?? data?.data;
+            if (!isCompleteCartCheckoutItems(checkout)) {
+                showTryAgainLater();
+                return;
+            }
+
+            setCheckoutResult(checkout);
+            setShowCheckout(false);
+
+            if (checkout.payment_status === "paid") {
+                return;
+            }
+
             const redirectUrl = checkout?.redirect_url || data?.redirect_url || checkout?.payment_url || data?.payment_url;
             if (redirectUrl) {
                 if (checkout?.checkout_reference) {
                     sessionStorage.setItem("payment_checkout_reference", checkout.checkout_reference);
                 }
                 window.location.href = redirectUrl;
-            } else if (checkout?.checkout_reference && !["cash", "wallet"].includes(selectedPayment ?? "")) {
+            } else if (checkout.checkout_reference && !["cash", "wallet"].includes(checkout.payment_type)) {
                 setPendingCheckoutReference(checkout.checkout_reference);
-            } else {
-                setShowCheckout(false);
-                setCheckoutDone(true);
+            } else if (checkout.payment_status !== "pending") {
+                showTryAgainLater();
             }
         },
         onError: (msg) => {
-            toast.error(msg, {
+            toast.error(msg || t.tryAgainLater, {
                 style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
             });
         },
@@ -74,7 +153,19 @@ export default function CartPage() {
             for (let attempt = 0; attempt < 20 && !cancelled; attempt += 1) {
                 try {
                     const response = await http.get(`${API_BASE_URL}/checkouts/${pendingCheckoutReference}`);
-                    const checkout = response.data?.data;
+                    const checkout = response.data?.data ?? response.data?.items;
+                    if (!isCompleteCartCheckoutItems(checkout)) {
+                        setPendingCheckoutReference(null);
+                        showTryAgainLater();
+                        return;
+                    }
+
+                    setCheckoutResult(checkout);
+                    if (checkout.payment_status === "paid") {
+                        sessionStorage.removeItem("payment_checkout_reference");
+                        setPendingCheckoutReference(null);
+                        return;
+                    }
                     if (checkout?.payment_url) {
                         sessionStorage.setItem("payment_checkout_reference", pendingCheckoutReference);
                         window.location.href = checkout.payment_url;
@@ -82,10 +173,15 @@ export default function CartPage() {
                     }
                     if (checkout?.status === "failed" || checkout?.provider_status === "payment_initiation_failed") {
                         setPendingCheckoutReference(null);
-                        toast.error(lang === "ar" ? "تعذر بدء الدفع. حاول مرة أخرى." : "Unable to start payment. Please try again.");
+                        showTryAgainLater();
                         return;
                     }
-                } catch {
+                } catch (error: any) {
+                    if (error?.response?.status === 503) {
+                        setPendingCheckoutReference(null);
+                        toast.error(error?.response?.data?.message || t.tryAgainLater);
+                        return;
+                    }
                     // Keep polling briefly: the job may still be starting.
                 }
                 await new Promise((resolve) => window.setTimeout(resolve, 1000));
@@ -98,7 +194,7 @@ export default function CartPage() {
 
         void waitForPaymentUrl();
         return () => { cancelled = true; };
-    }, [pendingCheckoutReference, lang]);
+    }, [pendingCheckoutReference, lang, t.tryAgainLater]);
 
     const handleRemove = async (itemId: number) => {
         setRemovingId(itemId);
@@ -128,6 +224,17 @@ export default function CartPage() {
             <div className="flex flex-col h-full bg-app-bg items-center justify-center p-8 font-active" dir={dir}>
                 <Loader2 className="animate-spin text-app-gold mb-4" size={34} />
                 <p className="text-center text-app-text">{lang === "ar" ? "جارٍ تجهيز رابط الدفع الآمن…" : "Preparing your secure payment link…"}</p>
+                {checkoutResult && (
+                    <OrderSummary
+                        checkout={checkoutResult}
+                        orderNumberLabel={t.orderNumber}
+                        totalLabel={t.totalAmount}
+                        paymentMethodLabel={t.paymentMethod}
+                        currency={lang === "ar" ? "د.ك" : "KWD"}
+                        paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
+                        className="mt-6"
+                    />
+                )}
             </div>
         );
     }
@@ -140,25 +247,39 @@ export default function CartPage() {
         return `${displayH}:${mStr} ${period}`;
     };
 
-    // ─── Success screen ────────────────────────────────────────────────────────
-    if (checkoutDone) {
+    // ─── Created order result ──────────────────────────────────────────────────
+    if (checkoutResult) {
+        const isPaid = checkoutResult.payment_status === "paid";
+        const isFailed = checkoutResult.payment_status === "failed";
+
         return (
             <div className="flex flex-col h-full bg-app-bg items-center justify-center p-8 font-active" dir={dir}>
                 <motion.div
-                    className="flex flex-col items-center text-center"
+                    className="flex flex-col items-center text-center w-full max-w-sm"
                     initial={{ opacity: 0, scale: 0.85 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] as const }}
                 >
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                        <CheckCircle size={44} className="text-green-500" />
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${isPaid ? "bg-green-100" : isFailed ? "bg-red-100" : "bg-amber-100"}`}>
+                        {isPaid
+                            ? <CheckCircle size={44} className="text-green-500" />
+                            : <AlertCircle size={44} className={isFailed ? "text-red-500" : "text-amber-500"} />}
                     </div>
                     <h2 className="text-xl font-bold text-app-text mb-2">
-                        {lang === "ar" ? "تم الإرسال بنجاح!" : "Order Placed!"}
+                        {isPaid ? t.paymentCompleted : t.orderCreated}
                     </h2>
-                    <p className="text-sm text-app-textSec mb-8">
-                        {lang === "ar" ? "تم استلام طلبك وسنتواصل معك قريباً" : "Your order was received and we'll be in touch soon."}
+                    <p className={`text-base mb-6 ${isFailed ? "text-red-500" : "text-app-textSec"}`}>
+                        {isPaid ? t.orderCreated : isFailed ? t.paymentNotCompleted : t.paymentPending}
                     </p>
+                    <OrderSummary
+                        checkout={checkoutResult}
+                        orderNumberLabel={t.orderNumber}
+                        totalLabel={t.totalAmount}
+                        paymentMethodLabel={t.paymentMethod}
+                        currency={lang === "ar" ? "د.ك" : "KWD"}
+                        paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
+                        className="mb-8 text-start"
+                    />
                     <button
                         onClick={() => navigate("/")}
                         className="bg-app-gold text-white px-8 py-3 rounded-2xl font-semibold shadow-lg shadow-app-gold/30"
