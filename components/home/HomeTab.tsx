@@ -19,6 +19,7 @@ import { useGetService } from "../services/useGetService";
 import { mapServicesToProducts } from "./serviceMappers";
 import { http } from "../services/http";
 import { API_BASE_URL } from "@/lib/apiConfig";
+import { isCompleteCartCheckoutItems } from "../services/useCartCheckout";
 
 type Props = {
     onBook: (product: Product, quantity: number, selectedAddons?: ServiceAddon[], packageOption?: ServicePackageOption, customFinalPrice?: number) => void;
@@ -54,44 +55,39 @@ export default function HomeTab({ onBook, favourites, onToggleFavourite }: Props
         const resolveReturn = async () => {
             if (!reference) {
                 toast(lang === 'ar' ? 'تم استلام نتيجة الدفع. تحقق من حجوزاتك.' : 'Payment result received. Check your bookings.');
-                setSearchParams({});
+                setSearchParams({}, { replace: true });
                 return;
             }
 
             try {
                 const response = await http.get(`${API_BASE_URL}/checkouts/${reference}`);
                 const checkout = response.data?.data ?? response.data?.items;
-                if (checkout?.status === 'paid') {
+                if (!isCompleteCartCheckoutItems(checkout)) {
+                    toast.error(t.tryAgainLater);
+                    setSearchParams({}, { replace: true });
+                    return;
+                }
+
+                setSearchParams({}, { replace: true });
+                if (checkout.payment_status === 'paid') {
                     sessionStorage.removeItem('payment_checkout_reference');
-                toast.success(
-                    lang === 'ar' ? 'تمت عملية الدفع بنجاح!' : 'Payment completed successfully!',
-                    {
-                        style: { background: "#198754", color: "#fff", borderRadius: "10px" },
-                        duration: 4000
-                    }
-                );
-                    setTimeout(() => navigate('/appointments', { replace: true }), 1500);
-                } else if (checkout?.status === 'failed') {
+                    navigate('/cart', { replace: true, state: { checkoutResult: checkout } });
+                } else if (checkout.payment_status === 'failed' || checkout.status === 'failed') {
                     sessionStorage.removeItem('payment_checkout_reference');
-                toast.error(
-                    lang === 'ar' ? 'فشلت عملية الدفع. يرجى المحاولة مرة أخرى.' : 'Payment failed. Please try again.',
-                    {
-                        style: { background: "#dc3545", color: "#fff", borderRadius: "10px" },
-                        duration: 5000
-                    }
-                );
+                    toast.error(t.tryAgainLater);
+                    navigate('/cart', { replace: true, state: { checkoutResult: checkout } });
                 } else {
-                    toast(lang === 'ar' ? 'الدفع ما زال قيد المعالجة. سيتم تحديث الحجز عند تأكيده.' : 'Payment is still pending. Your booking will update after confirmation.');
+                    toast(t.paymentPending);
+                    navigate('/cart', { replace: true, state: { checkoutResult: checkout } });
                 }
             } catch {
-                toast.error(lang === 'ar' ? 'تعذر التحقق من حالة الدفع. تحقق من حجوزاتك لاحقاً.' : 'Unable to verify payment status. Check your bookings later.');
-            } finally {
-                setSearchParams({});
+                toast.error(t.tryAgainLater);
+                setSearchParams({}, { replace: true });
             }
         };
 
         void resolveReturn();
-    }, [searchParams, setSearchParams, navigate, lang]);
+    }, [searchParams, setSearchParams, navigate, lang, t.paymentPending, t.tryAgainLater]);
 
     const toggleLang = () => {
         const newLang = lang === 'ar' ? 'en' : 'ar';
