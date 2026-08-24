@@ -21,6 +21,7 @@ export interface CartCheckoutItems {
     order_number?: string;
     final_price?: number;
     payment_type?: string;
+    points_earned?: number;
 }
 
 export type CompleteCartCheckoutItems = CartCheckoutItems & {
@@ -29,6 +30,7 @@ export type CompleteCartCheckoutItems = CartCheckoutItems & {
     order_number: string;
     final_price: number;
     payment_type: string;
+    points_earned?: number;
 };
 
 export function isCompleteCartCheckoutItems(value: unknown): value is CompleteCartCheckoutItems {

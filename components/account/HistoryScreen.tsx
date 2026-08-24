@@ -201,6 +201,12 @@ export default function HistoryScreen({
                                                 <span>{t.total}:</span>
                                                 <span className="text-app-gold">{formatMoney(order.final_price)}</span>
                                             </div>
+                                            {!!order.points_earned && (
+                                                <div className="flex justify-between text-xs text-app-textSec">
+                                                    <span>{t.pointsEarned}:</span>
+                                                    <span className="font-semibold text-app-gold">+{order.points_earned}</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <button

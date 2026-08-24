@@ -209,6 +209,13 @@ export default function OrderDetailsScreen({
                                 {formatMoney(booking.final_price)}
                             </span>
                         </div>
+
+                        {!!booking.points_earned && (
+                            <div className="flex justify-between items-center text-sm pt-1">
+                                <span className="text-app-textSec font-medium">{t.pointsEarned}</span>
+                                <span className="text-app-gold font-bold">+{booking.points_earned}</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Payment Info */}

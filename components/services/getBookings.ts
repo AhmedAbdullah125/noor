@@ -14,6 +14,7 @@ export type BookingItem = {
     base_price: string;
     options_price: string;
     final_price: string;
+    points_earned?: number;
 };
 
 type GetBookingsResponse = {

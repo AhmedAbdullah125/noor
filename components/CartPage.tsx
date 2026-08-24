@@ -33,6 +33,7 @@ function OrderSummary({
     orderNumberLabel,
     totalLabel,
     paymentMethodLabel,
+    pointsEarnedLabel,
     currency,
     paymentMethod,
     className = "",
@@ -41,6 +42,7 @@ function OrderSummary({
     orderNumberLabel: string;
     totalLabel: string;
     paymentMethodLabel: string;
+    pointsEarnedLabel: string;
     currency: string;
     paymentMethod: string;
     className?: string;
@@ -59,6 +61,12 @@ function OrderSummary({
                 <span className="text-app-textSec">{paymentMethodLabel}</span>
                 <span className="font-semibold text-app-text">{paymentMethod}</span>
             </div>
+            {!!checkout.points_earned && (
+                <div className="flex justify-between gap-4">
+                    <span className="text-app-textSec">{pointsEarnedLabel}</span>
+                    <span className="font-semibold text-app-gold">+{checkout.points_earned}</span>
+                </div>
+            )}
         </div>
     );
 }
@@ -230,6 +238,7 @@ export default function CartPage() {
                         orderNumberLabel={t.orderNumber}
                         totalLabel={t.totalAmount}
                         paymentMethodLabel={t.paymentMethod}
+                        pointsEarnedLabel={t.pointsEarned}
                         currency={lang === "ar" ? "د.ك" : "KWD"}
                         paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
                         className="mt-6"
@@ -276,6 +285,7 @@ export default function CartPage() {
                         orderNumberLabel={t.orderNumber}
                         totalLabel={t.totalAmount}
                         paymentMethodLabel={t.paymentMethod}
+                        pointsEarnedLabel={t.pointsEarned}
                         currency={lang === "ar" ? "د.ك" : "KWD"}
                         paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
                         className="mb-8 text-start"

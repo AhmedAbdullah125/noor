@@ -16,6 +16,7 @@ type CreateRequestResponse = {
     message: string;
     items?: {
         payment_url?: string;
+        points_earned?: number;
         [key: string]: any;
     };
 };

@@ -30,6 +30,7 @@ type ApiAppointmentItem = {
   base_price: string;
   options_price: string;
   final_price: string;
+  points_earned?: number;
 };
 
 // ✅ UI appointment type (keep compatible with your current UI)
@@ -57,6 +58,7 @@ type Appointment = {
   paymentType?: string;
   paymentStatus?: string;
   finalPrice?: string;
+  pointsEarned?: number;
 };
 
 function normalizeTimeToHHmm(t: string) {
@@ -123,6 +125,7 @@ const AppointmentsTab: React.FC = () => {
         paymentType: it.payment_type,
         paymentStatus: it.payment_status,
         finalPrice: it.final_price,
+        pointsEarned: it.points_earned,
         address: null,
       }));
 
@@ -277,6 +280,13 @@ const AppointmentsTab: React.FC = () => {
                       {appointment.finalPrice ? (
                         <div className="text-xs font-semibold text-app-gold">{Number(appointment.finalPrice).toFixed?.(3) ?? appointment.finalPrice} {t.currency}</div>
                       ) : null}
+                    </div>
+                  )}
+
+                  {!!appointment.pointsEarned && (
+                    <div className="flex items-center justify-between text-[11px] text-app-textSec px-1">
+                      <span>{t.pointsEarned}</span>
+                      <span className="font-semibold text-app-gold">+{appointment.pointsEarned}</span>
                     </div>
                   )}
                 </div>

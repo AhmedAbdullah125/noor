@@ -16,6 +16,7 @@ type Profile = {
   is_verify?: number;
   lang?: string;
   wallet?: string;
+  points?: number;
   created_at?: string;
   [k: string]: any;
 };

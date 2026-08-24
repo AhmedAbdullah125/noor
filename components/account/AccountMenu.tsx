@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, ClipboardList, Info, Mail, Phone, ChevronLeft, XCircle, Wallet, Video, Check, ShoppingBag, LogOut, FileText, AlertTriangle, UserCog, ChevronRight, Image, KeyRound } from "lucide-react";
+import { Heart, ClipboardList, Info, Mail, Phone, ChevronLeft, XCircle, Wallet, Video, Check, ShoppingBag, LogOut, FileText, AlertTriangle, UserCog, ChevronRight, Image, KeyRound, Star } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetQuestionnaire } from "../services/useGetQuestionnaire";
 
@@ -36,6 +36,7 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
     const userPhone = isGuest ? "" : profile?.phone || "";
     const userPhoto = isGuest ? "" : profile?.photo || "https://maison-de-noor.com/assets/img/unknown.svg";
     const wallet = isGuest ? "0.00" : profile?.wallet || "0.00";
+    const points = isGuest ? 0 : profile?.points ?? 0;
 
     const {
         questionnaireId,
@@ -140,6 +141,12 @@ export default function AccountMenu({ isGuest, profile, profileLoading, isHairPr
                                     </div>
 
                                     <p className="text-[12px] text-app-textSec leading-snug opacity-90 font-normal">{t.currentBalance}</p>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 pt-3 mt-3 border-t border-app-card/20">
+                                    <Star size={12} className="text-app-gold" />
+                                    <span className="text-[11px] font-semibold text-app-text">{points}</span>
+                                    <span className="text-[10px] text-app-textSec">{t.pointsEarned}</span>
                                 </div>
                             </div>
                         </div>

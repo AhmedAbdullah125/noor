@@ -401,7 +401,9 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
             window.location.href = res.data.payment_url;
             return;
         }
-        toast(t.requestSuccess, { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
+        const pointsEarned = res.data?.points_earned ?? 0;
+        const successMsg = pointsEarned > 0 ? `${t.requestSuccess} (+${pointsEarned} ${t.pointsEarned})` : t.requestSuccess;
+        toast(successMsg, { style: { background: "#198754", color: "#fff", borderRadius: "10px" } });
         setBookingModal(null);
         onCreated?.(res.data);
     };
