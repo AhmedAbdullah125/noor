@@ -4,10 +4,6 @@ import App from './App';
 import './index.css';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-
-// Deployment check: confirms the live customer app is built from the noor repo.
-console.log('%c[noor] customer app loaded from AhmedAbdullah125/noor', 'color:#483383;font-weight:bold');
-
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
