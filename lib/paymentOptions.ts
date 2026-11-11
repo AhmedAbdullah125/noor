@@ -47,3 +47,13 @@ export function withAtSalonOption<T extends { id: number; name_ar: string; name_
         ...methods,
     ];
 }
+
+// A service can override its category. Prefer the service's own (effective)
+// top-level flags, then the category's, then "allowed" for older backends.
+export function servicePaymentFlags(service: any): { allow_pay_at_salon: boolean; allow_pay_online: boolean } {
+    const pick = (key: "allow_pay_at_salon" | "allow_pay_online"): boolean => {
+        if (typeof service?.[key] === "boolean") return service[key];
+        return service?.category?.[key] !== false;
+    };
+    return { allow_pay_at_salon: pick("allow_pay_at_salon"), allow_pay_online: pick("allow_pay_online") };
+}

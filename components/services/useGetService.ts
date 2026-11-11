@@ -4,6 +4,7 @@ import axios from "axios";
 import { getAccessToken } from "../auth/authStorage";
 import { API_BASE_URL } from "../../lib/apiConfig";
 import { useQuery } from "@tanstack/react-query";
+import { servicePaymentFlags } from "../../lib/paymentOptions";
 
 const toLegacyService = (service: any) => ({
   id: service.id,
@@ -16,8 +17,7 @@ const toLegacyService = (service: any) => ({
   has_discount: Boolean(service.price?.original_amount),
   duration: service.booking?.duration_minutes ? `${service.booking.duration_minutes} mins` : "",
   category: service.category?.name ?? "",
-  allow_pay_at_salon: service.category?.allow_pay_at_salon !== false,
-  allow_pay_online: service.category?.allow_pay_online !== false,
+  ...servicePaymentFlags(service),
   is_favorite: Boolean(service.is_favorite),
   daily_appointments: service.booking?.daily_limit ?? 0,
   duration_minutes: service.booking?.duration_minutes ?? 0,

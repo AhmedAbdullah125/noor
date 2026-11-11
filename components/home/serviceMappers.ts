@@ -1,5 +1,6 @@
 import type { Brand, Product, ServiceAddonGroup, ServiceSubscription, } from "@/types";
 import { API_BASE_URL } from "@/lib/apiConfig";
+import { servicePaymentFlags } from "@/lib/paymentOptions";
 
 // غيّرها حسب مشروعك (مثلاً: https://maison-de-noor.com/storage/)
 const STORAGE_BASE = API_BASE_URL.replace(/\/api$/, "/storage/");
@@ -107,6 +108,7 @@ export function mapServicesToProducts(services: any[]): Product[] {
         .filter((s) => s?.is_active)
         .map((s) => {
             const price = Number(s.current_price ?? s.price ?? 0);
+            const flags = servicePaymentFlags(s);
 
             return {
                 id: s.id,
@@ -117,8 +119,8 @@ export function mapServicesToProducts(services: any[]): Product[] {
                 price: `${price.toFixed(3)} د.ك`,
                 oldPrice: s.has_discount ? `${Number(s.price ?? 0).toFixed(3)} د.ك` : undefined,
                 category: s.category,
-                allowPayAtSalon: s.allow_pay_at_salon !== false,
-                allowPayOnline: s.allow_pay_online !== false,
+                allowPayAtSalon: flags.allow_pay_at_salon,
+                allowPayOnline: flags.allow_pay_online,
 
                 // ✅ أهم حاجة: نخليها compatible مع UI بتاعك
                 addonGroups: mapOptionsToAddonGroups(s.options ?? []),
