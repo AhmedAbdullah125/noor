@@ -31,3 +31,19 @@ export function getPaymentRestriction({ allowPayAtSalon, allowPayOnline }: Payme
     if (allowPayOnline !== false && allowPayAtSalon === false) return "online_only";
     return null;
 }
+
+// The public payment-methods catalogue has no "cash" row today, so customers
+// never see it. When a service can only be paid at the salon, add a
+// pay-at-salon option so it can still be booked. Unrestricted services keep
+// exactly today's list.
+export function withAtSalonOption<T extends { id: number; name_ar: string; name_en: string; code: string; icon: string; is_active: boolean; sort_order: number }>(
+    methods: T[],
+    needed: boolean,
+    label: { ar: string; en: string },
+): T[] {
+    if (!needed || methods.some((m) => AT_SALON_CODES.includes(m.code))) return methods;
+    return [
+        { id: 9992, name_ar: label.ar, name_en: label.en, code: "cash", icon: "", is_active: true, sort_order: -1 } as T,
+        ...methods,
+    ];
+}

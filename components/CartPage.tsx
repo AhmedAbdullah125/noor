@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     ShoppingBag, Trash2, Calendar, Clock, Loader2,
-    Inbox, ShoppingCart, CreditCard, Wallet, CheckCircle, X, AlertCircle,
+    Inbox, ShoppingCart, CreditCard, Wallet, CheckCircle, X, AlertCircle, Store,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetCart } from "./services/useGetCart";
@@ -21,11 +21,12 @@ import { http } from "./services/http";
 import { useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { toast } from "sonner";
-import { filterPaymentMethods, getPaymentRestriction, ONLINE_CODES } from "@/lib/paymentOptions";
+import { filterPaymentMethods, getPaymentRestriction, ONLINE_CODES, withAtSalonOption } from "@/lib/paymentOptions";
 
 function PaymentIcon({ code, icon }: { code: string; icon: string }) {
     if (icon) return <AppImage src={icon} alt={code} className="w-6 h-6 object-contain" />;
     if (code === "wallet") return <Wallet size={20} className="text-app-gold" />;
+    if (code === "cash") return <Store size={20} className="text-app-gold" />;
     return <CreditCard size={20} className="text-app-gold" />;
 }
 
@@ -119,13 +120,13 @@ export default function CartPage() {
     const cartItems = cart?.items ?? [];
     const cartAllowsOnline = cartItems.some((i) => i.allow_pay_online !== false);
     const cartAllowsAtSalon = cartItems.every((i) => i.allow_pay_at_salon !== false);
-    const paymentMethods = filterPaymentMethods(allPaymentMethods, {
-        allowPayAtSalon: cartAllowsAtSalon,
-        allowPayOnline: cartAllowsOnline,
-    });
     const salonOnlyNames = cartItems
         .filter((i) => getPaymentRestriction({ allowPayAtSalon: i.allow_pay_at_salon, allowPayOnline: i.allow_pay_online }) === "salon_only")
         .map((i) => i.service_name);
+    const paymentMethods = filterPaymentMethods(
+        withAtSalonOption(allPaymentMethods, cartAllowsAtSalon && salonOnlyNames.length > 0, { ar: translations.ar.payAtSalonBookings, en: translations.en.payAtSalonBookings }),
+        { allowPayAtSalon: cartAllowsAtSalon, allowPayOnline: cartAllowsOnline },
+    );
     const separator = lang === "ar" ? "، " : ", ";
     const selectedIsOnline = !!selectedPayment && ONLINE_CODES.includes(selectedPayment);
 

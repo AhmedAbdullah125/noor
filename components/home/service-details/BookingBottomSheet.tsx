@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Store, Wallet, X } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
@@ -423,6 +423,8 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                         >
                                                             {p.code === "wallet"
                                                                 ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
+                                                                : p.code === "cash" && !p.icon
+                                                                ? <Store size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
                                                                 : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
                                                             }
                                                             <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>
