@@ -33,6 +33,8 @@ export type CartItem = {
     total_price: number;
     options: CartOption[];
     service_name: string;
+    allow_pay_at_salon?: boolean;
+    allow_pay_online?: boolean;
 };
 
 export type Cart = {

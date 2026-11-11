@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import parse from "html-react-parser";
 import { Product } from "../../../types";
 import ImageCarousel from "@/components/ImageCarousel";
+import { getPaymentRestriction } from "@/lib/paymentOptions";
 
 type Props = {
     product: Product;
@@ -75,6 +76,15 @@ export const ServiceHeader: React.FC<Props> = ({
                     )}
                 </div>
                 <div className="mt-2 mb-1 flex flex-wrap gap-2">
+                    {(() => {
+                        const restriction = getPaymentRestriction({ allowPayAtSalon: product.allowPayAtSalon, allowPayOnline: product.allowPayOnline });
+                        if (!restriction) return null;
+                        return (
+                            <span className="text-[10px] font-semibold bg-app-gold/10 text-app-gold px-2 py-0.5 rounded-lg">
+                                {restriction === "salon_only" ? t.payAtSalonOnly : t.payOnlineOnly}
+                            </span>
+                        );
+                    })()}
                     {hasAddons && (
                         <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg">
                             {t.optionalAddons}

@@ -76,6 +76,8 @@ export interface Product {
   packageOptions?: ServicePackageOption[];
   subscriptions?: ServiceSubscription[];
   isHomeService?: boolean;
+  allowPayAtSalon?: boolean;
+  allowPayOnline?: boolean;
   category?: {
     id: number;
     name: string;

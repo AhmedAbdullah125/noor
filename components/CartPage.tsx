@@ -21,6 +21,7 @@ import { http } from "./services/http";
 import { useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { toast } from "sonner";
+import { filterPaymentMethods, getPaymentRestriction, ONLINE_CODES } from "@/lib/paymentOptions";
 
 function PaymentIcon({ code, icon }: { code: string; icon: string }) {
     if (icon) return <AppImage src={icon} alt={code} className="w-6 h-6 object-contain" />;
@@ -36,6 +37,8 @@ function OrderSummary({
     pointsEarnedLabel,
     currency,
     paymentMethod,
+    atSalonLabel,
+    atSalonTotalLabel,
     className = "",
 }: {
     checkout: CompleteCartCheckoutItems;
@@ -45,8 +48,11 @@ function OrderSummary({
     pointsEarnedLabel: string;
     currency: string;
     paymentMethod: string;
+    atSalonLabel?: string;
+    atSalonTotalLabel?: string;
     className?: string;
 }) {
+    const atSalonNumbers = checkout.pay_at_salon_request_numbers ?? [];
     return (
         <div className={`w-full max-w-sm bg-white rounded-2xl border border-app-card/30 p-4 space-y-3 text-base ${className}`}>
             <div className="flex justify-between gap-4">
@@ -61,6 +67,20 @@ function OrderSummary({
                 <span className="text-app-textSec">{paymentMethodLabel}</span>
                 <span className="font-semibold text-app-text">{paymentMethod}</span>
             </div>
+            {atSalonNumbers.length > 0 && (
+                <>
+                    <div className="flex justify-between gap-4">
+                        <span className="text-app-textSec">{atSalonLabel}</span>
+                        <span className="font-semibold text-app-text text-end">{atSalonNumbers.join(", ")}</span>
+                    </div>
+                    {typeof checkout.pay_at_salon_total === "number" && Number.isFinite(checkout.pay_at_salon_total) && (
+                        <div className="flex justify-between gap-4">
+                            <span className="text-app-textSec">{atSalonTotalLabel}</span>
+                            <span className="font-semibold text-app-text">{checkout.pay_at_salon_total.toFixed(3)} {currency}</span>
+                        </div>
+                    )}
+                </>
+            )}
             {!!checkout.points_earned && (
                 <div className="flex justify-between gap-4">
                     <span className="text-app-textSec">{pointsEarnedLabel}</span>
@@ -94,7 +114,34 @@ export default function CartPage() {
 
     const total = cart?.total ?? 0;
 
-    const { data: paymentMethods = [], isLoading: pmLoading } = useGetPaymentMethods(total);
+    const { data: allPaymentMethods = [], isLoading: pmLoading } = useGetPaymentMethods(total);
+
+    const cartItems = cart?.items ?? [];
+    const cartAllowsOnline = cartItems.some((i) => i.allow_pay_online !== false);
+    const cartAllowsAtSalon = cartItems.every((i) => i.allow_pay_at_salon !== false);
+    const paymentMethods = filterPaymentMethods(allPaymentMethods, {
+        allowPayAtSalon: cartAllowsAtSalon,
+        allowPayOnline: cartAllowsOnline,
+    });
+    const salonOnlyNames = cartItems
+        .filter((i) => getPaymentRestriction({ allowPayAtSalon: i.allow_pay_at_salon, allowPayOnline: i.allow_pay_online }) === "salon_only")
+        .map((i) => i.service_name);
+    const separator = lang === "ar" ? "، " : ", ";
+    const selectedIsOnline = !!selectedPayment && ONLINE_CODES.includes(selectedPayment);
+
+    // Clear a selection that became disallowed (e.g. cart items changed).
+    useEffect(() => {
+        if (selectedPayment && !pmLoading && !paymentMethods.some((m) => m.code === selectedPayment)) {
+            setSelectedPayment(null);
+        }
+    }, [selectedPayment, pmLoading, paymentMethods]);
+
+    const selectPaymentMethod = (code: string) => {
+        setSelectedPayment(code);
+        if (ONLINE_CODES.includes(code) && salonOnlyNames.length > 0) {
+            toast(`${t.salonServicesNote} ${salonOnlyNames.join(separator)}`);
+        }
+    };
 
     const showTryAgainLater = () => {
         toast.error(t.tryAgainLater, {
@@ -241,6 +288,8 @@ export default function CartPage() {
                         pointsEarnedLabel={t.pointsEarned}
                         currency={lang === "ar" ? "د.ك" : "KWD"}
                         paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
+                        atSalonLabel={t.payAtSalonBookings}
+                        atSalonTotalLabel={t.payAtSalonBookingsTotal}
                         className="mt-6"
                     />
                 )}
@@ -288,6 +337,8 @@ export default function CartPage() {
                         pointsEarnedLabel={t.pointsEarned}
                         currency={lang === "ar" ? "د.ك" : "KWD"}
                         paymentMethod={paymentMethodLabel(checkoutResult.payment_type)}
+                        atSalonLabel={t.payAtSalonBookings}
+                        atSalonTotalLabel={t.payAtSalonBookingsTotal}
                         className="mb-8 text-start"
                     />
                     <button
@@ -377,9 +428,20 @@ export default function CartPage() {
                                         <div className="w-8 h-8 bg-app-gold/10 rounded-xl flex items-center justify-center">
                                             <ShoppingBag size={16} className="text-app-gold" />
                                         </div>
-                                        <span className="text-xs font-semibold text-app-textSec">
-                                            {item.service_name}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-semibold text-app-textSec">
+                                                {item.service_name}
+                                            </span>
+                                            {(() => {
+                                                const restriction = getPaymentRestriction({ allowPayAtSalon: item.allow_pay_at_salon, allowPayOnline: item.allow_pay_online });
+                                                if (!restriction) return null;
+                                                return (
+                                                    <span className="text-[11px] text-app-gold">
+                                                        {restriction === "salon_only" ? t.payAtSalonOnly : t.payOnlineOnly}
+                                                    </span>
+                                                );
+                                            })()}
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => handleRemove(item.id)}
@@ -523,7 +585,7 @@ export default function CartPage() {
                                         return (
                                             <button
                                                 key={method.id}
-                                                onClick={() => setSelectedPayment(method.code)}
+                                                onClick={() => selectPaymentMethod(method.code)}
                                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${isSelected
                                                     ? "border-app-gold bg-app-gold/5"
                                                     : "border-app-card/30 bg-white"
@@ -539,6 +601,12 @@ export default function CartPage() {
                                         );
                                     })}
                                 </div>
+                            )}
+
+                            {selectedIsOnline && salonOnlyNames.length > 0 && (
+                                <p className="text-xs text-app-textSec bg-app-bg rounded-xl px-3 py-2 mb-3">
+                                    {t.salonServicesNote} {salonOnlyNames.join(separator)}
+                                </p>
                             )}
 
                             {/* Confirm button */}

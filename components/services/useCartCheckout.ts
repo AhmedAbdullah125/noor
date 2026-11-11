@@ -22,6 +22,8 @@ export interface CartCheckoutItems {
     final_price?: number;
     payment_type?: string;
     points_earned?: number;
+    pay_at_salon_request_numbers?: string[];
+    pay_at_salon_total?: number;
 }
 
 export type CompleteCartCheckoutItems = CartCheckoutItems & {

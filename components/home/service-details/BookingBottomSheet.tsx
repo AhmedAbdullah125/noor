@@ -8,6 +8,7 @@ import { ar as arLocale } from "date-fns/locale";
 import { Product } from "../../../types";
 import { PaymentMethod } from "../../services/useGetPaymentMethods";
 import { calendarStyles, pad2 } from "./utils";
+import { getPaymentRestriction } from "@/lib/paymentOptions";
 
 type Props = {
     bookingModal: any;
@@ -398,6 +399,15 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                         {/* Payment methods — hidden when total is 0 */}
                                         {!isFree && (
                                             <div className="space-y-2">
+                                                {(() => {
+                                                    const restriction = getPaymentRestriction({ allowPayAtSalon: product.allowPayAtSalon, allowPayOnline: product.allowPayOnline });
+                                                    if (!restriction) return null;
+                                                    return (
+                                                        <p className="text-xs font-semibold text-app-gold bg-app-gold/10 rounded-xl px-3 py-2">
+                                                            {restriction === "salon_only" ? t.payAtSalonOnly : t.payOnlineOnly}
+                                                        </p>
+                                                    );
+                                                })()}
                                                 {paymentMethods.map((p) => {
                                                     const isActive = paymentType === p.code;
                                                     const isApple = p.code === "apple_pay";

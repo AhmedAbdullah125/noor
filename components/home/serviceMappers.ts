@@ -117,6 +117,8 @@ export function mapServicesToProducts(services: any[]): Product[] {
                 price: `${price.toFixed(3)} د.ك`,
                 oldPrice: s.has_discount ? `${Number(s.price ?? 0).toFixed(3)} د.ك` : undefined,
                 category: s.category,
+                allowPayAtSalon: s.allow_pay_at_salon !== false,
+                allowPayOnline: s.allow_pay_online !== false,
 
                 // ✅ أهم حاجة: نخليها compatible مع UI بتاعك
                 addonGroups: mapOptionsToAddonGroups(s.options ?? []),
