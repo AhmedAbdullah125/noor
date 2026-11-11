@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Wallet, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CreditCard, Loader2, ShoppingBag, ShoppingCart, Store, Wallet, X } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
@@ -8,6 +8,7 @@ import { ar as arLocale } from "date-fns/locale";
 import { Product } from "../../../types";
 import { PaymentMethod } from "../../services/useGetPaymentMethods";
 import { calendarStyles, pad2 } from "./utils";
+import { getPaymentRestriction } from "@/lib/paymentOptions";
 
 type Props = {
     bookingModal: any;
@@ -398,6 +399,15 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                         {/* Payment methods — hidden when total is 0 */}
                                         {!isFree && (
                                             <div className="space-y-2">
+                                                {(() => {
+                                                    const restriction = getPaymentRestriction({ allowPayAtSalon: product.allowPayAtSalon, allowPayOnline: product.allowPayOnline });
+                                                    if (!restriction) return null;
+                                                    return (
+                                                        <p className="text-xs font-semibold text-app-gold bg-app-gold/10 rounded-xl px-3 py-2">
+                                                            {restriction === "salon_only" ? t.payAtSalonOnly : t.payOnlineOnly}
+                                                        </p>
+                                                    );
+                                                })()}
                                                 {paymentMethods.map((p) => {
                                                     const isActive = paymentType === p.code;
                                                     const isApple = p.code === "apple_pay";
@@ -413,6 +423,8 @@ export const BookingBottomSheet: React.FC<Props> = ({
                                                         >
                                                             {p.code === "wallet"
                                                                 ? <Wallet size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
+                                                                : p.code === "cash" && !p.icon
+                                                                ? <Store size={20} className={isActive ? "text-app-gold" : "text-app-textSec"} />
                                                                 : <img src={p.icon} alt={p.name_en} className="h-5 object-contain rounded-sm" />
                                                             }
                                                             <span className={`flex-1 text-sm font-semibold text-start ${isActive && !isApple ? "text-app-gold" : "text-app-text"}`}>

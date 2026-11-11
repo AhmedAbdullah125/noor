@@ -10,6 +10,7 @@ import { getLang, translations } from "../../services/i18n";
 import { API_BASE_URL } from "@/lib/apiConfig";
 import { useGetProfile } from "../services/useGetProfile";
 import { useGetPaymentMethods } from "../services/useGetPaymentMethods";
+import { defaultPaymentCode, filterPaymentMethods, getPaymentRestriction, withAtSalonOption } from "@/lib/paymentOptions";
 import { getAccessToken } from "../auth/authStorage";
 
 // Sub-components
@@ -57,7 +58,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         finalTotal: number;
     } | null>(null);
 
-    const [paymentType, setPaymentType] = useState<string>("wallet");
+    const [paymentType, setPaymentType] = useState<string>(() => defaultPaymentCode({ allowPayOnline: product.allowPayOnline }));
     const [startDate, setStartDate] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("");
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -172,7 +173,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
     useEffect(() => {
         setSelectedAddonIds(new Set());
         setBookingModal(null);
-        setPaymentType("wallet");
+        setPaymentType(defaultPaymentCode({ allowPayOnline: product.allowPayOnline }));
         setStartDate("");
         setStartTime("");
         setCouponCode("");
@@ -214,7 +215,18 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         duration: (product as any)?.duration || "0",
     }), [basePrice, addonsTotal, total, t.currency]);
 
-    const { data: paymentMethods = [] } = useGetPaymentMethods(total);
+    const { data: allPaymentMethods = [] } = useGetPaymentMethods(total);
+    const paymentMethods = useMemo(
+        () => filterPaymentMethods(
+            withAtSalonOption(
+                allPaymentMethods,
+                getPaymentRestriction({ allowPayAtSalon: product.allowPayAtSalon, allowPayOnline: product.allowPayOnline }) === "salon_only",
+                { ar: translations.ar.payAtSalonBookings, en: translations.en.payAtSalonBookings },
+            ),
+            { allowPayAtSalon: product.allowPayAtSalon, allowPayOnline: product.allowPayOnline },
+        ),
+        [allPaymentMethods, product.allowPayAtSalon, product.allowPayOnline],
+    );
 
     const getImages = () => {
         const imgs = (product as any)?.images ?? [];
@@ -296,7 +308,7 @@ export default function ServiceDetails({ product, onBack, onCreated, onModalTogg
         if (!validateRequiredGroups()) return;
         setStartDate("");
         setStartTime("");
-        setPaymentType("wallet");
+        setPaymentType(defaultPaymentCode({ allowPayOnline: product.allowPayOnline }));
         setBookingModal(data);
         setCouponCode("");
         setIsCheckingCoupon(false);

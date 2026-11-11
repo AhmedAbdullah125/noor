@@ -27,6 +27,8 @@ const fetchServices = async (lang: string, page: number, search?: string): Promi
         name: service.name,
         main_image: service.image?.url ?? "",
         category: service.category?.name ?? "",
+        allow_pay_at_salon: service.category?.allow_pay_at_salon !== false,
+        allow_pay_online: service.category?.allow_pay_online !== false,
         is_active: true,
         current_price: service.price?.amount ?? "0",
         price: service.price?.original_amount ?? service.price?.amount ?? "0",
